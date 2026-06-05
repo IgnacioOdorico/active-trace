@@ -11,3 +11,18 @@ Thumbs.db
 .DS_Store
 .vscode/
 .idea/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Environment
+.env
+backend/.env
+
+# Alembic
+backend/alembic/versions/*.pyc
