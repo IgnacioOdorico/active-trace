@@ -24,3 +24,6 @@ class Settings(BaseSettings):
                 f"ENCRYPTION_KEY must be exactly 32 characters, got {len(self.ENCRYPTION_KEY)}"
             )
         return self
+
+
+settings = Settings()  # type: ignore[call-arg]

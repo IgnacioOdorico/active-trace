@@ -1,0 +1,20 @@
+from sqlalchemy import String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.core.database import Base
+from app.models.base import EntityMeta
+
+
+class Tenant(Base, EntityMeta):
+    __tablename__ = "tenant"
+
+    slug: Mapped[str] = mapped_column(
+        String(100), unique=True, nullable=False
+    )
+    name: Mapped[str] = mapped_column(
+        String(255), nullable=False
+    )
+    config: Mapped[dict] = mapped_column(
+        JSONB, nullable=False, default={}, server_default="{}"
+    )

@@ -1,0 +1,58 @@
+SEED_ROLES: dict[str, list[str]] = {
+    "ADMIN": ["*:*"],
+    "COORDINADOR": [
+        "estructura:*", "equipos:*", "avisos:*", "encuentros:*",
+        "coloquios:*", "tareas:*", "padron:ver", "atrasados:ver",
+        "auditoria:ver", "auditoria:ver(propio)",
+        "calificaciones:ver", "comunicaciones:*", "programas:*",
+    ],
+    "PROFESOR": [
+        "calificaciones:*", "padron:ver", "atrasados:ver",
+        "comunicaciones:enviar", "comunicaciones:ver(propio)",
+        "encuentros:ver(propio)", "tareas:*(propio)",
+    ],
+    "TUTOR": [
+        "atrasados:ver", "encuentros:ver(propio)", "guardias:registrar",
+    ],
+    "ALUMNO": [
+        "coloquios:reservar", "perfil:ver(propio)", "mensajes:*(propio)",
+    ],
+    "NEXO": [
+        "liquidaciones:ver", "facturas:ver",
+    ],
+    "FINANZAS": [
+        "liquidaciones:*", "facturas:*",
+    ],
+}
+
+PERMISO_DESCRIPTIONS: dict[str, str] = {
+    "estructura:*": "Gestionar estructura organizativa",
+    "equipos:*": "Gestionar equipos de trabajo",
+    "avisos:*": "Gestionar avisos y notificaciones",
+    "encuentros:*": "Gestionar encuentros",
+    "encuentros:ver(propio)": "Ver encuentros propios",
+    "coloquios:*": "Gestionar coloquios",
+    "coloquios:reservar": "Reservar coloquios",
+    "tareas:*": "Gestionar tareas",
+    "tareas:*(propio)": "Gestionar tareas propias",
+    "padron:ver": "Ver padrón",
+    "atrasados:ver": "Ver atrasados",
+    "auditoria:ver": "Ver auditoría",
+    "auditoria:ver(propio)": "Ver auditoría propia",
+    "calificaciones:*": "Gestionar calificaciones",
+    "calificaciones:ver": "Ver calificaciones",
+    "comunicaciones:*": "Gestionar comunicaciones",
+    "comunicaciones:enviar": "Enviar comunicaciones",
+    "comunicaciones:ver(propio)": "Ver comunicaciones propias",
+    "programas:*": "Gestionar programas",
+    "guardias:registrar": "Registrar guardias",
+    "perfil:ver(propio)": "Ver perfil propio",
+    "mensajes:*(propio)": "Gestionar mensajes propios",
+    "liquidaciones:*": "Gestionar liquidaciones",
+    "liquidaciones:ver": "Ver liquidaciones",
+    "facturas:*": "Gestionar facturas",
+    "facturas:ver": "Ver facturas",
+    "*:*": "Acceso total al sistema",
+    "admin:roles": "Gestionar roles",
+    "admin:permisos": "Gestionar permisos",
+}
