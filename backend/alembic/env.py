@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.config import Settings
 from app.core.database import Base
+from app.models.audit_log import AuditLog  # noqa: F401
 from app.models.base import EntityMeta  # noqa: F401
 from app.models.carrera import Carrera  # noqa: F401
 from app.models.cohorte import Cohorte  # noqa: F401

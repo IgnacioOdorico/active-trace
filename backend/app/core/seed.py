@@ -39,6 +39,7 @@ PERMISO_DESCRIPTIONS: dict[str, str] = {
     "atrasados:ver": "Ver atrasados",
     "auditoria:ver": "Ver auditoría",
     "auditoria:ver(propio)": "Ver auditoría propia",
+    "impersonacion:usar": "Usar impersonación",
     "calificaciones:*": "Gestionar calificaciones",
     "calificaciones:ver": "Ver calificaciones",
     "comunicaciones:*": "Gestionar comunicaciones",

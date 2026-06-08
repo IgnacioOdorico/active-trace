@@ -84,6 +84,7 @@ PERMISO_DESCRIPTIONS: dict[str, str] = {
     "facturas:*": "Gestionar facturas",
     "facturas:ver": "Ver facturas",
     "*:*": "Acceso total al sistema",
+    "impersonacion:usar": "Usar impersonación",
 }
 
 

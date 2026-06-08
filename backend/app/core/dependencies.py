@@ -80,6 +80,9 @@ async def get_current_user(
             detail="Account is inactive",
         )
 
+    user.impersonator_id = payload.get("impersonator_id")
+    user.impersonated_user_id = payload.get("impersonated_user_id")
+
     return user
 
 

@@ -1,3 +1,4 @@
+from app.models.audit_log import AuditLog
 from app.models.base import EntityMeta
 from app.models.carrera import Carrera
 from app.models.cohorte import Cohorte
@@ -12,6 +13,7 @@ from app.models.user import User
 from app.models.user_rol import UserRol
 
 __all__ = [
+    "AuditLog",
     "Carrera",
     "Cohorte",
     "EntityMeta",
