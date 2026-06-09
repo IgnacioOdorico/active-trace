@@ -11,6 +11,7 @@ from app.models.audit_log import AuditLog  # noqa: F401
 from app.models.base import EntityMeta  # noqa: F401
 from app.models.carrera import Carrera  # noqa: F401
 from app.models.cohorte import Cohorte  # noqa: F401
+from app.models.entrada_padron import EntradaPadron  # noqa: F401
 from app.models.materia import Materia  # noqa: F401
 from app.models.permiso import Permiso  # noqa: F401
 from app.models.recovery_token import RecoveryToken  # noqa: F401
@@ -20,6 +21,7 @@ from app.models.rol_permiso import RolPermiso  # noqa: F401
 from app.models.tenant import Tenant  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.user_rol import UserRol  # noqa: F401
+from app.models.version_padron import VersionPadron  # noqa: F401
 
 config = context.config
 

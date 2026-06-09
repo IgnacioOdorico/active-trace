@@ -12,6 +12,8 @@ from app.core.database import close_db, init_db
 from app.core.logging import setup_logging
 from app.core.observability import setup_observability
 from app.routers.asignaciones import router as asignaciones_router
+from app.routers.equipos import router as equipos_router
+from app.routers.padron import router as padron_router
 from app.routers.usuarios import router as usuarios_router
 
 settings = Settings()
@@ -39,3 +41,5 @@ app.include_router(auth_router)
 app.include_router(estructura_router)
 app.include_router(usuarios_router)
 app.include_router(asignaciones_router)
+app.include_router(equipos_router)
+app.include_router(padron_router)
