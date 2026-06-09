@@ -9,6 +9,7 @@ from app.core.database import Base
 from app.models.asignacion import Asignacion  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
 from app.models.base import EntityMeta  # noqa: F401
+from app.models.calificacion import Calificacion  # noqa: F401
 from app.models.carrera import Carrera  # noqa: F401
 from app.models.cohorte import Cohorte  # noqa: F401
 from app.models.entrada_padron import EntradaPadron  # noqa: F401
@@ -19,6 +20,7 @@ from app.models.refresh_token import RefreshToken  # noqa: F401
 from app.models.rol import Rol  # noqa: F401
 from app.models.rol_permiso import RolPermiso  # noqa: F401
 from app.models.tenant import Tenant  # noqa: F401
+from app.models.umbral_materia import UmbralMateria  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.user_rol import UserRol  # noqa: F401
 from app.models.version_padron import VersionPadron  # noqa: F401
