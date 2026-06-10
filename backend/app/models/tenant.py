@@ -1,4 +1,4 @@
-from sqlalchemy import String
+from sqlalchemy import Boolean, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -17,4 +17,7 @@ class Tenant(Base, EntityMeta):
     )
     config: Mapped[dict] = mapped_column(
         JSONB, nullable=False, default={}, server_default="{}"
+    )
+    requiere_aprobacion_comunicaciones: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
     )

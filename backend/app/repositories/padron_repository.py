@@ -28,6 +28,18 @@ class VersionPadronRepository(BaseRepository[VersionPadron]):
         result = await session.execute(query)
         return result.unique().scalar_one_or_none()
 
+    async def get_active_by_materia(
+        self,
+        session: AsyncSession,
+        materia_id: uuid.UUID,
+    ) -> Sequence[VersionPadron]:
+        query = self._base_query().where(
+            self._model.materia_id == materia_id,
+            self._model.activa,
+        )
+        result = await session.execute(query)
+        return list(result.unique().scalars().all())
+
     async def deactivate_all(
         self,
         session: AsyncSession,
