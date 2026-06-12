@@ -27,6 +27,12 @@ SEED_ROLES: dict[str, list[str]] = {
 }
 
 PERMISO_DESCRIPTIONS: dict[str, str] = {
+    "liquidaciones:calcular": "Calcular liquidaciones",
+    "liquidaciones:cerrar": "Cerrar liquidaciones",
+    "liquidaciones:exportar": "Exportar liquidaciones",
+    "liquidaciones:configurar-salarios": "Configurar grilla salarial",
+    "facturas:cargar": "Cargar facturas PDF",
+    "facturas:abonar": "Abonar facturas",
     "estructura:*": "Gestionar estructura organizativa",
     "equipos:*": "Gestionar equipos de trabajo",
     "avisos:*": "Gestionar avisos y notificaciones",

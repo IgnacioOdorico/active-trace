@@ -39,6 +39,10 @@ from app.models.umbral_materia import UmbralMateria  # noqa: F401
 from app.models.user import User  # noqa: F401
 from app.models.user_rol import UserRol  # noqa: F401
 from app.models.version_padron import VersionPadron  # noqa: F401
+from app.models.salario_base import SalarioBase  # noqa: F401
+from app.models.salario_plus import SalarioPlus  # noqa: F401
+from app.models.liquidacion import Liquidacion  # noqa: F401
+from app.models.factura import Factura  # noqa: F401
 
 config = context.config
 

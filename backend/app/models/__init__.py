@@ -8,6 +8,9 @@ from app.models.comunicacion import Comunicacion, EstadoComunicacion
 from app.models.carrera import Carrera
 from app.models.cohorte import Cohorte
 from app.models.entrada_padron import EntradaPadron
+from app.models.factura import Factura
+from app.models.financial_base import FinancialEntityMeta
+from app.models.liquidacion import Liquidacion
 from app.models.evaluacion import Evaluacion, TipoEvaluacion
 from app.models.evaluacion_alumno import EvaluacionAlumno
 from app.models.evaluacion_dia import EvaluacionDia
@@ -15,6 +18,8 @@ from app.models.guardia import EstadoGuardia, Guardia
 from app.models.instancia_encuentro import EstadoEncuentro, InstanciaEncuentro
 from app.models.materia import Materia
 from app.models.permiso import Permiso
+from app.models.salario_base import SalarioBase
+from app.models.salario_plus import SalarioPlus
 from app.models.recovery_token import RecoveryToken
 from app.models.refresh_token import RefreshToken
 from app.models.reserva_evaluacion import EstadoReserva, ReservaEvaluacion
@@ -50,6 +55,9 @@ __all__ = [
     "ComentarioTarea",
     "EntradaPadron",
     "EstadoTarea",
+    "Factura",
+    "FinancialEntityMeta",
+    "Liquidacion",
     "EntityMeta",
     "FechaAcademica",
     "ProgramaMateria",
@@ -67,6 +75,8 @@ __all__ = [
     "ResultadoEvaluacion",
     "Rol",
     "RolPermiso",
+    "SalarioBase",
+    "SalarioPlus",
     "SlotEncuentro",
     "Tarea",
     "Tenant",

@@ -26,6 +26,10 @@ from app.routers.guardias import router as guardias_router
 from app.routers.padron import router as padron_router
 from app.routers.umbral import router as umbral_router
 from app.routers.usuarios import router as usuarios_router
+from app.routers.salario_base import router as salario_base_router
+from app.routers.salario_plus import router as salario_plus_router
+from app.routers.liquidaciones import router as liquidaciones_router
+from app.routers.facturas import router as facturas_router
 
 settings = Settings()
 
@@ -65,3 +69,7 @@ app.include_router(fechas_academicas_router)
 app.include_router(guardias_router)
 app.include_router(umbral_router)
 app.include_router(padron_router)
+app.include_router(salario_base_router)
+app.include_router(salario_plus_router)
+app.include_router(liquidaciones_router)
+app.include_router(facturas_router)
