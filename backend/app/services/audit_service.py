@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import datetime
 from functools import wraps
 
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.audit_log import AuditLog
 from app.repositories.audit_log import AuditLogRepository
 
 CALIFICACIONES_IMPORTAR = "CALIFICACIONES_IMPORTAR"
@@ -125,6 +128,87 @@ class AuditLogService:
             hasta=hasta,
         )
         return list(items), total
+
+    async def acciones_por_dia(
+        self,
+        db: AsyncSession,
+        *,
+        desde: datetime | None = None,
+        hasta: datetime | None = None,
+        materia_id: uuid.UUID | None = None,
+        actor_id: uuid.UUID | None = None,
+        accion: str | None = None,
+        materias_ids: list[uuid.UUID] | None = None,
+    ) -> list[dict]:
+        return await self._repo.acciones_por_dia(
+            db,
+            desde=desde,
+            hasta=hasta,
+            materia_id=materia_id,
+            actor_id=actor_id,
+            accion=accion,
+            materias_ids=materias_ids,
+        )
+
+    async def comunicaciones_por_docente(
+        self,
+        db: AsyncSession,
+        *,
+        desde: datetime | None = None,
+        hasta: datetime | None = None,
+        materia_id: uuid.UUID | None = None,
+        materias_ids: list[uuid.UUID] | None = None,
+    ) -> list[dict]:
+        return await self._repo.comunicaciones_por_docente(
+            db,
+            desde=desde,
+            hasta=hasta,
+            materia_id=materia_id,
+            materias_ids=materias_ids,
+        )
+
+    async def interacciones_por_docente_materia(
+        self,
+        db: AsyncSession,
+        *,
+        desde: datetime | None = None,
+        hasta: datetime | None = None,
+        materia_id: uuid.UUID | None = None,
+        actor_id: uuid.UUID | None = None,
+        materias_ids: list[uuid.UUID] | None = None,
+    ) -> list[dict]:
+        return await self._repo.interacciones_por_docente_materia(
+            db,
+            desde=desde,
+            hasta=hasta,
+            materia_id=materia_id,
+            actor_id=actor_id,
+            materias_ids=materias_ids,
+        )
+
+    async def ultimas_acciones(
+        self,
+        db: AsyncSession,
+        *,
+        max_resultados: int = 200,
+        desde: datetime | None = None,
+        hasta: datetime | None = None,
+        materia_id: uuid.UUID | None = None,
+        actor_id: uuid.UUID | None = None,
+        accion: str | None = None,
+        materias_ids: list[uuid.UUID] | None = None,
+    ) -> Sequence[AuditLog]:
+        max_resultados = min(max_resultados, 1000)
+        return await self._repo.ultimas_acciones(
+            db,
+            max_resultados=max_resultados,
+            desde=desde,
+            hasta=hasta,
+            materia_id=materia_id,
+            actor_id=actor_id,
+            accion=accion,
+            materias_ids=materias_ids,
+        )
 
 
 async def log_action(
