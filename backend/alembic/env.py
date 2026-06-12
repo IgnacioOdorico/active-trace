@@ -6,7 +6,9 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.config import Settings
 from app.core.database import Base
+from app.models.acknowledgment_aviso import AcknowledgmentAviso  # noqa: F401
 from app.models.asignacion import Asignacion  # noqa: F401
+from app.models.aviso import Aviso  # noqa: F401
 from app.models.audit_log import AuditLog  # noqa: F401
 from app.models.base import EntityMeta  # noqa: F401
 from app.models.calificacion import Calificacion  # noqa: F401
@@ -14,7 +16,14 @@ from app.models.comunicacion import Comunicacion  # noqa: F401
 from app.models.carrera import Carrera  # noqa: F401
 from app.models.cohorte import Cohorte  # noqa: F401
 from app.models.entrada_padron import EntradaPadron  # noqa: F401
+from app.models.evaluacion import Evaluacion  # noqa: F401
+from app.models.fecha_academica import FechaAcademica  # noqa: F401
+from app.models.programa_materia import ProgramaMateria  # noqa: F401
+from app.models.evaluacion_alumno import EvaluacionAlumno  # noqa: F401
+from app.models.evaluacion_dia import EvaluacionDia  # noqa: F401
 from app.models.guardia import Guardia  # noqa: F401
+from app.models.reserva_evaluacion import ReservaEvaluacion  # noqa: F401
+from app.models.resultado_evaluacion import ResultadoEvaluacion  # noqa: F401
 from app.models.instancia_encuentro import InstanciaEncuentro  # noqa: F401
 from app.models.materia import Materia  # noqa: F401
 from app.models.permiso import Permiso  # noqa: F401
@@ -23,6 +32,8 @@ from app.models.refresh_token import RefreshToken  # noqa: F401
 from app.models.rol import Rol  # noqa: F401
 from app.models.rol_permiso import RolPermiso  # noqa: F401
 from app.models.slot_encuentro import SlotEncuentro  # noqa: F401
+from app.models.tarea import Tarea  # noqa: F401
+from app.models.comentario_tarea import ComentarioTarea  # noqa: F401
 from app.models.tenant import Tenant  # noqa: F401
 from app.models.umbral_materia import UmbralMateria  # noqa: F401
 from app.models.user import User  # noqa: F401

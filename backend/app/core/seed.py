@@ -2,7 +2,7 @@ SEED_ROLES: dict[str, list[str]] = {
     "ADMIN": ["*:*"],
     "COORDINADOR": [
         "estructura:*", "equipos:*", "avisos:*", "encuentros:*", "encuentros:gestionar",
-        "coloquios:*", "tareas:*", "padron:ver", "padron:importar",
+        "coloquios:*", "coloquios:gestionar", "tareas:*", "padron:ver", "padron:importar",
         "atrasados:ver",
         "auditoria:ver", "auditoria:ver(propio)",
         "calificaciones:*", "comunicaciones:*", "programas:*",
@@ -34,6 +34,7 @@ PERMISO_DESCRIPTIONS: dict[str, str] = {
     "encuentros:gestionar": "Gestionar encuentros y guardias",
     "encuentros:ver(propio)": "Ver encuentros propios",
     "coloquios:*": "Gestionar coloquios",
+    "coloquios:gestionar": "Gestionar coloquios y convocatorias",
     "coloquios:reservar": "Reservar coloquios",
     "tareas:*": "Gestionar tareas",
     "tareas:*(propio)": "Gestionar tareas propias",

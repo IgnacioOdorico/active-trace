@@ -12,11 +12,16 @@ from app.core.database import close_db, init_db
 from app.core.logging import setup_logging
 from app.core.observability import setup_observability
 from app.routers.analisis import router as analisis_router
+from app.routers.avisos import router as avisos_router
+from app.routers.tareas import router as tareas_router
 from app.routers.asignaciones import router as asignaciones_router
 from app.routers.equipos import router as equipos_router
 from app.routers.calificaciones import router as calificaciones_router
+from app.routers.coloquios import router as coloquios_router
 from app.routers.comunicaciones import router as comunicaciones_router
 from app.routers.encuentros import router as encuentros_router
+from app.routers.fechas_academicas import router as fechas_academicas_router
+from app.routers.programas import router as programas_router
 from app.routers.guardias import router as guardias_router
 from app.routers.padron import router as padron_router
 from app.routers.umbral import router as umbral_router
@@ -46,12 +51,17 @@ app.include_router(audit_router)
 app.include_router(auth_router)
 app.include_router(estructura_router)
 app.include_router(usuarios_router)
+app.include_router(avisos_router)
+app.include_router(tareas_router)
 app.include_router(asignaciones_router)
 app.include_router(equipos_router)
 app.include_router(analisis_router)
 app.include_router(calificaciones_router)
+app.include_router(coloquios_router)
 app.include_router(comunicaciones_router)
 app.include_router(encuentros_router)
+app.include_router(programas_router)
+app.include_router(fechas_academicas_router)
 app.include_router(guardias_router)
 app.include_router(umbral_router)
 app.include_router(padron_router)
