@@ -9,7 +9,8 @@ import os
 import signal
 
 from app.core.config import Settings
-from app.core.database import async_session_factory, close_db, init_db
+from app.core.database import close_db, init_db
+from app.core import database as db_module
 from app.workers.comunicacion_worker import ComunicacionWorker
 
 logger = logging.getLogger(__name__)
@@ -19,13 +20,13 @@ settings = Settings()
 
 async def main() -> None:
     init_db(settings.DATABASE_URL)
-    if async_session_factory is None:
+    if db_module.async_session_factory is None:
         raise RuntimeError("Database not initialized")
 
     poll_interval = int(os.getenv("WORKER_POLL_INTERVAL", "10"))
 
     worker = ComunicacionWorker(
-        session_factory=async_session_factory,
+        session_factory=db_module.async_session_factory,
         poll_interval=poll_interval,
     )
 

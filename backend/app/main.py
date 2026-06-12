@@ -31,6 +31,8 @@ from app.routers.salario_base import router as salario_base_router
 from app.routers.salario_plus import router as salario_plus_router
 from app.routers.liquidaciones import router as liquidaciones_router
 from app.routers.facturas import router as facturas_router
+from app.routers.perfil import router as perfil_router
+from app.routers.inbox import router as inbox_router
 
 settings = Settings()
 
@@ -75,3 +77,5 @@ app.include_router(salario_base_router)
 app.include_router(salario_plus_router)
 app.include_router(liquidaciones_router)
 app.include_router(facturas_router)
+app.include_router(perfil_router)
+app.include_router(inbox_router)

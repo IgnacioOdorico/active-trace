@@ -6,14 +6,17 @@ SEED_ROLES: dict[str, list[str]] = {
         "atrasados:ver",
         "auditoria:ver", "auditoria:ver(propio)",
         "calificaciones:*", "comunicaciones:*", "programas:*",
+        "perfil:editar", "inbox:leer", "inbox:responder",
     ],
     "PROFESOR": [
         "calificaciones:*", "padron:ver", "atrasados:ver",
         "comunicaciones:enviar", "comunicaciones:ver(propio)",
         "encuentros:ver(propio)", "tareas:*(propio)",
+        "perfil:editar", "inbox:leer", "inbox:responder",
     ],
     "TUTOR": [
         "atrasados:ver", "encuentros:ver(propio)", "guardias:registrar",
+        "perfil:editar", "inbox:leer", "inbox:responder",
     ],
     "ALUMNO": [
         "coloquios:reservar", "perfil:ver(propio)", "mensajes:*(propio)",
@@ -27,6 +30,9 @@ SEED_ROLES: dict[str, list[str]] = {
 }
 
 PERMISO_DESCRIPTIONS: dict[str, str] = {
+    "perfil:editar": "Editar perfil propio",
+    "inbox:leer": "Leer mensajes de la bandeja de entrada",
+    "inbox:responder": "Responder mensajes de la bandeja de entrada",
     "liquidaciones:calcular": "Calcular liquidaciones",
     "liquidaciones:cerrar": "Cerrar liquidaciones",
     "liquidaciones:exportar": "Exportar liquidaciones",

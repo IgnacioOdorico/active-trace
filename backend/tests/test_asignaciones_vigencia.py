@@ -44,18 +44,18 @@ class TestAsignacionVigencia:
         assert a.estado_vigencia == "Pendiente"
 
     def test_asignacion_exactamente_en_desde(self):
-        fixed = datetime(2026, 6, 1, tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
         a = Asignacion(
-            desde=fixed,
-            hasta=fixed + timedelta(days=10),
+            desde=now,
+            hasta=now + timedelta(days=10),
         )
         assert a.estado_vigencia == "Vigente"
 
     def test_asignacion_exactamente_en_hasta(self):
-        fixed = datetime(2026, 6, 1, tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
         a = Asignacion(
-            desde=fixed - timedelta(days=10),
-            hasta=fixed,
+            desde=now - timedelta(days=10),
+            hasta=now,
         )
         assert a.estado_vigencia == "Vencida"
 
