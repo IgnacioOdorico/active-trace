@@ -27,7 +27,7 @@ class CalificacionResponse(BaseModel):
 
 class ImportRequest(BaseModel):
     materia_id: str
-    actividades: list[str]
+    actividad_ids: list[str]
 
 
 class ImportResponse(BaseModel):

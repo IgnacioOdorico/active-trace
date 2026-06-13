@@ -137,7 +137,7 @@ async def cancelar_comunicacion(
         )
 
 
-@router.post("/lotes/{lote_id}/aprobar")
+@router.post("/lote/{lote_id}/aprobar")
 async def aprobar_lote(
     lote_id: str,
     db: AsyncSession = Depends(get_db),
@@ -150,7 +150,7 @@ async def aprobar_lote(
     return result
 
 
-@router.post("/lotes/{lote_id}/rechazar")
+@router.post("/lote/{lote_id}/rechazar")
 async def rechazar_lote(
     lote_id: str,
     db: AsyncSession = Depends(get_db),

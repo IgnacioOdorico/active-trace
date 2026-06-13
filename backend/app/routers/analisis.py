@@ -3,11 +3,13 @@ from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
 from app.core.exceptions import DomainError
 from app.core.permissions import require_permission
+from app.models.calificacion import Calificacion
 from app.models.user import User
 from app.schemas.analisis import (
     AlumnoAtrasadoResponse,
@@ -23,23 +25,82 @@ router = APIRouter(prefix="/api/analisis", tags=["analisis"])
 
 
 @router.get(
-    "/atrasados/{materia_id}",
-    response_model=list[AlumnoAtrasadoResponse],
+    "/atrasados",
 )
 async def atrasados(
-    materia_id: uuid.UUID,
+    materia_id: uuid.UUID = Query(...),
+    pagina: int = Query(default=1, ge=1),
+    por_pagina: int = Query(default=50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _=Depends(require_permission("atrasados:ver")),
 ):
     svc = AnalisisService(current_user.tenant_id)
     try:
-        return await svc.atrasados(db, materia_id)
+        raw = await svc.atrasados(db, materia_id)
     except DomainError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=e.detail,
         )
+
+    total = len(raw)
+    start = (pagina - 1) * por_pagina
+    page = raw[start:start + por_pagina]
+
+    total_actividades = 0
+    if raw:
+        max_actividades = max(
+            len(item.get("actividades_problematicas", [])) for item in raw
+        )
+        total_actividades = max_actividades
+
+    data = []
+    for item in page:
+        data.append({
+            "id": item.get("entrada_padron_id", ""),
+            "nombre": item.get("nombre", ""),
+            "apellidos": item.get("apellidos", ""),
+            "email": item.get("email", ""),
+            "comision": item.get("comision") or "",
+            "actividades_no_aprobadas": len(item.get("actividades_problematicas", [])),
+            "total_actividades": total_actividades,
+            "progreso": round(
+                (total_actividades - len(item.get("actividades_problematicas", [])))
+                / max(total_actividades, 1) * 100, 1
+            ) if total_actividades > 0 else 0,
+            "ultima_actividad": "",
+        })
+
+    return {
+        "data": data,
+        "total": total,
+        "pagina": pagina,
+        "por_pagina": por_pagina,
+    }
+
+
+@router.get(
+    "/reportes/{materia_id}/actividades",
+)
+async def actividades_por_materia(
+    materia_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _=Depends(require_permission("atrasados:ver")),
+):
+    result = await db.execute(
+        select(Calificacion.nombre_actividad).distinct().where(
+            Calificacion.materia_id == materia_id,
+            Calificacion.tenant_id == current_user.tenant_id,
+            Calificacion.deleted_at.is_(None),
+        ).order_by(Calificacion.nombre_actividad)
+    )
+    names = list(result.scalars().all())
+    return [
+        {"id": name, "nombre": name, "tipo": "numerica"}
+        for name in names
+    ]
 
 
 @router.get(

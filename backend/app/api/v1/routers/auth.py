@@ -295,4 +295,16 @@ async def reset_password(
 
 @router.get("/me")
 async def get_me(current_user: User = Depends(get_current_user)):
-    return {"email": current_user.email, "id": str(current_user.id), "is_active": current_user.is_active}
+    permissions: set[str] = set()
+    for rol in current_user.roles:
+        for permiso in rol.permisos:
+            permissions.add(permiso.codigo)
+    return {
+        "email": current_user.email,
+        "id": str(current_user.id),
+        "is_active": current_user.is_active,
+        "nombre": current_user.nombre or current_user.email.split("@")[0],
+        "roles": [r.codigo for r in current_user.roles],
+        "permissions": sorted(permissions),
+        "tenant_id": str(current_user.tenant_id),
+    }

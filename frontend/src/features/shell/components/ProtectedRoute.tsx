@@ -30,9 +30,9 @@ export default function ProtectedRoute({
   }
 
   if (requiredPermissions && requiredPermissions.length > 0 && user) {
-    const hasAllPermissions = requiredPermissions.every((perm) =>
-      user.permissions.includes(perm),
-    )
+    const hasAllPermissions =
+      user.permissions.includes('*:*') ||
+      requiredPermissions.every((perm) => user.permissions.includes(perm))
     if (!hasAllPermissions) {
       return (
         <div className="flex min-h-screen items-center justify-center">

@@ -8,6 +8,12 @@ import ProtectedRoute from '../features/shell/components/ProtectedRoute'
 import Layout from '../features/shell/components/Layout'
 import Home from './Home'
 import NotFound from './NotFound'
+import CalificacionesImportarPage from '../features/calificaciones-importar/pages/CalificacionesImportarPage'
+import UmbralPage from '../features/gestion-umbral/pages/UmbralPage'
+import AlumnosAtrasadosPage from '../features/alumnos-atrasados/pages/AlumnosAtrasadosPage'
+import ReportesPage from '../features/notas-finales-reportes/pages/ReportesPage'
+import ComunicacionesPage from '../features/comunicacion-atrasados/pages/ComunicacionesPage'
+import MonitoresPage from '../features/monitor-seguimiento/pages/MonitoresPage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -71,6 +77,12 @@ export default function AppRouter() {
         }
       >
         <Route index element={<Home />} />
+        <Route path="calificaciones/importar" element={<CalificacionesImportarPage />} />
+        <Route path="calificaciones/umbral" element={<UmbralPage />} />
+        <Route path="alumnos/atrasados" element={<AlumnosAtrasadosPage />} />
+        <Route path="reportes" element={<ReportesPage />} />
+        <Route path="comunicaciones" element={<ComunicacionesPage />} />
+        <Route path="monitores" element={<MonitoresPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

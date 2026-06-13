@@ -6,6 +6,12 @@ class UmbralConfigRequest(BaseModel):
     valores_aprobatorios: list[str] | None = None
 
 
+class UmbralUpdateRequest(BaseModel):
+    materia_id: str
+    umbral_pct: float | None = None
+    valores_aprobatorios: list[str] | None = None
+
+
 class UmbralMateriaResponse(BaseModel):
     id: str
     asignacion_id: str
