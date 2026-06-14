@@ -53,6 +53,86 @@ const menuSections: MenuSection[] = [
       },
     ],
   },
+  {
+    label: 'Coordinación',
+    items: [
+      {
+        label: 'Equipos Docentes',
+        path: '/coordinacion/equipos',
+        requiredPermission: 'equipos:asignar',
+      },
+      {
+        label: 'Avisos',
+        path: '/coordinacion/avisos',
+        requiredPermission: 'avisos:publicar',
+      },
+      {
+        label: 'Tareas',
+        path: '/coordinacion/tareas',
+        requiredPermission: 'tareas:gestionar',
+      },
+      {
+        label: 'Encuentros (Admin)',
+        path: '/coordinacion/encuentros',
+        requiredPermission: 'encuentros:gestionar',
+      },
+      {
+        label: 'Coloquios',
+        path: '/coordinacion/coloquios',
+        requiredPermission: 'equipos:asignar',
+      },
+      {
+        label: 'Setup Cuatrimestre',
+        path: '/coordinacion/setup',
+        requiredPermission: 'equipos:asignar',
+      },
+      {
+        label: 'Monitores Coord.',
+        path: '/coordinacion/monitores',
+        requiredPermission: 'monitores:ver',
+      },
+    ],
+  },
+  {
+    label: 'Finanzas',
+    items: [
+      {
+        label: 'Liquidaciones',
+        path: '/finanzas/liquidaciones',
+        requiredPermission: 'liquidaciones:ver',
+      },
+      {
+        label: 'Grilla Salarial',
+        path: '/finanzas/grilla-salarial',
+        requiredPermission: 'liquidaciones:configurar-salarios',
+      },
+      {
+        label: 'Facturas',
+        path: '/finanzas/facturas',
+        requiredPermission: 'facturas:ver',
+      },
+    ],
+  },
+  {
+    label: 'Administración',
+    items: [
+      {
+        label: 'Estructura Académica',
+        path: '/admin/estructura',
+        requiredPermission: 'estructura:gestionar',
+      },
+      {
+        label: 'Usuarios',
+        path: '/admin/usuarios',
+        requiredPermission: 'usuarios:gestionar',
+      },
+      {
+        label: 'Panel de Auditoría',
+        path: '/admin/auditoria',
+        requiredPermission: 'auditoria:ver',
+      },
+    ],
+  },
 ]
 
 export default function Layout() {

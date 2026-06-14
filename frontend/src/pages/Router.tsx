@@ -14,6 +14,19 @@ import AlumnosAtrasadosPage from '../features/alumnos-atrasados/pages/AlumnosAtr
 import ReportesPage from '../features/notas-finales-reportes/pages/ReportesPage'
 import ComunicacionesPage from '../features/comunicacion-atrasados/pages/ComunicacionesPage'
 import MonitoresPage from '../features/monitor-seguimiento/pages/MonitoresPage'
+import EquiposPage from '../features/equipos/pages/EquiposPage'
+import AvisosPage from '../features/avisos/pages/AvisosPage'
+import TareasPage from '../features/tareas/pages/TareasPage'
+import EncuentrosAdminPage from '../features/encuentros-admin/pages/EncuentrosAdminPage'
+import ColoquiosPage from '../features/coloquios/pages/ColoquiosPage'
+import SetupCuatrimestrePage from '../features/setup-cuatrimestre/pages/SetupCuatrimestrePage'
+import MonitoresCoordinacionPage from '../features/monitor-seguimiento/pages/MonitoresCoordinacionPage'
+import LiquidacionesPage from '../features/liquidaciones/pages/LiquidacionesPage'
+import GrillaSalarialPage from '../features/grilla-salarial/pages/GrillaSalarialPage'
+import FacturasPage from '../features/facturas/pages/FacturasPage'
+import EstructuraAcademicaPage from '../features/estructura-academica/pages/EstructuraAcademicaPage'
+import UsuariosPage from '../features/usuarios/pages/UsuariosPage'
+import PanelAuditoriaPage from '../features/panel-auditoria/pages/PanelAuditoriaPage'
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
@@ -83,6 +96,22 @@ export default function AppRouter() {
         <Route path="reportes" element={<ReportesPage />} />
         <Route path="comunicaciones" element={<ComunicacionesPage />} />
         <Route path="monitores" element={<MonitoresPage />} />
+        {/* Coordinación */}
+        <Route path="coordinacion/equipos" element={<EquiposPage />} />
+        <Route path="coordinacion/avisos" element={<AvisosPage />} />
+        <Route path="coordinacion/tareas" element={<TareasPage />} />
+        <Route path="coordinacion/encuentros" element={<EncuentrosAdminPage />} />
+        <Route path="coordinacion/coloquios" element={<ColoquiosPage />} />
+        <Route path="coordinacion/setup" element={<SetupCuatrimestrePage />} />
+        <Route path="coordinacion/monitores" element={<MonitoresCoordinacionPage />} />
+        {/* Finanzas */}
+        <Route path="finanzas/liquidaciones" element={<LiquidacionesPage />} />
+        <Route path="finanzas/grilla-salarial" element={<GrillaSalarialPage />} />
+        <Route path="finanzas/facturas" element={<FacturasPage />} />
+        {/* Administración */}
+        <Route path="admin/estructura" element={<EstructuraAcademicaPage />} />
+        <Route path="admin/usuarios" element={<UsuariosPage />} />
+        <Route path="admin/auditoria" element={<PanelAuditoriaPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
