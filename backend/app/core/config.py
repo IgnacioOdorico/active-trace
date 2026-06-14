@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     OTEL_SERVICE_NAME: str = Field(default="activia-trace")
     OTEL_EXPORTER_OTLP_ENDPOINT: str | None = Field(default=None)
     OTEL_ENABLED: bool = Field(default=False)
+    FACTURAS_DIR: str = Field(default="/data/facturas")
+    MAX_FILE_SIZE_KB: int = Field(default=10240)
 
     @model_validator(mode="after")
     def validate_encryption_key_length(self):

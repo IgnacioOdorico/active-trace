@@ -26,16 +26,32 @@ def verify_password(plain: str, hashed: str) -> bool:
         return False
 
 
-def create_access_token(user_id: str, tenant_id: str, roles: list[str] | None = None) -> str:
+def create_access_token(
+    user_id: str,
+    tenant_id: str,
+    roles: list[str] | None = None,
+    impersonating: bool = False,
+    impersonator_id: str | None = None,
+    impersonated_user_id: str | None = None,
+    original_roles: list[str] | None = None,
+) -> str:
     now = datetime.now(timezone.utc)
-    claims = {
+    claims: dict = {
         "sub": user_id,
         "tenant_id": tenant_id,
         "rols": roles or [],
+        "impersonating": impersonating,
         "exp": now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
         "iat": now,
         "type": "access",
     }
+    if impersonating:
+        if impersonator_id is not None:
+            claims["impersonator_id"] = impersonator_id
+        if impersonated_user_id is not None:
+            claims["impersonated_user_id"] = impersonated_user_id
+        if original_roles is not None:
+            claims["original_roles"] = original_roles
     return jwt.encode(claims, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 

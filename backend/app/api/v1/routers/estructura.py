@@ -23,6 +23,7 @@ from app.services.cohorte_service import CohorteService
 from app.services.materia_service import MateriaService
 
 router = APIRouter(prefix="/api/v1/admin", tags=["estructura"])
+router_public = APIRouter(prefix="/api/v1/estructura", tags=["estructura"])
 
 
 def _carrera_to_response(c) -> CarreraResponse:
@@ -275,3 +276,16 @@ async def delete_materia(
     svc = MateriaService(current_user.tenant_id)
     await svc.soft_delete(db, materia_id)
     await db.commit()
+
+
+@router_public.get("/materias")
+async def list_materias_public(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    svc = MateriaService(current_user.tenant_id)
+    materias = await svc.get_all(db)
+    return [
+        {"id": str(m.id), "nombre": m.nombre, "codigo": m.codigo, "comision": None, "regional": None}
+        for m in materias
+    ]

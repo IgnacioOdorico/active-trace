@@ -21,5 +21,5 @@ class Rol(Base):
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
 
     permisos: Mapped[list["Permiso"]] = relationship(
-        secondary="rol_permisos", back_populates="roles",
+        secondary="rol_permisos", back_populates="roles", lazy="selectin",
     )

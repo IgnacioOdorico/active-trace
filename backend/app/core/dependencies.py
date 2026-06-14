@@ -6,8 +6,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core import database as db_module
 from app.core.auth import decode_access_token
-from app.core.database import async_session_factory
 from app.models.tenant import Tenant
 from app.models.user import User
 
@@ -15,9 +15,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=Fals
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    if async_session_factory is None:
+    factory = db_module.async_session_factory
+    if factory is None:
         raise RuntimeError("Database not initialized. Call init_db() first.")
-    session = async_session_factory()
+    session = factory()
     try:
         yield session
     finally:
@@ -79,6 +80,9 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Account is inactive",
         )
+
+    user.impersonator_id = payload.get("impersonator_id")
+    user.impersonated_user_id = payload.get("impersonated_user_id")
 
     return user
 
