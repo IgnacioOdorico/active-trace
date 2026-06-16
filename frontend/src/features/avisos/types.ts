@@ -1,23 +1,25 @@
 // Tipos derivados de los response_model del router /api/avisos/*
 
-export type AvisoAlcance = 'global' | 'materia' | 'cohorte' | 'rol'
-export type AvisoSeveridad = 'info' | 'warning' | 'error'
+export type AvisoAlcance = 'Global' | 'PorMateria' | 'PorCohorte' | 'PorRol'
+export type AvisoSeveridad = 'Info' | 'Advertencia' | 'Crítico'
 
 export interface Aviso {
   id: string
+  tenant_id: string
   alcance: AvisoAlcance
   materia_id?: string
-  cohorte?: string
-  roles: string[]
+  cohorte_id?: string
+  rol_destino?: string
   severidad: AvisoSeveridad
   titulo: string
   cuerpo: string
-  vigencia_inicio: string
-  vigencia_fin: string
+  inicio_en: string
+  fin_en: string
   orden: number
   activo: boolean
   requiere_ack: boolean
-  creado_en: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface AvisoGestion extends Aviso {
@@ -25,25 +27,29 @@ export interface AvisoGestion extends Aviso {
 }
 
 export interface AvisosGestionResponse {
-  data: AvisoGestion[]
+  items: AvisoGestion[]
   total: number
+  pagina: number
+  page_size: number
 }
 
 export interface AvisosUsuarioResponse {
-  data: Aviso[]
+  items: Aviso[]
   total: number
+  pagina: number
+  page_size: number
 }
 
 export interface CrearAvisoRequest {
   alcance: AvisoAlcance
   materia_id?: string
-  cohorte?: string
-  roles: string[]
+  cohorte_id?: string
+  rol_destino?: string
   severidad: AvisoSeveridad
   titulo: string
   cuerpo: string
-  vigencia_inicio: string
-  vigencia_fin: string
+  inicio_en: string
+  fin_en: string
   orden: number
   activo: boolean
   requiere_ack: boolean

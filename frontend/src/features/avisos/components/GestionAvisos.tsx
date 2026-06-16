@@ -3,10 +3,10 @@ import { useAvisosGestion, useEliminarAviso } from '../hooks/useAvisosApi'
 import AvisoForm from './AvisoForm'
 import type { Aviso } from '../types'
 
-const SEVERIDAD_COLORS = {
-  info: 'bg-blue-100 text-blue-700',
-  warning: 'bg-yellow-100 text-yellow-700',
-  error: 'bg-red-100 text-red-700',
+const SEVERIDAD_COLORS: Record<string, string> = {
+  Info: 'bg-blue-100 text-blue-700',
+  Advertencia: 'bg-yellow-100 text-yellow-700',
+  'Crítico': 'bg-red-100 text-red-700',
 }
 
 export default function GestionAvisos() {
@@ -18,7 +18,7 @@ export default function GestionAvisos() {
   if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando avisos...</div>
   if (isError) return <div className="py-8 text-center text-red-600">Error al cargar avisos.</div>
 
-  const avisos = data?.data ?? []
+  const avisos = data?.items ?? []
 
   if (creando || editando) {
     return (
@@ -69,7 +69,7 @@ export default function GestionAvisos() {
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">
                     <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${SEVERIDAD_COLORS[aviso.severidad]}`}
+                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${SEVERIDAD_COLORS[aviso.severidad] ?? 'bg-gray-100 text-gray-700'}`}
                     >
                       {aviso.severidad}
                     </span>
@@ -86,7 +86,7 @@ export default function GestionAvisos() {
                   <p className="font-medium text-gray-900">{aviso.titulo}</p>
                   <p className="mt-1 text-sm text-gray-600">{aviso.cuerpo}</p>
                   <p className="mt-1 text-xs text-gray-400">
-                    {aviso.vigencia_inicio} → {aviso.vigencia_fin}
+                    {aviso.inicio_en} → {aviso.fin_en}
                   </p>
                 </div>
                 <div className="ml-4 flex gap-2">

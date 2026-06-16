@@ -2,36 +2,36 @@ import { z } from 'zod'
 
 export const avisoSchema = z
   .object({
-    alcance: z.enum(['global', 'materia', 'cohorte', 'rol']),
+    alcance: z.enum(['Global', 'PorMateria', 'PorCohorte', 'PorRol']),
     materia_id: z.string().optional(),
-    cohorte: z.string().optional(),
-    roles: z.array(z.string()),
-    severidad: z.enum(['info', 'warning', 'error']),
+    cohorte_id: z.string().optional(),
+    rol_destino: z.string().optional(),
+    severidad: z.enum(['Info', 'Advertencia', 'Crítico']),
     titulo: z.string().min(1, 'El título es requerido'),
     cuerpo: z.string().min(1, 'El cuerpo es requerido'),
-    vigencia_inicio: z.string().min(1, 'Ingrese fecha de inicio'),
-    vigencia_fin: z.string().min(1, 'Ingrese fecha de fin'),
+    inicio_en: z.string().min(1, 'Ingrese fecha de inicio'),
+    fin_en: z.string().min(1, 'Ingrese fecha de fin'),
     orden: z.number().int().min(0),
     activo: z.boolean(),
     requiere_ack: z.boolean(),
   })
   .refine(
     (v) => {
-      if (v.alcance === 'materia') return !!v.materia_id
+      if (v.alcance === 'PorMateria') return !!v.materia_id
       return true
     },
-    { message: 'Seleccione una materia para el alcance "materia"', path: ['materia_id'] },
+    { message: 'Seleccione una materia para el alcance "Por materia"', path: ['materia_id'] },
   )
   .refine(
     (v) => {
-      if (v.alcance === 'cohorte') return !!v.cohorte
+      if (v.alcance === 'PorCohorte') return !!v.cohorte_id
       return true
     },
-    { message: 'Ingrese la cohorte para el alcance "cohorte"', path: ['cohorte'] },
+    { message: 'Ingrese la cohorte para el alcance "Por cohorte"', path: ['cohorte_id'] },
   )
-  .refine((v) => v.vigencia_inicio < v.vigencia_fin, {
+  .refine((v) => v.inicio_en < v.fin_en, {
     message: 'La fecha de inicio debe ser anterior a la de fin',
-    path: ['vigencia_fin'],
+    path: ['fin_en'],
   })
 
 export type AvisoFormData = z.infer<typeof avisoSchema>

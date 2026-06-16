@@ -1,9 +1,9 @@
 import { useAvisosUsuario, useAckAviso } from '../hooks/useAvisosApi'
 
-const SEVERIDAD_COLORS = {
-  info: 'border-blue-300 bg-blue-50',
-  warning: 'border-yellow-300 bg-yellow-50',
-  error: 'border-red-300 bg-red-50',
+const SEVERIDAD_COLORS: Record<string, string> = {
+  Info: 'border-blue-300 bg-blue-50',
+  Advertencia: 'border-yellow-300 bg-yellow-50',
+  'Crítico': 'border-red-300 bg-red-50',
 }
 
 export default function AvisosUsuario() {
@@ -12,7 +12,7 @@ export default function AvisosUsuario() {
 
   if (isLoading) return <div className="py-4 text-sm text-gray-500">Cargando avisos...</div>
 
-  const avisos = data?.data ?? []
+  const avisos = data?.items ?? []
 
   if (avisos.length === 0) return null
 
@@ -21,7 +21,7 @@ export default function AvisosUsuario() {
       {avisos.map((aviso) => (
         <div
           key={aviso.id}
-          className={`rounded-lg border-l-4 p-4 ${SEVERIDAD_COLORS[aviso.severidad]}`}
+          className={`rounded-lg border-l-4 p-4 ${SEVERIDAD_COLORS[aviso.severidad] ?? 'border-gray-300 bg-gray-50'}`}
         >
           <div className="flex items-start justify-between">
             <div>

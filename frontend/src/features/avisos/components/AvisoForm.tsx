@@ -22,18 +22,18 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
       ? {
           alcance: aviso.alcance,
           materia_id: aviso.materia_id,
-          cohorte: aviso.cohorte,
-          roles: aviso.roles,
+          cohorte_id: aviso.cohorte_id,
+          rol_destino: aviso.rol_destino,
           severidad: aviso.severidad,
           titulo: aviso.titulo,
           cuerpo: aviso.cuerpo,
-          vigencia_inicio: aviso.vigencia_inicio,
-          vigencia_fin: aviso.vigencia_fin,
+          inicio_en: aviso.inicio_en,
+          fin_en: aviso.fin_en,
           orden: aviso.orden,
           activo: aviso.activo,
           requiere_ack: aviso.requiere_ack,
         }
-      : { alcance: 'global', severidad: 'info', roles: [], orden: 0, activo: true, requiere_ack: false },
+      : { alcance: 'Global', severidad: 'Info', orden: 0, activo: true, requiere_ack: false },
   })
 
   const alcance = watch('alcance')
@@ -58,10 +58,10 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
             {...register('alcance')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           >
-            <option value="global">Global</option>
-            <option value="materia">Por materia</option>
-            <option value="cohorte">Por cohorte</option>
-            <option value="rol">Por rol</option>
+            <option value="Global">Global</option>
+            <option value="PorMateria">Por materia</option>
+            <option value="PorCohorte">Por cohorte</option>
+            <option value="PorRol">Por rol</option>
           </select>
           {errors.alcance && <p className="mt-1 text-xs text-red-600">{errors.alcance.message}</p>}
         </div>
@@ -71,20 +71,20 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
             {...register('severidad')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           >
-            <option value="info">Info</option>
-            <option value="warning">Warning</option>
-            <option value="error">Error</option>
+            <option value="Info">Info</option>
+            <option value="Advertencia">Advertencia</option>
+            <option value="Crítico">Crítico</option>
           </select>
         </div>
       </div>
 
-      {alcance === 'materia' && (
+      {alcance === 'PorMateria' && (
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Materia ID</label>
           <input
             {...register('materia_id')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="ID de la materia"
+            placeholder="UUID de la materia"
           />
           {errors.materia_id && (
             <p className="mt-1 text-xs text-red-600">{errors.materia_id.message}</p>
@@ -92,17 +92,36 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
         </div>
       )}
 
-      {alcance === 'cohorte' && (
+      {alcance === 'PorCohorte' && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Cohorte</label>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Cohorte ID</label>
           <input
-            {...register('cohorte')}
+            {...register('cohorte_id')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="Ej: 2024-1"
+            placeholder="UUID de la cohorte"
           />
-          {errors.cohorte && (
-            <p className="mt-1 text-xs text-red-600">{errors.cohorte.message}</p>
+          {errors.cohorte_id && (
+            <p className="mt-1 text-xs text-red-600">{errors.cohorte_id.message}</p>
           )}
+        </div>
+      )}
+
+      {alcance === 'PorRol' && (
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700">Rol destino</label>
+          <select
+            {...register('rol_destino')}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="">— Seleccionar —</option>
+            <option value="ALUMNO">Alumno</option>
+            <option value="TUTOR">Tutor</option>
+            <option value="PROFESOR">Profesor</option>
+            <option value="COORDINADOR">Coordinador</option>
+            <option value="NEXO">Nexo</option>
+            <option value="ADMIN">Admin</option>
+            <option value="FINANZAS">Finanzas</option>
+          </select>
         </div>
       )}
 
@@ -130,22 +149,22 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
           <label className="mb-1 block text-sm font-medium text-gray-700">Vigencia inicio</label>
           <input
             type="datetime-local"
-            {...register('vigencia_inicio')}
+            {...register('inicio_en')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           />
-          {errors.vigencia_inicio && (
-            <p className="mt-1 text-xs text-red-600">{errors.vigencia_inicio.message}</p>
+          {errors.inicio_en && (
+            <p className="mt-1 text-xs text-red-600">{errors.inicio_en.message}</p>
           )}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">Vigencia fin</label>
           <input
             type="datetime-local"
-            {...register('vigencia_fin')}
+            {...register('fin_en')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           />
-          {errors.vigencia_fin && (
-            <p className="mt-1 text-xs text-red-600">{errors.vigencia_fin.message}</p>
+          {errors.fin_en && (
+            <p className="mt-1 text-xs text-red-600">{errors.fin_en.message}</p>
           )}
         </div>
       </div>
