@@ -311,18 +311,20 @@ class AnalisisService:
         pagina: int = 1,
         por_pagina: int = 50,
     ) -> dict[str, Any]:
-        items_raw, total = await self._calificacion_repo.get_filtrado(
+        # Fetch all matching calificaciones without DB-level pagination so we can
+        # aggregate per student, compute estado, filter, and then paginate correctly.
+        all_rows, _ = await self._calificacion_repo.get_filtrado(
             db,
             materia_id=materia_id,
             regional=regional,
             comision=comision,
             q=q,
-            pagina=pagina,
-            por_pagina=por_pagina,
+            pagina=1,
+            por_pagina=10_000,
         )
 
         alumno_map: dict[uuid.UUID, dict[str, Any]] = {}
-        for calif, entrada in items_raw:
+        for calif, entrada in all_rows:
             eid = calif.entrada_padron_id
             if eid not in alumno_map:
                 alumno_map[eid] = {
@@ -343,20 +345,20 @@ class AnalisisService:
 
         items = list(alumno_map.values())
         for item in items:
-            if item["aprobadas"] < item["total_actividades"]:
-                item["estado"] = "atrasado"
-            else:
-                item["estado"] = "al_dia"
+            item["estado"] = "atrasado" if item["aprobadas"] < item["total_actividades"] else "al_dia"
 
         if estado == "atrasado":
             items = [i for i in items if i["estado"] == "atrasado"]
         elif estado == "al_dia":
             items = [i for i in items if i["estado"] == "al_dia"]
 
+        total = len(items)
         total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
+        offset = (pagina - 1) * por_pagina
+        items_page = items[offset : offset + por_pagina]
 
         return {
-            "items": items,
+            "items": items_page,
             "total": total,
             "pagina": pagina,
             "por_pagina": por_pagina,
@@ -376,36 +378,39 @@ class AnalisisService:
         pagina: int = 1,
         por_pagina: int = 50,
     ) -> dict[str, Any]:
-        items_raw: list = []
-        total = 0
+        # Fetch all matching rows without DB-level pagination so we can aggregate
+        # per student, apply actividad_minima filter, and paginate correctly.
+        all_rows: list = []
         if materias_ids:
             for mid in materias_ids:
-                sub_items, sub_total = await self._calificacion_repo.get_filtrado(
+                sub_items, _ = await self._calificacion_repo.get_filtrado(
                     db,
                     materia_id=mid,
                     comision=comision,
                     entrada_padron_id=entrada_padron_id,
                     desde=desde,
                     hasta=hasta,
-                    pagina=pagina,
-                    por_pagina=por_pagina,
+                    pagina=1,
+                    por_pagina=10_000,
                 )
-                items_raw.extend(sub_items)
-                total += sub_total
+                all_rows.extend(sub_items)
         else:
-            items_raw, total = await self._calificacion_repo.get_filtrado(
+            all_rows, _ = await self._calificacion_repo.get_filtrado(
                 db,
                 comision=comision,
                 entrada_padron_id=entrada_padron_id,
                 desde=desde,
                 hasta=hasta,
-                pagina=pagina,
-                por_pagina=por_pagina,
+                pagina=1,
+                por_pagina=10_000,
             )
 
+        # Track which actividades each alumno has (needed for actividad_minima filter).
+        alumno_actividades: dict[uuid.UUID, set[str]] = defaultdict(set)
         alumno_map: dict[uuid.UUID, dict[str, Any]] = {}
-        for calif, entrada in items_raw:
+        for calif, entrada in all_rows:
             eid = calif.entrada_padron_id
+            alumno_actividades[eid].add(calif.nombre_actividad)
             if eid not in alumno_map:
                 alumno_map[eid] = {
                     "entrada_padron_id": str(eid),
@@ -425,30 +430,24 @@ class AnalisisService:
 
         items = list(alumno_map.values())
         for item in items:
-            if item["aprobadas"] < item["total_actividades"]:
-                item["estado"] = "atrasado"
-            else:
-                item["estado"] = "al_dia"
+            item["estado"] = "atrasado" if item["aprobadas"] < item["total_actividades"] else "al_dia"
 
-        if actividad_minima and items:
-            items_filtered = []
-            for item in items:
-                eid = uuid.UUID(item["entrada_padron_id"])
-                califs = await self._calificacion_repo.get_by_materia(db, uuid.UUID(int=0))
-                has_minima = any(
-                    c.entrada_padron_id == eid
-                    and c.nombre_actividad == actividad_minima
-                    for c in califs
+        if actividad_minima:
+            items = [
+                item for item in items
+                if actividad_minima in alumno_actividades.get(
+                    uuid.UUID(item["entrada_padron_id"]), set()
                 )
-                if has_minima:
-                    items_filtered.append(item)
-            items = items_filtered
+            ]
 
+        total = len(items)
         total_paginas = max(1, (total + por_pagina - 1) // por_pagina)
+        offset = (pagina - 1) * por_pagina
+        items_page = items[offset : offset + por_pagina]
 
         return {
-            "items": items,
-            "total": len(items),
+            "items": items_page,
+            "total": total,
             "pagina": pagina,
             "por_pagina": por_pagina,
             "total_paginas": total_paginas,
