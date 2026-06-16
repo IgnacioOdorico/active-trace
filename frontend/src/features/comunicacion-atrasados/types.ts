@@ -33,9 +33,8 @@ export interface ComunicacionItem {
 }
 
 export interface TrackingResponse {
-  lote_id: string
-  estado_lote: string
-  comunicaciones: ComunicacionItem[]
-  requiere_aprobacion: boolean
+  items: ComunicacionItem[]
   total: number
+  pagina: number
+  por_pagina: number
 }
