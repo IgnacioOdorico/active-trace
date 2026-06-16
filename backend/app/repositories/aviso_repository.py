@@ -67,7 +67,7 @@ class AvisoRepository(BaseRepository[Aviso]):
 
         base = base.order_by(Aviso.orden.asc())
 
-        count_q = base.with_only_columns(func.count())
+        count_q = base.order_by(None).with_only_columns(func.count())
         total_result = await session.execute(count_q)
         total = total_result.scalar_one()
 
@@ -92,7 +92,7 @@ class AvisoRepository(BaseRepository[Aviso]):
             .order_by(Aviso.created_at.desc())
         )
 
-        count_q = base.with_only_columns(func.count())
+        count_q = base.order_by(None).with_only_columns(func.count())
         total_result = await session.execute(count_q)
         total = total_result.scalar_one()
 
