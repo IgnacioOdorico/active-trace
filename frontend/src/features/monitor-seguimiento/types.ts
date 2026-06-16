@@ -1,22 +1,26 @@
-export interface MonitorAlumno {
-  id: string
+export interface MonitorItem {
+  entrada_padron_id: string
   nombre: string
   apellidos: string
   email: string
-  comision: string
-  regional: string
-  materia: string
+  comision: string | null
+  regional: string | null
+  materia_id: string | null
   total_actividades: number
   aprobadas: number
   estado: 'atrasado' | 'al_dia'
 }
 
-export interface MonitorGeneralResponse {
-  data: MonitorAlumno[]
+export interface MonitorPaginacionResponse {
+  items: MonitorItem[]
   total: number
   pagina: number
   por_pagina: number
+  total_paginas: number
 }
+
+export type MonitorGeneralResponse = MonitorPaginacionResponse
+export type MonitorSeguimientoResponse = MonitorPaginacionResponse
 
 export interface MonitorGeneralFilters {
   materia_id?: string
@@ -26,29 +30,6 @@ export interface MonitorGeneralFilters {
   estado?: string
   pagina?: number
   por_pagina?: number
-}
-
-export interface ActividadCalificacion {
-  actividad: string
-  tipo: string
-  calificacion: string | number
-  aprobada: boolean
-}
-
-export interface SeguimientoAlumno {
-  id: string
-  nombre: string
-  apellidos: string
-  email: string
-  comision: string
-  actividades: ActividadCalificacion[]
-}
-
-export interface MonitorSeguimientoResponse {
-  data: SeguimientoAlumno[]
-  total: number
-  pagina: number
-  por_pagina: number
 }
 
 export interface MonitorSeguimientoFilters {
