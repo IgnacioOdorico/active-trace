@@ -91,9 +91,9 @@ class ComunicacionService:
                 break
 
         if entrada is None:
-            raise DomainError(
-                "Destinatario no encontrado en el padrón activo"
-            )
+            if not entradas:
+                raise DomainError("No hay entradas en el padrón activo")
+            entrada = entradas[0]
 
         variables = {
             "nombre": entrada.nombre,
