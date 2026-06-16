@@ -229,12 +229,16 @@ async def seed():
                     usuario_id=admin.id,
                     rol="PROFESOR",
                     materia_id=materia.id,
+                    carrera_id=materia.carrera_id,
+                    cohorte_id=cohorte.id,
+                    comisiones=["A", "B"],
                     desde=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                    hasta=datetime(2026, 12, 31, tzinfo=timezone.utc),
                 )
                 db.add(a)
         await db.flush()
 
-        # Fetch asignaciones
+        # Fetch asignaciones and patch carrera_id/cohorte_id if missing (seed re-run)
         asignaciones: dict[str, uuid.UUID] = {}
         for codigo, materia in materias.items():
             result = await db.execute(
@@ -248,6 +252,15 @@ async def seed():
             a = result.unique().scalar_one_or_none()
             if a:
                 asignaciones[codigo] = a.id
+                if a.carrera_id is None and materia.carrera_id:
+                    a.carrera_id = materia.carrera_id
+                if a.cohorte_id is None:
+                    a.cohorte_id = cohorte.id
+                if a.comisiones is None:
+                    a.comisiones = ["A", "B"]
+                if a.hasta is None:
+                    a.hasta = datetime(2026, 12, 31, tzinfo=timezone.utc)
+        await db.flush()
 
         # --- Umbral para PROG1 ---
         if "PROG1" in asignaciones:
