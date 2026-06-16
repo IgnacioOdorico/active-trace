@@ -16,7 +16,7 @@ export interface ActividadInfo {
 
 export interface NotaFinalRequest {
   materia_id: string
-  actividad_ids: string[]
+  actividades: string[]
 }
 
 export interface NotaFinalAlumno {

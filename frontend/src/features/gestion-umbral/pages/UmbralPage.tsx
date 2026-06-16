@@ -42,7 +42,7 @@ export default function UmbralPage() {
     if (current.data && !current.isFetching) {
       setValoresAprobatorios(current.data.valores_aprobatorios)
       reset({
-        materia_id,
+        materia_id: materiaId,
         umbral_pct: current.data.umbral_pct,
         valores_aprobatorios: current.data.valores_aprobatorios,
       })

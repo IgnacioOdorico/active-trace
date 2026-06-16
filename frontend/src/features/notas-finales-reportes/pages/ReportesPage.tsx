@@ -42,10 +42,10 @@ export default function ReportesPage() {
   function handleCalcular() {
     if (!materiaId || selectedActividadIds.length === 0) return
     calcularNotaFinal.mutate(
-      { materia_id: materiaId, actividad_ids: selectedActividadIds },
+      { materia_id: materiaId, actividades: selectedActividadIds },
       {
         onSuccess: (data) => {
-          setResultados(data.alumnos)
+          setResultados(data)
         },
       },
     )
