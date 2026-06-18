@@ -58,6 +58,42 @@ export function useHistorialLiquidaciones(filters: HistorialFilters) {
   })
 }
 
+export function useExportarPlanilla() {
+  return useMutation({
+    mutationFn: async (filters: { periodo: string; cohorte_id?: string }) => {
+      const qs = buildParams(filters as Record<string, string | undefined>)
+      const response = await apiClient.get(`/api/liquidaciones/exportar?${qs}`, {
+        responseType: 'blob',
+      })
+      const url = window.URL.createObjectURL(new Blob([response.data as BlobPart]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `liquidaciones_${filters.periodo}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    },
+  })
+}
+
+export function useCalcularLiquidacion() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: { cohorte_id: string; periodo: string }) => {
+      const { data } = await apiClient.post<{ liquidaciones: unknown[]; total: number }>(
+        '/api/liquidaciones/calcular',
+        payload,
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['liquidaciones'] })
+      queryClient.invalidateQueries({ queryKey: ['liquidaciones-kpis'] })
+    },
+  })
+}
+
 export function useCerrarLiquidacion() {
   const queryClient = useQueryClient()
   return useMutation({

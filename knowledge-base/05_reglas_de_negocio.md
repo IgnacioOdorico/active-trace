@@ -119,7 +119,9 @@ Las tablas de Base y Plus tienen fecha de inicio (`desde`) y fecha de fin (`hast
 Existe una **base salarial fija por rol** independiente de la materia dictada. Los roles del dominio con base definida son: COORDINADOR, NEXO, PROFESOR, TUTOR. Los valores concretos son configuración de la grilla salarial, no constantes del sistema.
 
 ### RN-33 — Plus salarial por (categoría de materia × rol)
-Los plus son adicionales identificados por una **clave de categoría** (por ejemplo: una categoría que agrupa materias de programación) cruzada con el rol del docente. El valor del plus es configurable en la grilla. Si un docente tiene asignaciones en N comisiones de la misma categoría, acumula N veces el plus correspondiente.
+Los plus son adicionales identificados por una **clave de categoría** (por ejemplo: una categoría que agrupa materias de programación) cruzada con el rol del docente. El valor del plus es configurable en la grilla. Si un docente tiene asignaciones en N comisiones de la misma categoría, acumula N veces el plus correspondiente, **sin tope de acumulación** y de manera **igual para todos los roles** (la fórmula `Plus(clave, rol) × N_comisiones` ya incluye el rol como parte de la clave compuesta).
+
+La clave de categoría vive en `Materia.clave_plus` (columna fija, no editable desde la UI de tenant — la carga el equipo de producto vía migración/seed). Mapeo vigente: `PROG1`/`PROG2` → `PROG`, `BD1` → `BD`, `MAT1` → `MAT`, `ING1` → `ING`. Una materia sin `clave_plus` asignada no genera Plus (se ignora en el cálculo, no es un error). Ver [PA-22/PA-23 cerradas](10_preguntas_abiertas.md#decisiones-ya-cerradas).
 
 ### RN-34 — Cálculo de liquidación mensual
 La liquidación mensual de un docente se calcula como:

@@ -12,8 +12,9 @@ export default function FiltrosPeriodo({ filters, onChange }: Props) {
   return (
     <div className="flex flex-wrap gap-3 rounded-lg bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Cohorte</label>
+        <label htmlFor="liq-cohorte" className="text-xs font-medium text-gray-600">Cohorte</label>
         <select
+          id="liq-cohorte"
           className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           value={filters.cohorte_id ?? ''}
           onChange={(e) => onChange({ ...filters, cohorte_id: e.target.value || undefined })}
@@ -28,8 +29,9 @@ export default function FiltrosPeriodo({ filters, onChange }: Props) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Período (AAAA-MM)</label>
+        <label htmlFor="liq-periodo" className="text-xs font-medium text-gray-600">Período (AAAA-MM)</label>
         <input
+          id="liq-periodo"
           type="month"
           className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           value={filters.periodo ?? ''}

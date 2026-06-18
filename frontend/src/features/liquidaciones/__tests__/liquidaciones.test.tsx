@@ -19,11 +19,24 @@ vi.mock('../../estructura-academica/hooks/useEstructuraApi', () => ({
   useCohortes: vi.fn().mockReturnValue({ data: [] }),
 }))
 
+vi.mock('../../auth/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: { roles: ['FINANZAS'], permissions: ['*:*'] },
+    isAuthenticated: true,
+    isLoading: false,
+    logout: vi.fn(),
+    getAccessToken: vi.fn(() => 'token'),
+    accessToken: 'token',
+  }),
+}))
+
 import apiClient from '../../../shared/services/httpClient'
 const mockApiClient = vi.mocked(apiClient)
 
 beforeEach(() => {
   vi.clearAllMocks()
+  window.URL.createObjectURL = vi.fn(() => 'blob:fake-url')
+  window.URL.revokeObjectURL = vi.fn()
 })
 
 const liqGeneral = {
@@ -168,5 +181,130 @@ describe('CierreConfirmacion — flujo de cierre', () => {
     await waitFor(() => expect(screen.getByText(/ya estaba cerrada/i)).toBeInTheDocument())
     // onClosed se llama igual (idempotente)
     await waitFor(() => expect(onClosed).toHaveBeenCalled())
+  })
+})
+
+// Exportar planilla: botón deshabilitado sin período, GET con responseType blob al hacer click
+describe('LiquidacionesPage — Exportar planilla', () => {
+  it('el botón está deshabilitado mientras no haya un período seleccionado', async () => {
+    const { default: LiquidacionesPage } = await import('../pages/LiquidacionesPage')
+    renderWithProviders(<LiquidacionesPage />)
+
+    const boton = screen.getByRole('button', { name: /Exportar planilla/i })
+    expect(boton).toBeDisabled()
+  })
+
+  it('al seleccionar período se habilita y dispara GET /api/liquidaciones/exportar con responseType blob', async () => {
+    mockApiClient.get.mockImplementation((url: string) => {
+      if (url.includes('/api/liquidaciones/exportar')) {
+        return Promise.resolve({ data: new Blob(['fake-xlsx']) })
+      }
+      if (url.includes('/api/liquidaciones/kpis')) {
+        return Promise.resolve({
+          data: {
+            total_general: 0, total_nexo: 0, total_facturas_pendientes: 0,
+            total_facturas_abonadas: 0, cantidad_general: 0, cantidad_nexo: 0,
+            cantidad_facturantes: 0,
+          },
+        })
+      }
+      return Promise.resolve({ data: { items: [], total: 0 } })
+    })
+
+    const { default: LiquidacionesPage } = await import('../pages/LiquidacionesPage')
+    const user = userEvent.setup()
+    renderWithProviders(<LiquidacionesPage />)
+
+    const periodoInput = screen.getByLabelText(/Período/i)
+    await user.type(periodoInput, '2026-06')
+
+    const boton = await screen.findByRole('button', { name: /Exportar planilla/i })
+    expect(boton).not.toBeDisabled()
+
+    await user.click(boton)
+
+    await waitFor(() => {
+      const exportCall = mockApiClient.get.mock.calls.find(([url]) =>
+        (url as string).includes('/api/liquidaciones/exportar'),
+      )
+      expect(exportCall).toBeDefined()
+      expect((exportCall as unknown[])[0] as string).toContain('periodo=2026-06')
+      expect((exportCall as unknown[])[1]).toMatchObject({ responseType: 'blob' })
+    })
+  })
+})
+
+describe('LiquidacionesPage — Calcular liquidación', () => {
+  beforeEach(() => {
+    mockApiClient.get.mockImplementation((url: string) => {
+      if (url.includes('/api/liquidaciones/kpis')) {
+        return Promise.resolve({
+          data: {
+            total_general: 0, total_nexo: 0, total_facturas_pendientes: 0,
+            total_facturas_abonadas: 0, cantidad_general: 0, cantidad_nexo: 0,
+            cantidad_facturantes: 0,
+          },
+        })
+      }
+      return Promise.resolve({ data: { items: [], total: 0 } })
+    })
+  })
+
+  it('el botón está deshabilitado sin cohorte y período seleccionados', async () => {
+    const { default: LiquidacionesPage } = await import('../pages/LiquidacionesPage')
+    renderWithProviders(<LiquidacionesPage />)
+
+    const boton = screen.getByRole('button', { name: /Calcular liquidación/i })
+    expect(boton).toBeDisabled()
+  })
+
+  it('al seleccionar cohorte y período se habilita y dispara POST /api/liquidaciones/calcular', async () => {
+    const { useCohortes } = await import('../../estructura-academica/hooks/useEstructuraApi')
+    vi.mocked(useCohortes).mockReturnValue({
+      data: [{ id: 'c-1', nombre: 'Cohorte 2026' }],
+    } as ReturnType<typeof useCohortes>)
+    mockApiClient.post.mockResolvedValueOnce({ data: { liquidaciones: [], total: 3 } })
+
+    const { default: LiquidacionesPage } = await import('../pages/LiquidacionesPage')
+    const user = userEvent.setup()
+    renderWithProviders(<LiquidacionesPage />)
+
+    await user.selectOptions(screen.getByLabelText(/Cohorte/i), 'c-1')
+    await user.type(screen.getByLabelText(/Período/i), '2026-06')
+
+    const boton = await screen.findByRole('button', { name: /Calcular liquidación/i })
+    expect(boton).not.toBeDisabled()
+
+    await user.click(boton)
+
+    await waitFor(() => {
+      expect(mockApiClient.post).toHaveBeenCalledWith('/api/liquidaciones/calcular', {
+        cohorte_id: 'c-1',
+        periodo: '2026-06',
+      })
+    })
+    expect(await screen.findByText(/Se calcularon 3 liquidaciones/i)).toBeInTheDocument()
+  })
+
+  it('maneja 409 (período cerrado) mostrando mensaje no destructivo', async () => {
+    const { useCohortes } = await import('../../estructura-academica/hooks/useEstructuraApi')
+    vi.mocked(useCohortes).mockReturnValue({
+      data: [{ id: 'c-1', nombre: 'Cohorte 2026' }],
+    } as ReturnType<typeof useCohortes>)
+    mockApiClient.post.mockRejectedValueOnce({
+      response: { status: 409, data: { detail: 'El período ya está cerrado' } },
+    })
+
+    const { default: LiquidacionesPage } = await import('../pages/LiquidacionesPage')
+    const user = userEvent.setup()
+    renderWithProviders(<LiquidacionesPage />)
+
+    await user.selectOptions(screen.getByLabelText(/Cohorte/i), 'c-1')
+    await user.type(screen.getByLabelText(/Período/i), '2026-06')
+
+    const boton = await screen.findByRole('button', { name: /Calcular liquidación/i })
+    await user.click(boton)
+
+    expect(await screen.findByText(/ya está cerrado/i)).toBeInTheDocument()
   })
 })

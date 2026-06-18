@@ -58,6 +58,16 @@ async def seed_academico(
         ("MAT1", "Matemática I", carreras["TUP"].id),
         ("ING1", "Inglés I", carreras["TUP"].id),
     ]
+    # Clave de categoría de Plus salarial (RN-33/PA-22), fija/precargada por
+    # producto. Agrupa materias afines (PROG1+PROG2 -> "PROG") para el
+    # cálculo de liquidaciones; ver alembic/versions/017_materia_clave_plus.py.
+    clave_plus_por_codigo = {
+        "PROG1": "PROG",
+        "PROG2": "PROG",
+        "BD1": "BD",
+        "MAT1": "MAT",
+        "ING1": "ING",
+    }
     for codigo, nombre, carrera_id in materias_data:
         existing = await db.execute(
             select(Materia).where(
@@ -66,13 +76,17 @@ async def seed_academico(
                 Materia.deleted_at.is_(None),
             )
         )
-        if existing.unique().scalar_one_or_none() is None:
+        materia_existente = existing.unique().scalar_one_or_none()
+        if materia_existente is None:
             db.add(Materia(
                 tenant_id=tenant_id,
                 codigo=codigo,
                 nombre=nombre,
                 carrera_id=carrera_id,
+                clave_plus=clave_plus_por_codigo.get(codigo),
             ))
+        elif materia_existente.clave_plus is None:
+            materia_existente.clave_plus = clave_plus_por_codigo.get(codigo)
     await db.flush()
 
     materias = {}

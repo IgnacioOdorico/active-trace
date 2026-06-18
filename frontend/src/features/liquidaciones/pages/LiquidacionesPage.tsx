@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
-import { useLiquidaciones } from '../hooks/useLiquidacionesApi'
+import { useLiquidaciones, useExportarPlanilla, useCalcularLiquidacion } from '../hooks/useLiquidacionesApi'
 import FiltrosPeriodo from '../components/FiltrosPeriodo'
 import KpisCabecera from '../components/KpisCabecera'
 import GrillaSegmentada from '../components/GrillaSegmentada'
@@ -14,13 +14,49 @@ export default function LiquidacionesPage() {
   const perms = user?.permissions ?? []
   const puedeVer = perms.includes('*:*') || perms.includes('liquidaciones:ver')
   const puedeCerrar = perms.includes('*:*') || perms.includes('liquidaciones:cerrar')
+  const puedeCalcular = perms.includes('*:*') || perms.includes('liquidaciones:calcular')
 
   const [filters, setFilters] = useState<LiquidacionesFilters>({})
   const [detalle, setDetalle] = useState<Liquidacion | null>(null)
   const [cierre, setCierre] = useState<Liquidacion | null>(null)
   const [tab, setTab] = useState<'periodo' | 'historial'>('periodo')
+  const [calcularMensaje, setCalcularMensaje] = useState<
+    { tipo: 'ok' | 'error'; texto: string } | null
+  >(null)
 
   const { data, isLoading, isError } = useLiquidaciones(filters)
+  const exportarMutation = useExportarPlanilla()
+  const calcularMutation = useCalcularLiquidacion()
+
+  function handleCalcular() {
+    if (!filters.cohorte_id || !filters.periodo) return
+    setCalcularMensaje(null)
+    calcularMutation.mutate(
+      { cohorte_id: filters.cohorte_id, periodo: filters.periodo },
+      {
+        onSuccess: (data) => {
+          setCalcularMensaje({
+            tipo: 'ok',
+            texto: `Se calcularon ${data.total} liquidaciones para el período ${filters.periodo}.`,
+          })
+        },
+        onError: (err: unknown) => {
+          const status = (err as { response?: { status?: number } })?.response?.status
+          if (status === 409) {
+            setCalcularMensaje({
+              tipo: 'error',
+              texto: 'Este período ya está cerrado para esta cohorte y no se puede recalcular.',
+            })
+          } else {
+            setCalcularMensaje({
+              tipo: 'error',
+              texto: 'Ocurrió un error al calcular la liquidación. Intente nuevamente.',
+            })
+          }
+        },
+      },
+    )
+  }
 
   if (!puedeVer) {
     return (
@@ -34,14 +70,46 @@ export default function LiquidacionesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Liquidaciones</h1>
-        <button
-          disabled
-          title="Export no disponible aún"
-          className="cursor-not-allowed rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-400"
-        >
-          Exportar planilla
-        </button>
+        <div className="flex gap-2">
+          {puedeCalcular && (
+            <button
+              disabled={!filters.cohorte_id || !filters.periodo || calcularMutation.isPending}
+              title={
+                !filters.cohorte_id || !filters.periodo
+                  ? 'Seleccioná una cohorte y un período para calcular'
+                  : undefined
+              }
+              onClick={handleCalcular}
+              className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+            >
+              {calcularMutation.isPending ? 'Calculando...' : 'Calcular liquidación'}
+            </button>
+          )}
+          <button
+            disabled={!filters.periodo || exportarMutation.isPending}
+            title={!filters.periodo ? 'Seleccioná un período para exportar' : undefined}
+            onClick={() =>
+              filters.periodo &&
+              exportarMutation.mutate({ periodo: filters.periodo, cohorte_id: filters.cohorte_id })
+            }
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-transparent"
+          >
+            {exportarMutation.isPending ? 'Exportando...' : 'Exportar planilla'}
+          </button>
+        </div>
       </div>
+
+      {calcularMensaje && (
+        <p
+          className={`rounded-lg p-3 text-sm ${
+            calcularMensaje.tipo === 'ok'
+              ? 'bg-green-50 text-green-700'
+              : 'bg-yellow-50 text-yellow-700'
+          }`}
+        >
+          {calcularMensaje.texto}
+        </p>
+      )}
 
       <div className="flex gap-2 border-b border-gray-200">
         {(['periodo', 'historial'] as const).map((t) => (

@@ -16,6 +16,10 @@ class Materia(Base, EntityMeta):
     carrera_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("carreras.id"), nullable=True
     )
+    # Clave de categoría de Plus salarial (RN-33/PA-22). Agrupa materias
+    # afines (ej. PROG1 y PROG2 -> "PROG") para el cálculo de liquidaciones.
+    # Fija/precargada por producto, no editable desde la UI de tenant.
+    clave_plus: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
     carrera: Mapped["Carrera | None"] = relationship(back_populates="materias")  # noqa: F821
 

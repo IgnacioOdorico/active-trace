@@ -48,3 +48,31 @@ class TestInmutabilidad:
         repo.get = AsyncMock(return_value=mock_liq)
         with pytest.raises(DomainError, match="cerrada"):
             await repo._validar_no_cerrada(mock_session, uuid.uuid4())
+
+
+class TestSoftDeleteAbiertas:
+    """Recalcular debe reemplazar el borrador: soft-delete de las
+    liquidaciones 'Abierta' previas de esa cohorte+período, nunca un
+    hard delete (regla dura #13)."""
+
+    @pytest.fixture
+    def repo(self):
+        return LiquidacionRepository(tenant_id=uuid.uuid4())
+
+    @pytest.mark.asyncio
+    async def test_soft_delete_abiertas_ejecuta_update_no_delete(self, repo):
+        mock_session = AsyncMock()
+        cohorte_id = uuid.uuid4()
+
+        await repo.soft_delete_abiertas(mock_session, cohorte_id, "2026-06")
+
+        mock_session.execute.assert_awaited_once()
+        executed_stmt = mock_session.execute.await_args.args[0]
+        assert executed_stmt.is_dml
+        assert type(executed_stmt).__name__ == "Update"
+
+    @pytest.mark.asyncio
+    async def test_base_query_excluye_soft_deleted(self, repo):
+        query = repo._base_query()
+        compiled = str(query)
+        assert "deleted_at IS NULL" in compiled
