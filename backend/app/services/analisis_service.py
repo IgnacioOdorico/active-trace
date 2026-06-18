@@ -148,11 +148,9 @@ class AnalisisService:
             }
 
         actividades_set: set[str] = set()
-        alumnos_set: set[uuid.UUID] = set()
         aprobados_count = 0
         for c in calificaciones:
             actividades_set.add(c.nombre_actividad)
-            alumnos_set.add(c.entrada_padron_id)
             if c.aprobado:
                 aprobados_count += 1
 
@@ -170,10 +168,10 @@ class AnalisisService:
             "total_actividades": len(actividades_set),
             "total_calificaciones": total_calificaciones,
             "promedio_aprobacion_general": round(
-                aprobados_count / total_calificaciones, 4
+                aprobados_count / total_calificaciones * 100, 2
             ) if total_calificaciones > 0 else None,
             "alumnos_atrasados_count": len(atrasados),
-            "alumnos_aprobados_count": len(alumnos_set) - len(atrasados),
+            "alumnos_aprobados_count": total_alumnos - len(atrasados),
             "sin_datos": False,
         }
 
@@ -214,6 +212,9 @@ class AnalisisService:
                 "nota_textual": calif.nota_textual,
             })
 
+        umbral = await self._umbral_repo.get_by_asignacion(db, uuid.UUID(int=0))
+        umbral_pct, _ = self._umbral_repo.get_umbral_efectivo(umbral)
+
         result = list(alumno_data.values())
         for item in result:
             numericas = [
@@ -230,6 +231,11 @@ class AnalisisService:
             item["actividades_textuales"] = textuales
             if numericas:
                 item["nota_final"] = round(sum(numericas) / len(numericas), 2)
+            item["estado"] = (
+                "aprobado"
+                if item["nota_final"] is not None and item["nota_final"] >= umbral_pct
+                else "no_aprobado"
+            )
 
         actividades_encontradas = set()
         for item in result:

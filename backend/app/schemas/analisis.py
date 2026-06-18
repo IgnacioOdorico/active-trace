@@ -50,6 +50,7 @@ class NotaFinalItemResponse(BaseModel):
     notas: list[NotaActividad]
     nota_final: float | None = None
     actividades_textuales: list[str] = []
+    estado: str
 
 
 class NotasFinalesRequest(BaseModel):
