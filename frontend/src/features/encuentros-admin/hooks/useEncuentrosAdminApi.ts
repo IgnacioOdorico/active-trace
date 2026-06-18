@@ -7,6 +7,7 @@ import type {
   GuardiasFilters,
   RegistrarGuardiaRequest,
   EditarGuardiaRequest,
+  ExportGuardiasResponse,
 } from '../types'
 
 function buildParams(filters: Record<string, string | undefined>): string {
@@ -69,16 +70,32 @@ export function useEditarGuardia() {
   })
 }
 
+function escapeCsvField(value: string): string {
+  return `"${value.replace(/"/g, '""')}"`
+}
+
 export function useExportarGuardias() {
   return useMutation({
     mutationFn: async () => {
-      const response = await apiClient.get('/api/guardias/exportar', {
-        responseType: 'blob',
-      })
-      const url = window.URL.createObjectURL(new Blob([response.data as BlobPart]))
+      const { data } = await apiClient.get<ExportGuardiasResponse>('/api/guardias/exportar')
+      const headers = ['Materia', 'Carrera', 'Cohorte', 'Día', 'Horario', 'Estado', 'Comentarios']
+      const rows = data.items.map((g) => [
+        g.materia_id,
+        g.carrera_id,
+        g.cohorte_id ?? '',
+        g.dia,
+        g.horario,
+        g.estado,
+        g.comentarios ?? '',
+      ])
+      const csv = [headers, ...rows]
+        .map((row) => row.map(escapeCsvField).join(','))
+        .join('\n')
+
+      const url = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', 'guardias.xlsx')
+      link.setAttribute('download', 'guardias.csv')
       document.body.appendChild(link)
       link.click()
       link.remove()

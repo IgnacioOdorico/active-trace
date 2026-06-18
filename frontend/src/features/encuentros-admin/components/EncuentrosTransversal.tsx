@@ -1,16 +1,23 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useEncuentrosInstancias } from '../hooks/useEncuentrosAdminApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
 import type { EncuentrosFilters, EncuentroEstado } from '../types'
 
 const ESTADO_COLORS: Record<EncuentroEstado, string> = {
-  pendiente: 'bg-yellow-100 text-yellow-700',
-  realizado: 'bg-green-100 text-green-700',
-  cancelado: 'bg-red-100 text-red-700',
+  Programado: 'bg-yellow-100 text-yellow-700',
+  Realizado: 'bg-green-100 text-green-700',
+  Cancelado: 'bg-red-100 text-red-700',
 }
 
 export default function EncuentrosTransversal() {
   const [filters, setFilters] = useState<EncuentrosFilters>({})
   const { data, isLoading, isError } = useEncuentrosInstancias(filters)
+  const { data: materias } = useMaterias()
+
+  const nombreMateria = useMemo(() => {
+    const mapa = new Map(materias?.map((m) => [m.id, m.nombre]))
+    return (materiaId: string) => mapa.get(materiaId) ?? materiaId
+  }, [materias])
 
   const handleFilter = (key: keyof EncuentrosFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value || undefined }))
@@ -19,7 +26,7 @@ export default function EncuentrosTransversal() {
   if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando encuentros...</div>
   if (isError) return <div className="py-8 text-center text-red-600">Error al cargar encuentros.</div>
 
-  const encuentros = data?.data ?? []
+  const encuentros = data?.items ?? []
 
   return (
     <div>
@@ -35,9 +42,9 @@ export default function EncuentrosTransversal() {
           onChange={(e) => handleFilter('estado', e.target.value)}
         >
           <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="realizado">Realizado</option>
-          <option value="cancelado">Cancelado</option>
+          <option value="Programado">Programado</option>
+          <option value="Realizado">Realizado</option>
+          <option value="Cancelado">Cancelado</option>
         </select>
       </div>
 
@@ -50,7 +57,7 @@ export default function EncuentrosTransversal() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Materia', 'Docente', 'Fecha', 'Horario', 'Estado', 'Links'].map((h) => (
+                {['Materia', 'Título', 'Fecha', 'Hora', 'Estado', 'Links'].map((h) => (
                   <th
                     key={h}
                     className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
@@ -63,12 +70,10 @@ export default function EncuentrosTransversal() {
             <tbody className="divide-y divide-gray-100 bg-white">
               {encuentros.map((enc) => (
                 <tr key={enc.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900">{enc.materia_nombre}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{enc.docente_nombre}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900">{nombreMateria(enc.materia_id)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{enc.titulo}</td>
                   <td className="px-4 py-3 text-sm text-gray-600">{enc.fecha}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {enc.hora_inicio} – {enc.hora_fin}
-                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{enc.hora}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_COLORS[enc.estado]}`}
@@ -82,9 +87,19 @@ export default function EncuentrosTransversal() {
                         href={enc.meet_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className="mr-2 text-blue-600 hover:underline"
                       >
                         Meet
+                      </a>
+                    )}
+                    {enc.video_url && (
+                      <a
+                        href={enc.video_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        Grabación
                       </a>
                     )}
                   </td>

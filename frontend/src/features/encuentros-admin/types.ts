@@ -1,71 +1,77 @@
-// Tipos derivados de los response_model del router /api/encuentros/instancias y /api/guardias
+// Tipos alineados a los response_model reales de app/schemas/encuentro.py
+// y app/schemas/guardia.py. El backend no resuelve nombres de materia/docente,
+// solo expone IDs crudos, y los endpoints de listado devuelven `items`
+// (paginado), no `data`.
 
-export type EncuentroEstado = 'pendiente' | 'realizado' | 'cancelado'
+export type EncuentroEstado = 'Programado' | 'Realizado' | 'Cancelado'
 
 export interface InstanciaEncuentro {
   id: string
-  slot_id: string
+  slot_id: string | null
   materia_id: string
-  materia_nombre: string
-  docente_id: string
-  docente_nombre: string
   fecha: string
-  hora_inicio: string
-  hora_fin: string
+  hora: string
+  titulo: string
   estado: EncuentroEstado
-  meet_url?: string
-  html_url?: string
+  meet_url: string
+  video_url?: string
+  comentario?: string
 }
 
 export interface EncuentrosInstanciasResponse {
-  data: InstanciaEncuentro[]
+  items: InstanciaEncuentro[]
   total: number
+  pagina: number
+  page_size: number
 }
 
 export interface EncuentrosFilters {
   materia_id?: string
+  fecha_desde?: string
+  fecha_hasta?: string
   estado?: EncuentroEstado
 }
 
-export type GuardiaEstado = 'pendiente' | 'cubierta' | 'sin_cubrir'
+export type GuardiaEstado = 'Pendiente' | 'Realizada' | 'Cancelada'
 
 export interface Guardia {
   id: string
+  asignacion_id: string
   materia_id: string
-  materia_nombre: string
-  docente_ausente_id: string
-  docente_ausente_nombre: string
-  docente_guardia_id?: string
-  docente_guardia_nombre?: string
-  fecha: string
-  hora_inicio: string
-  hora_fin: string
+  carrera_id: string
+  cohorte_id?: string
+  dia: string
+  horario: string
   estado: GuardiaEstado
   comentarios?: string
 }
 
 export interface GuardiasResponse {
-  data: Guardia[]
+  items: Guardia[]
   total: number
-}
-
-export interface RegistrarGuardiaRequest {
-  materia_id: string
-  docente_ausente_id: string
-  docente_guardia_id?: string
-  fecha: string
-  hora_inicio: string
-  hora_fin: string
-  comentarios?: string
-}
-
-export interface EditarGuardiaRequest extends Partial<RegistrarGuardiaRequest> {
-  estado?: GuardiaEstado
+  pagina: number
+  page_size: number
 }
 
 export interface GuardiasFilters {
   materia_id?: string
+  asignacion_id?: string
+}
+
+export interface RegistrarGuardiaRequest {
+  materia_id: string
+  carrera_id: string
+  cohorte_id?: string
+  dia: string
+  horario: string
+  comentarios?: string
+}
+
+export interface EditarGuardiaRequest {
   estado?: GuardiaEstado
-  fecha_desde?: string
-  fecha_hasta?: string
+  comentarios?: string
+}
+
+export interface ExportGuardiasResponse {
+  items: Guardia[]
 }

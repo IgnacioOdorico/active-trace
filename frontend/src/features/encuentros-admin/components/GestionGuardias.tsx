@@ -1,17 +1,31 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useGuardias, useExportarGuardias } from '../hooks/useEncuentrosAdminApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
+import { useCarreras } from '../../estructura-academica/hooks/useEstructuraApi'
 import type { GuardiasFilters, GuardiaEstado } from '../types'
 
 const ESTADO_COLORS: Record<GuardiaEstado, string> = {
-  pendiente: 'bg-yellow-100 text-yellow-700',
-  cubierta: 'bg-green-100 text-green-700',
-  sin_cubrir: 'bg-red-100 text-red-700',
+  Pendiente: 'bg-yellow-100 text-yellow-700',
+  Realizada: 'bg-green-100 text-green-700',
+  Cancelada: 'bg-red-100 text-red-700',
 }
 
 export default function GestionGuardias() {
   const [filters, setFilters] = useState<GuardiasFilters>({})
   const { data, isLoading, isError } = useGuardias(filters)
   const exportar = useExportarGuardias()
+  const { data: materias } = useMaterias()
+  const { data: carreras } = useCarreras()
+
+  const nombreMateria = useMemo(() => {
+    const mapa = new Map(materias?.map((m) => [m.id, m.nombre]))
+    return (materiaId: string) => mapa.get(materiaId) ?? materiaId
+  }, [materias])
+
+  const nombreCarrera = useMemo(() => {
+    const mapa = new Map(carreras?.map((c) => [c.id, c.nombre]))
+    return (carreraId: string) => mapa.get(carreraId) ?? carreraId
+  }, [carreras])
 
   const handleFilter = (key: keyof GuardiasFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value || undefined }))
@@ -20,7 +34,7 @@ export default function GestionGuardias() {
   if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando guardias...</div>
   if (isError) return <div className="py-8 text-center text-red-600">Error al cargar guardias.</div>
 
-  const guardias = data?.data ?? []
+  const guardias = data?.items ?? []
 
   return (
     <div>
@@ -31,24 +45,11 @@ export default function GestionGuardias() {
           className="rounded-md border border-gray-300 px-3 py-2 text-sm"
           onChange={(e) => handleFilter('materia_id', e.target.value)}
         />
-        <select
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          onChange={(e) => handleFilter('estado', e.target.value)}
-        >
-          <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="cubierta">Cubierta</option>
-          <option value="sin_cubrir">Sin cubrir</option>
-        </select>
         <input
-          type="date"
+          type="text"
+          placeholder="Asignación ID"
           className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          onChange={(e) => handleFilter('fecha_desde', e.target.value)}
-        />
-        <input
-          type="date"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          onChange={(e) => handleFilter('fecha_hasta', e.target.value)}
+          onChange={(e) => handleFilter('asignacion_id', e.target.value)}
         />
         <button
           type="button"
@@ -69,30 +70,23 @@ export default function GestionGuardias() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                {['Materia', 'Docente ausente', 'Guardia', 'Fecha', 'Horario', 'Estado', 'Comentarios'].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+                {['Materia', 'Carrera', 'Día', 'Horario', 'Estado', 'Comentarios'].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {guardias.map((g) => (
                 <tr key={g.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900">{g.materia_nombre}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{g.docente_ausente_nombre}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {g.docente_guardia_nombre ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{g.fecha}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {g.hora_inicio} – {g.hora_fin}
-                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900">{nombreMateria(g.materia_id)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{nombreCarrera(g.carrera_id)}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{g.dia}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">{g.horario}</td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_COLORS[g.estado]}`}
