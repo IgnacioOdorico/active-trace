@@ -28,7 +28,7 @@ class ComentarioTareaRepository(BaseRepository[ComentarioTarea]):
             .order_by(ComentarioTarea.creado_at.asc())
         )
 
-        count_q = base.with_only_columns(func.count())
+        count_q = base.order_by(None).with_only_columns(func.count())
         total_result = await session.execute(count_q)
         total = total_result.scalar_one()
 

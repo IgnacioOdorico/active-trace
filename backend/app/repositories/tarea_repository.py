@@ -32,7 +32,7 @@ class TareaRepository(BaseRepository[Tarea]):
         if estado:
             base = base.where(Tarea.estado == estado)
 
-        count_q = base.with_only_columns(func.count())
+        count_q = base.order_by(None).with_only_columns(func.count())
         total_result = await session.execute(count_q)
         total = total_result.scalar_one()
 
@@ -73,7 +73,7 @@ class TareaRepository(BaseRepository[Tarea]):
         if busqueda:
             base = base.where(Tarea.descripcion.ilike(f"%{busqueda}%"))
 
-        count_q = base.with_only_columns(func.count())
+        count_q = base.order_by(None).with_only_columns(func.count())
         total_result = await session.execute(count_q)
         total = total_result.scalar_one()
 
