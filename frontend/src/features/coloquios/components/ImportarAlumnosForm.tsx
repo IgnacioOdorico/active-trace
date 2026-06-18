@@ -47,7 +47,7 @@ export default function ImportarAlumnosForm({
 
       {mutation.isSuccess && (
         <div className="rounded-md bg-green-50 p-3 text-sm text-green-700">
-          {mutation.data.importados} alumno(s) importados. Total convocados: {mutation.data.convocados}.
+          {mutation.data.cantidad_importados} alumno(s) importados.
         </div>
       )}
 

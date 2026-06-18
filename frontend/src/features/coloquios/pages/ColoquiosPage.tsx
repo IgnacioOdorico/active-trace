@@ -2,6 +2,7 @@ import { useState } from 'react'
 import MetricasColoquios from '../components/MetricasColoquios'
 import ListadoConvocatorias from '../components/ListadoConvocatorias'
 import ConvocatoriaForm from '../components/ConvocatoriaForm'
+import EditarConvocatoriaForm from '../components/EditarConvocatoriaForm'
 import ImportarAlumnosForm from '../components/ImportarAlumnosForm'
 import type { Convocatoria } from '../types'
 
@@ -75,9 +76,9 @@ export default function ColoquiosPage() {
       {vista === 'editar' && convocatoriaActual && (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <h2 className="mb-4 text-lg font-semibold text-gray-800">
-            Editar Convocatoria — {convocatoriaActual.materia_nombre}
+            Editar Convocatoria — {convocatoriaActual.instancia}
           </h2>
-          <ConvocatoriaForm
+          <EditarConvocatoriaForm
             convocatoria={convocatoriaActual}
             onSuccess={handleBack}
             onCancel={handleBack}

@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useConvocatorias, useCerrarConvocatoria } from '../hooks/useColoquiosApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
+import { useCohortes } from '../../estructura-academica/hooks/useEstructuraApi'
 import type { Convocatoria } from '../types'
 
 interface ListadoConvocatoriasProps {
@@ -12,13 +14,17 @@ export default function ListadoConvocatorias({
   onImportar,
 }: ListadoConvocatoriasProps) {
   const { data, isLoading, isError } = useConvocatorias()
+  const { data: materias } = useMaterias()
+  const { data: cohortes } = useCohortes()
   const cerrar = useCerrarConvocatoria()
   const [cerrandoId, setCerrandoId] = useState<string | null>(null)
 
   if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando convocatorias...</div>
   if (isError) return <div className="py-8 text-center text-red-600">Error al cargar convocatorias.</div>
 
-  const convocatorias = data?.data ?? []
+  const convocatorias = data?.items ?? []
+  const nombreMateria = (id: string) => materias?.find((m) => m.id === id)?.nombre ?? id
+  const nombreCohorte = (id: string) => cohortes?.find((c) => c.id === id)?.nombre ?? id
 
   if (convocatorias.length === 0) {
     return (
@@ -35,13 +41,13 @@ export default function ListadoConvocatorias({
           <tr>
             {[
               'Materia',
+              'Cohorte',
+              'Tipo',
               'Instancia',
-              'Días',
-              'Cupo/día',
+              'Días generados',
               'Convocados',
               'Reservas',
               'Cupos libres',
-              'Estado',
               'Acciones',
             ].map((h) => (
               <th
@@ -56,57 +62,41 @@ export default function ListadoConvocatorias({
         <tbody className="divide-y divide-gray-100 bg-white">
           {convocatorias.map((conv) => (
             <tr key={conv.id} className="hover:bg-gray-50">
-              <td className="px-4 py-3 text-sm text-gray-900">{conv.materia_nombre}</td>
+              <td className="px-4 py-3 text-sm text-gray-900">{nombreMateria(conv.materia_id)}</td>
+              <td className="px-4 py-3 text-sm text-gray-600">{nombreCohorte(conv.cohorte_id)}</td>
+              <td className="px-4 py-3 text-sm text-gray-600">{conv.tipo}</td>
               <td className="px-4 py-3 text-sm text-gray-600">{conv.instancia}</td>
-              <td className="px-4 py-3 text-sm text-gray-600">
-                {conv.dias_disponibles.join(', ')}
-              </td>
-              <td className="px-4 py-3 text-sm text-gray-600">{conv.cupo_por_dia}</td>
-              <td className="px-4 py-3 text-sm text-gray-900">{conv.convocados}</td>
-              <td className="px-4 py-3 text-sm text-gray-900">{conv.reservas_activas}</td>
-              <td className="px-4 py-3 text-sm text-gray-900">{conv.cupos_libres}</td>
-              <td className="px-4 py-3">
-                <span
-                  className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                    conv.estado === 'activa'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {conv.estado}
-                </span>
-              </td>
+              <td className="px-4 py-3 text-sm text-gray-600">{conv.dias_disponibles}</td>
+              <td className="px-4 py-3 text-sm text-gray-900">{conv.total_convocados}</td>
+              <td className="px-4 py-3 text-sm text-gray-900">{conv.total_reservas_activas}</td>
+              <td className="px-4 py-3 text-sm text-gray-900">{conv.total_cupos_libres}</td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-2">
-                  {conv.estado === 'activa' && (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => onEditar(conv)}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onImportar(conv.id)}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        Importar alumnos
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCerrandoId(conv.id)
-                          cerrar.mutate(conv.id, { onSettled: () => setCerrandoId(null) })
-                        }}
-                        disabled={cerrandoId === conv.id}
-                        className="text-xs text-red-600 hover:underline disabled:opacity-50"
-                      >
-                        {cerrandoId === conv.id ? 'Cerrando...' : 'Cerrar'}
-                      </button>
-                    </>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => onEditar(conv)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onImportar(conv.id)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Importar alumnos
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCerrandoId(conv.id)
+                      cerrar.mutate(conv.id, { onSettled: () => setCerrandoId(null) })
+                    }}
+                    disabled={cerrandoId === conv.id}
+                    className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                  >
+                    {cerrandoId === conv.id ? 'Cerrando...' : 'Cerrar'}
+                  </button>
                 </div>
               </td>
             </tr>

@@ -54,7 +54,7 @@ export function useEditarConvocatoria() {
       id: string
       payload: EditarConvocatoriaRequest
     }) => {
-      const { data } = await apiClient.patch(`/api/coloquios/${id}`, payload)
+      const { data } = await apiClient.patch<{ id: string }>(`/api/coloquios/${id}`, payload)
       return data
     },
     onSuccess: () => {

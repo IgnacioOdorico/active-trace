@@ -29,10 +29,10 @@ export default function MetricasColoquios() {
 
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-      <MetricaCard label="Alumnos cargados" value={data?.total_alumnos} />
-      <MetricaCard label="Instancias activas" value={data?.instancias_activas} />
-      <MetricaCard label="Reservas activas" value={data?.reservas_activas} />
-      <MetricaCard label="Notas registradas" value={data?.notas_registradas} />
+      <MetricaCard label="Alumnos cargados" value={data?.total_alumnos_convocados} />
+      <MetricaCard label="Instancias activas" value={data?.total_instancias_activas} />
+      <MetricaCard label="Reservas activas" value={data?.total_reservas_activas} />
+      <MetricaCard label="Notas registradas" value={data?.total_notas_registradas} />
     </div>
   )
 }
