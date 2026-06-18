@@ -4,8 +4,8 @@ export interface AccionPorDia {
 }
 
 export interface ComunicacionPorDocente {
-  actor_id: string
-  actor_nombre: string
+  docente_id: string
+  docente_nombre: string
   pendiente: number
   enviando: number
   enviado: number
@@ -14,20 +14,22 @@ export interface ComunicacionPorDocente {
 }
 
 export interface InteraccionDocenteMateria {
-  actor_id: string
-  actor_nombre: string
+  docente_id: string
+  docente_nombre: string
   materia_id: string
   materia_nombre: string
-  total: number
-  por_tipo: Record<string, number>
+  total_acciones: number
+  acciones_por_tipo: Record<string, number>
 }
 
 export interface AuditLogEntry {
   id: string
   fecha_hora: string
   actor_id: string
+  actor_nombre: string
   impersonado_id: string | null
   materia_id: string | null
+  materia_nombre: string | null
   accion: string
   detalle: Record<string, unknown> | null
   filas_afectadas: number | null

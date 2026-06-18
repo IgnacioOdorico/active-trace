@@ -58,10 +58,8 @@ export default function UltimasAcciones({ filters }: Props) {
                     {new Date(item.fecha_hora).toLocaleString('es-AR')}
                   </td>
                   <td className="px-3 py-2 font-medium text-gray-900">{item.accion}</td>
-                  <td className="px-3 py-2 text-gray-600 font-mono">{item.actor_id.slice(0, 8)}…</td>
-                  <td className="px-3 py-2 text-gray-600 font-mono">
-                    {item.materia_id ? item.materia_id.slice(0, 8) + '…' : '—'}
-                  </td>
+                  <td className="px-3 py-2 text-gray-600">{item.actor_nombre || item.actor_id.slice(0, 8) + '…'}</td>
+                  <td className="px-3 py-2 text-gray-600">{item.materia_nombre || '—'}</td>
                   <td className="px-3 py-2 text-right text-gray-600">
                     {item.filas_afectadas ?? '—'}
                   </td>

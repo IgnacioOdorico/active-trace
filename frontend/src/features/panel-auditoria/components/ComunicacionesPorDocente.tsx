@@ -43,8 +43,8 @@ export default function ComunicacionesPorDocente({ filters }: Props) {
       </thead>
       <tbody>
         {data.map((item) => (
-          <tr key={item.actor_id} className="border-b border-gray-100 hover:bg-gray-50">
-            <td className="px-4 py-2 text-sm font-medium text-gray-900">{item.actor_nombre}</td>
+          <tr key={item.docente_id} className="border-b border-gray-100 hover:bg-gray-50">
+            <td className="px-4 py-2 text-sm font-medium text-gray-900">{item.docente_nombre}</td>
             {ESTADOS.map((estado) => (
               <td key={estado} className="px-4 py-2 text-center">
                 {item[estado] > 0 && (

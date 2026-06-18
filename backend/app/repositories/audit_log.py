@@ -8,6 +8,8 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.audit_log import AuditLog
+from app.models.materia import Materia
+from app.models.user import User, nombre_completo_usuario
 
 
 class AuditLogRepository:
@@ -140,10 +142,17 @@ class AuditLogRepository:
                 self._model.actor_id,
                 self._model.accion,
                 func.count().label("total"),
+                User.nombre,
+                User.apellidos,
+                User.email,
             )
+            .join(User, User.id == self._model.actor_id)
             .where(self._model.tenant_id == self._tenant_id)
             .where(self._model.accion.like("COMUNICACION_%"))
-            .group_by(self._model.actor_id, self._model.accion)
+            .group_by(
+                self._model.actor_id, self._model.accion,
+                User.nombre, User.apellidos, User.email,
+            )
         )
         if desde is not None:
             query = query.where(self._model.fecha_hora >= desde)
@@ -161,6 +170,7 @@ class AuditLogRepository:
             if aid not in grouped:
                 grouped[aid] = {
                     "docente_id": str(aid),
+                    "docente_nombre": nombre_completo_usuario(row.nombre, row.apellidos, row.email),
                     "pendiente": 0,
                     "enviando": 0,
                     "enviado": 0,
@@ -198,9 +208,18 @@ class AuditLogRepository:
                 self._model.materia_id,
                 self._model.accion,
                 func.count().label("cnt"),
+                User.nombre,
+                User.apellidos,
+                User.email,
+                Materia.nombre.label("materia_nombre"),
             )
+            .join(User, User.id == self._model.actor_id)
+            .outerjoin(Materia, Materia.id == self._model.materia_id)
             .where(self._model.tenant_id == self._tenant_id)
-            .group_by(self._model.actor_id, self._model.materia_id, self._model.accion)
+            .group_by(
+                self._model.actor_id, self._model.materia_id, self._model.accion,
+                User.nombre, User.apellidos, User.email, Materia.nombre,
+            )
         )
         if desde is not None:
             query = query.where(self._model.fecha_hora >= desde)
@@ -220,7 +239,9 @@ class AuditLogRepository:
             if key not in grouped:
                 grouped[key] = {
                     "docente_id": str(row.actor_id),
+                    "docente_nombre": nombre_completo_usuario(row.nombre, row.apellidos, row.email),
                     "materia_id": str(row.materia_id) if row.materia_id else "",
+                    "materia_nombre": row.materia_nombre or "",
                     "total_acciones": 0,
                     "acciones_por_tipo": {},
                 }

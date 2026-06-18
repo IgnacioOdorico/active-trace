@@ -7,8 +7,10 @@ class AuditLogResponse(BaseModel):
     id: str
     fecha_hora: datetime
     actor_id: str
+    actor_nombre: str = ""
     impersonado_id: str | None = None
     materia_id: str | None = None
+    materia_nombre: str | None = None
     accion: str
     detalle: dict | None = None
     filas_afectadas: int

@@ -34,3 +34,8 @@ class User(Base, EntityMeta):
     __table_args__ = (
         UniqueConstraint("tenant_id", "email", name="uq_user_email_per_tenant"),
     )
+
+
+def nombre_completo_usuario(nombre: str | None, apellidos: str | None, email: str) -> str:
+    partes = [p for p in (nombre, apellidos) if p]
+    return " ".join(partes) if partes else email

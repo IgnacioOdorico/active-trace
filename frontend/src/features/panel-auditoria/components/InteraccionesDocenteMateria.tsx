@@ -32,13 +32,13 @@ export default function InteraccionesDocenteMateria({ filters }: Props) {
       </thead>
       <tbody>
         {data.map((item) => (
-          <tr key={`${item.actor_id}-${item.materia_id}`} className="border-b border-gray-100 hover:bg-gray-50">
-            <td className="px-4 py-2 text-sm font-medium text-gray-900">{item.actor_nombre}</td>
+          <tr key={`${item.docente_id}-${item.materia_id}`} className="border-b border-gray-100 hover:bg-gray-50">
+            <td className="px-4 py-2 text-sm font-medium text-gray-900">{item.docente_nombre}</td>
             <td className="px-4 py-2 text-sm text-gray-700">{item.materia_nombre}</td>
-            <td className="px-4 py-2 text-right text-sm font-medium text-gray-900">{item.total}</td>
+            <td className="px-4 py-2 text-right text-sm font-medium text-gray-900">{item.total_acciones}</td>
             <td className="px-4 py-2">
               <div className="flex flex-wrap gap-1">
-                {Object.entries(item.por_tipo).map(([tipo, count]) => (
+                {Object.entries(item.acciones_por_tipo ?? {}).map(([tipo, count]) => (
                   <span key={tipo} className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
                     {tipo}: {count}
                   </span>
