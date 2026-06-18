@@ -211,8 +211,10 @@ async def monitor_general(
     response_model=MonitorPaginationResponse,
 )
 async def monitor_seguimiento(
+    materia_id: uuid.UUID | None = Query(default=None),
     comision: str | None = Query(default=None),
     entrada_padron_id: uuid.UUID | None = Query(default=None),
+    actividad_minima: str | None = Query(default=None),
     desde: date | None = Query(default=None),
     hasta: date | None = Query(default=None),
     pagina: int = Query(default=1, ge=1),
@@ -232,9 +234,10 @@ async def monitor_seguimiento(
 
     return await svc.monitor_seguimiento(
         db,
-        materias_ids=None,
+        materias_ids=[materia_id] if materia_id else None,
         comision=comision,
         entrada_padron_id=entrada_padron_id,
+        actividad_minima=actividad_minima,
         desde=desde_dt,
         hasta=hasta_dt,
         pagina=pagina,

@@ -9,8 +9,7 @@ export default function MonitorSeguimiento() {
   const isCoordinador = user?.roles.includes('coordinador')
 
   const [materiaId, setMateriaId] = useState('')
-  const [alumnoId, setAlumnoId] = useState('')
-  const [alumnoBusqueda, setAlumnoBusqueda] = useState('')
+  const [comision, setComision] = useState('')
   const [actividadMinima, setActividadMinima] = useState('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
@@ -18,10 +17,10 @@ export default function MonitorSeguimiento() {
 
   const { data, isLoading, isError } = useMonitorSeguimiento({
     materia_id: isCoordinador ? (materiaId || undefined) : undefined,
-    alumno_id: alumnoId || undefined,
+    comision: comision || undefined,
     actividad_minima: actividadMinima || undefined,
-    fecha_desde: isCoordinador ? (fechaDesde || undefined) : undefined,
-    fecha_hasta: isCoordinador ? (fechaHasta || undefined) : undefined,
+    desde: isCoordinador ? (fechaDesde || undefined) : undefined,
+    hasta: isCoordinador ? (fechaHasta || undefined) : undefined,
     pagina,
     por_pagina: 50,
   })
@@ -61,13 +60,13 @@ export default function MonitorSeguimiento() {
         </div>
 
         <div>
-          <label htmlFor="seg-alumno" className="block text-xs font-medium text-gray-700">Alumno</label>
+          <label htmlFor="seg-comision" className="block text-xs font-medium text-gray-700">Comisión</label>
           <input
-            id="seg-alumno"
+            id="seg-comision"
             type="text"
-            value={alumnoBusqueda}
-            onChange={(e) => setAlumnoBusqueda(e.target.value)}
-            placeholder="Nombre del alumno"
+            value={comision}
+            onChange={(e) => { setComision(e.target.value); setPagina(1) }}
+            placeholder="Ej: A"
             className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>

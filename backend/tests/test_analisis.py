@@ -2,8 +2,12 @@ import uuid
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 
+from app.core.dependencies import get_current_user, get_db
 from app.core.exceptions import DomainError
+from app.main import app
+from app.models.user import User
 
 
 class TestCalificacionRepositoryNuevos:
@@ -958,6 +962,93 @@ class TestAnalisisService:
             )
 
             assert result["total"] == 0
+
+
+class _MockSession:
+    def __init__(self) -> None:
+        execute_result = Mock()
+        execute_result.scalar_one.return_value = 0
+        self.execute = AsyncMock(return_value=execute_result)
+
+
+class TestMonitorSeguimientoRouter:
+    _tenant_id = uuid.uuid4()
+    _user_id = uuid.uuid4()
+
+    @pytest.fixture(autouse=True)
+    def mock_deps(self):
+        async def _mock_user():
+            user = Mock(spec=User)
+            user.id = self._user_id
+            user.tenant_id = self._tenant_id
+            user.is_active = True
+            user.impersonator_id = None
+            return user
+
+        async def _mock_db():
+            return _MockSession()
+
+        app.dependency_overrides[get_current_user] = _mock_user
+        app.dependency_overrides[get_db] = _mock_db
+        yield
+        app.dependency_overrides.clear()
+
+    @pytest.mark.asyncio
+    async def test_reenvia_materia_id_y_actividad_minima_al_service(self):
+        materia_id = uuid.uuid4()
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["COORDINADOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.analisis.AnalisisService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, False))
+            mock_svc = MockSvc.return_value
+            mock_svc.monitor_seguimiento = AsyncMock(return_value={
+                "items": [], "total": 0, "pagina": 1, "por_pagina": 50, "total_paginas": 0,
+            })
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.get(
+                    "/api/analisis/monitor-seguimiento",
+                    params={
+                        "materia_id": str(materia_id),
+                        "actividad_minima": "TP1",
+                        "desde": "2024-03-01",
+                        "hasta": "2024-03-31",
+                    },
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 200
+
+                _, kwargs = mock_svc.monitor_seguimiento.call_args
+                assert kwargs["materias_ids"] == [materia_id]
+                assert kwargs["actividad_minima"] == "TP1"
+                assert kwargs["desde"] is not None
+                assert kwargs["hasta"] is not None
+
+    @pytest.mark.asyncio
+    async def test_sin_materia_id_no_filtra_por_materia(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["COORDINADOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.analisis.AnalisisService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, False))
+            mock_svc = MockSvc.return_value
+            mock_svc.monitor_seguimiento = AsyncMock(return_value={
+                "items": [], "total": 0, "pagina": 1, "por_pagina": 50, "total_paginas": 0,
+            })
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.get(
+                    "/api/analisis/monitor-seguimiento",
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 200
+
+                _, kwargs = mock_svc.monitor_seguimiento.call_args
+                assert kwargs["materias_ids"] is None
+                assert kwargs["actividad_minima"] is None
 
 
 db = pytest.mark.skipif(

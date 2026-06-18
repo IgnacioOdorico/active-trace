@@ -35,7 +35,7 @@ beforeEach(() => {
 describe('MonitorGeneral — filtros y Limpiar', () => {
   it('renderiza los filtros y el listado vacío', async () => {
     mockApiClient.get.mockResolvedValue({
-      data: { data: [], total: 0, pagina: 1, por_pagina: 50 },
+      data: { items: [], total: 0, pagina: 1, por_pagina: 50, total_paginas: 0 },
     })
 
     const { default: MonitorGeneral } = await import('../components/MonitorGeneral')
@@ -46,7 +46,7 @@ describe('MonitorGeneral — filtros y Limpiar', () => {
 
   it('envía query params de filtros al endpoint', async () => {
     mockApiClient.get.mockResolvedValue({
-      data: { data: [], total: 0, pagina: 1, por_pagina: 50 },
+      data: { items: [], total: 0, pagina: 1, por_pagina: 50, total_paginas: 0 },
     })
 
     const { default: MonitorGeneral } = await import('../components/MonitorGeneral')
@@ -56,15 +56,17 @@ describe('MonitorGeneral — filtros y Limpiar', () => {
     const comisionInput = screen.getByPlaceholderText(/Ej: A/i)
     await user.type(comisionInput, 'B')
 
-    // El hook re-consulta con el nuevo filtro — verificamos que get fue llamado
     expect(mockApiClient.get).toHaveBeenCalled()
+    const calls = mockApiClient.get.mock.calls
+    const lastCall = calls[calls.length - 1]![0] as string
+    expect(lastCall).toContain('comision=B')
   })
 })
 
 describe('MonitorSeguimiento — filtro rango de fechas (coordinador)', () => {
-  it('muestra inputs de fecha_desde y fecha_hasta para coordinador', async () => {
+  it('muestra inputs de fecha desde/hasta para coordinador', async () => {
     mockApiClient.get.mockResolvedValue({
-      data: { data: [], total: 0, pagina: 1, por_pagina: 50 },
+      data: { items: [], total: 0, pagina: 1, por_pagina: 50, total_paginas: 0 },
     })
 
     const { default: MonitorSeguimiento } = await import('../components/MonitorSeguimiento')
@@ -74,9 +76,9 @@ describe('MonitorSeguimiento — filtro rango de fechas (coordinador)', () => {
     expect(screen.getByLabelText(/Fecha hasta/i)).toBeInTheDocument()
   })
 
-  it('incluye fecha_desde y fecha_hasta en la query al establecer rango', async () => {
+  it('envía "desde" y "hasta" (no fecha_desde/fecha_hasta) al establecer el rango', async () => {
     mockApiClient.get.mockResolvedValue({
-      data: { data: [], total: 0, pagina: 1, por_pagina: 50 },
+      data: { items: [], total: 0, pagina: 1, por_pagina: 50, total_paginas: 0 },
     })
 
     const { default: MonitorSeguimiento } = await import('../components/MonitorSeguimiento')
@@ -85,8 +87,31 @@ describe('MonitorSeguimiento — filtro rango de fechas (coordinador)', () => {
 
     const desdeInput = await screen.findByLabelText(/Fecha desde/i)
     await user.type(desdeInput, '2024-03-01')
+    const hastaInput = screen.getByLabelText(/Fecha hasta/i)
+    await user.type(hastaInput, '2024-03-31')
 
-    // Verificamos que el endpoint fue llamado (con los parámetros que incluyen fecha_desde)
-    expect(mockApiClient.get).toHaveBeenCalled()
+    const calls = mockApiClient.get.mock.calls
+    const lastCall = calls[calls.length - 1]![0] as string
+    expect(lastCall).toContain('desde=2024-03-01')
+    expect(lastCall).toContain('hasta=2024-03-31')
+    expect(lastCall).not.toContain('fecha_desde')
+    expect(lastCall).not.toContain('fecha_hasta')
+  })
+
+  it('muestra un filtro de Comisión (no de búsqueda de alumno, que el backend no soporta)', async () => {
+    mockApiClient.get.mockResolvedValue({
+      data: { items: [], total: 0, pagina: 1, por_pagina: 50, total_paginas: 0 },
+    })
+
+    const { default: MonitorSeguimiento } = await import('../components/MonitorSeguimiento')
+    const user = userEvent.setup()
+    renderWithProviders(<MonitorSeguimiento />)
+
+    const comisionInput = await screen.findByLabelText(/Comisión/i)
+    await user.type(comisionInput, 'A')
+
+    const calls = mockApiClient.get.mock.calls
+    const lastCall = calls[calls.length - 1]![0] as string
+    expect(lastCall).toContain('comision=A')
   })
 })

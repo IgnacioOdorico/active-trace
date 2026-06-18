@@ -32,12 +32,16 @@ export interface MonitorGeneralFilters {
   por_pagina?: number
 }
 
+// Query params alineados a GET /api/analisis/monitor-seguimiento
+// (backend/app/routers/analisis.py). No existe búsqueda de alumno por
+// nombre en este endpoint — solo "comision" (texto) y "entrada_padron_id"
+// (UUID exacto, sin uso en la UI actual).
 export interface MonitorSeguimientoFilters {
-  alumno_id?: string
-  actividad_minima?: string
-  fecha_desde?: string
-  fecha_hasta?: string
   materia_id?: string
+  comision?: string
+  actividad_minima?: string
+  desde?: string
+  hasta?: string
   pagina?: number
   por_pagina?: number
 }
