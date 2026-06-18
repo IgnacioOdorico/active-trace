@@ -24,6 +24,17 @@ class UmbralRepository(BaseRepository[UmbralMateria]):
         result = await session.execute(query)
         return result.unique().scalar_one_or_none()
 
+    async def get_by_materia(
+        self,
+        session: AsyncSession,
+        materia_id: uuid.UUID,
+    ) -> UmbralMateria | None:
+        query = self._base_query().where(
+            self._model.materia_id == materia_id,
+        )
+        result = await session.execute(query)
+        return result.unique().scalar_one_or_none()
+
     async def upsert(
         self,
         session: AsyncSession,

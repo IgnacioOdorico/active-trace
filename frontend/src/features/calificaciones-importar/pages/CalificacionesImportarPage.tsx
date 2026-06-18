@@ -18,6 +18,7 @@ export default function CalificacionesImportarPage() {
   const [resultado, setResultado] = useState<ImportarResultado | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [advertenciasOpen, setAdvertenciasOpen] = useState(false)
+  const [erroresOpen, setErroresOpen] = useState(false)
 
   const materiaNombre =
     previewData?.materia_nombre ??
@@ -34,7 +35,7 @@ export default function CalificacionesImportarPage() {
       if (data.actividades.length === 0) {
         setStep('empty')
       } else {
-        setSelectedIds(data.actividades.map((a) => a.id))
+        setSelectedIds(data.actividades.map((a) => a.nombre))
         setStep('preview')
       }
     } catch (err) {
@@ -46,12 +47,13 @@ export default function CalificacionesImportarPage() {
   }
 
   async function handleImportar() {
-    if (!materiaId || selectedIds.length === 0) return
+    if (!materiaId || selectedIds.length === 0 || !file) return
     setStep('importing')
     try {
       const data = await importar.mutateAsync({
         materia_id: materiaId,
         actividad_ids: selectedIds,
+        file,
       })
       setResultado(data)
       setStep('result')
@@ -149,6 +151,32 @@ export default function CalificacionesImportarPage() {
           </p>
         </div>
 
+        {resultado.errores.length > 0 && (
+          <div className="mt-4 rounded-md border border-red-200 bg-red-50">
+            <button
+              onClick={() => setErroresOpen(!erroresOpen)}
+              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-red-800"
+            >
+              <span>
+                {resultado.errores.length} error(es)
+              </span>
+              <span>{erroresOpen ? '▲' : '▼'}</span>
+            </button>
+
+            {erroresOpen && (
+              <div className="border-t border-red-200 px-4 py-2">
+                <ul className="space-y-1">
+                  {resultado.errores.map((err, i) => (
+                    <li key={i} className="text-sm text-red-700">
+                      {err.detalle ?? JSON.stringify(err)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {resultado.advertencias.length > 0 && (
           <div className="mt-4 rounded-md border border-yellow-200 bg-yellow-50">
             <button
@@ -166,7 +194,7 @@ export default function CalificacionesImportarPage() {
                 <ul className="space-y-1">
                   {resultado.advertencias.map((adv, i) => (
                     <li key={i} className="text-sm text-yellow-700">
-                      Fila {adv.fila}: {adv.motivo}
+                      Fila {adv.fila}: {adv.detalle}
                     </li>
                   ))}
                 </ul>
@@ -253,6 +281,7 @@ export default function CalificacionesImportarPage() {
             onSelectionChange={setSelectedIds}
             materiaNombre={materiaNombre}
             totalFilas={previewData.total_filas}
+            preview={previewData.preview}
           />
 
           <button

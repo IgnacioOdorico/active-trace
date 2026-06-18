@@ -182,7 +182,7 @@ class TestAnalisisService:
                 return_value=[AsyncMock(id=uuid.uuid4())]
             )
             MockCalifRepo.return_value.get_by_materia = AsyncMock(return_value=[])
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -233,7 +233,7 @@ class TestAnalisisService:
                 return_value=[mock_calif]
             )
 
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -283,7 +283,7 @@ class TestAnalisisService:
                 return_value=[mock_calif]
             )
 
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -350,7 +350,7 @@ class TestAnalisisService:
                 return_value=[mock_calif]
             )
 
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -470,7 +470,7 @@ class TestAnalisisService:
                     (mock_calif_2, mock_entrada),
                 ]
             )
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -522,7 +522,7 @@ class TestAnalisisService:
                     (mock_calif_text, mock_entrada),
                 ]
             )
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -565,7 +565,7 @@ class TestAnalisisService:
             MockCalifRepo.return_value.get_notas_por_alumno = AsyncMock(
                 return_value=[(mock_calif, mock_entrada)]
             )
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -606,7 +606,7 @@ class TestAnalisisService:
             MockCalifRepo.return_value.get_notas_por_alumno = AsyncMock(
                 return_value=[(mock_calif_text, mock_entrada)]
             )
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -674,7 +674,7 @@ class TestAnalisisService:
             MockEntradaRepo.return_value.get_by_version = AsyncMock(
                 return_value=mock_entradas
             )
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
@@ -715,7 +715,7 @@ class TestAnalisisService:
             MockEntradaRepo.return_value.get_by_version = AsyncMock(
                 return_value=mock_entradas
             )
-            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_by_materia = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)

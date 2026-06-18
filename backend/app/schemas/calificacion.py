@@ -10,6 +10,8 @@ class ImportPreviewResponse(BaseModel):
     actividades: list[ActividadDetectada]
     preview: list[dict]
     total_filas: int
+    materia_id: str
+    materia_nombre: str
 
 
 class CalificacionResponse(BaseModel):

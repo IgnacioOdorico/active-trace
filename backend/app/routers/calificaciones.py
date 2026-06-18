@@ -1,3 +1,4 @@
+import json
 import uuid
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
@@ -7,11 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_current_user, get_db
 from app.core.exceptions import DomainError
 from app.core.permissions import require_permission
-from app.models.calificacion import Calificacion
+from app.models.materia import Materia
 from app.models.user import User
 from app.schemas.calificacion import (
     ImportPreviewResponse,
-    ImportRequest,
     ImportResponse,
     ReporteFinalizacionResponse,
 )
@@ -31,8 +31,27 @@ async def preview_calificaciones(
     svc = CalificacionService(current_user.tenant_id)
     content = await file.read()
 
+    # Resolve materia info for the response
+    materia_nombre = ""
+    result = await db.execute(
+        select(Materia).where(
+            Materia.id == uuid.UUID(materia_id),
+            Materia.deleted_at.is_(None),
+        )
+    )
+    materia = result.unique().scalar_one_or_none()
+    if materia:
+        materia_nombre = materia.nombre
+
     try:
-        return svc.preview(content, file.filename or "")
+        preview = svc.preview(content, file.filename or "")
+        return {
+            "actividades": preview["actividades"],
+            "preview": preview["preview"],
+            "total_filas": preview["total_filas"],
+            "materia_id": materia_id,
+            "materia_nombre": materia_nombre,
+        }
     except DomainError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -42,49 +61,43 @@ async def preview_calificaciones(
 
 @router.post("/importar", response_model=ImportResponse)
 async def importar_calificaciones(
-    body: ImportRequest,
+    materia_id: str = Form(...),
+    actividad_ids: str = Form(...),
+    file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _=Depends(require_permission("calificaciones:importar")),
 ):
     svc = CalificacionService(current_user.tenant_id)
-    materia_id = uuid.UUID(body.materia_id)
+    content = await file.read()
 
     try:
-        from datetime import datetime, timezone
+        actividades = json.loads(actividad_ids)
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="actividad_ids debe ser un array JSON de strings",
+        )
 
-        affected = 0
-        for actividad_id in body.actividad_ids:
-            stmt = (
-                select(Calificacion)
-                .where(
-                    Calificacion.tenant_id == current_user.tenant_id,
-                    Calificacion.materia_id == materia_id,
-                    Calificacion.nombre_actividad == actividad_id,
-                    Calificacion.deleted_at.is_(None),
-                )
-            )
-            result = await db.execute(stmt)
-            califs = list(result.unique().scalars().all())
+    if not isinstance(actividades, list) or not all(
+        isinstance(a, str) for a in actividades
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="actividad_ids debe ser un array JSON de strings",
+        )
 
-            for c in califs:
-                if c.nota_numerica is not None and c.nota_numerica >= 60:
-                    c.aprobado = True
-                elif c.nota_numerica is not None:
-                    c.aprobado = False
-                c.origen = "Importado"
-                c.importado_at = datetime.now(timezone.utc)
-                affected += 1
-
+    try:
+        result = await svc.importar(
+            db=db,
+            materia_id=uuid.UUID(materia_id),
+            actividades=actividades,
+            content=content,
+            filename=file.filename or "",
+            usuario_id=current_user.id,
+        )
         await db.commit()
-
-        return {
-            "insertadas": 0,
-            "actualizadas": affected,
-            "filas_afectadas": affected,
-            "errores": [],
-            "advertencias": [],
-        }
+        return result
     except DomainError as e:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

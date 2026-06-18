@@ -10,6 +10,7 @@ interface PreviewParams {
 interface ImportarParams {
   materia_id: string
   actividad_ids: string[]
+  file: File
 }
 
 export function useCalificacionesApi() {
@@ -28,10 +29,15 @@ export function useCalificacionesApi() {
   })
 
   const importar = useMutation({
-    mutationFn: async (params: ImportarParams) => {
+    mutationFn: async ({ materia_id, actividad_ids, file }: ImportarParams) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('materia_id', materia_id)
+      formData.append('actividad_ids', JSON.stringify(actividad_ids))
       const { data } = await apiClient.post<ImportarResultado>(
         '/api/calificaciones/importar',
-        params,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
       )
       return data
     },

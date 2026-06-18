@@ -251,7 +251,7 @@ class TestCalificacionService:
             MockParser._detect_column_types.return_value = (["TP1 (Real)"], ["Email"])
 
             mock_version_repo = MockVersionRepo.return_value
-            mock_version_repo.get_active = AsyncMock(return_value=None)
+            mock_version_repo.get_active_by_materia = AsyncMock(return_value=None)
 
             svc = CalificacionService(tenant_id)
             with pytest.raises(DomainError, match="No hay un padrón activo"):
@@ -337,11 +337,126 @@ class TestCalificacionService:
             MockParser.detect_actividades.return_value = [{"nombre": "TP Final", "tipo": "textual"}]
 
             mock_version_repo = MockVersionRepo.return_value
-            mock_version_repo.get_active = AsyncMock(return_value=None)
+            mock_version_repo.get_active_by_materia = AsyncMock(return_value=None)
 
             svc = CalificacionService(tenant_id)
             with pytest.raises(DomainError, match="No hay un padrón activo"):
                 await svc.reporte_finalizacion(AsyncMock(), materia_id, b"", "test.csv")
+
+    @pytest.mark.asyncio
+    async def test_importar_alumno_no_identificado_genera_advertencia(self):
+        from app.services.calificacion_service import CalificacionService
+        tenant_id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+        usuario_id = uuid.uuid4()
+        entrada_id = uuid.uuid4()
+
+        with (
+            patch("app.services.calificacion_service.VersionPadronRepository") as MockVersionRepo,
+            patch("app.services.calificacion_service.EntradaPadronRepository") as MockEntradaRepo,
+            patch("app.services.calificacion_service.CalificacionRepository") as MockCalifRepo,
+            patch("app.services.calificacion_service.UmbralRepository") as MockUmbralRepo,
+            patch("app.services.calificacion_service.AuditLogService") as MockAudit,
+        ):
+            MockVersionRepo.return_value.get_active_by_materia = AsyncMock(
+                return_value=[AsyncMock(id=uuid.uuid4())]
+            )
+
+            mock_entrada = AsyncMock()
+            mock_entrada.id = entrada_id
+            mock_entrada.email = "existente@padron.com"
+            mock_entrada.nombre = "Existente"
+            mock_entrada.apellidos = "EnPadron"
+            MockEntradaRepo.return_value.get_by_version = AsyncMock(return_value=[mock_entrada])
+
+            mock_umbral = MockUmbralRepo.return_value
+            mock_umbral.get_by_materia = AsyncMock(return_value=None)
+            mock_umbral.get_umbral_efectivo = Mock(return_value=(60.0, None))
+
+            MockCalifRepo.return_value.bulk_upsert = AsyncMock(
+                return_value={"insertadas": 1, "actualizadas": 0}
+            )
+
+            MockAudit.CALIFICACIONES_IMPORTAR = "CALIFICACIONES_IMPORTAR"
+            MockAudit.return_value.log = AsyncMock()
+
+            # CSV con 2 alumnos: uno en padrón y otro NO
+            csv_content = b"Email,TP1 (Real)\nexistente@padron.com,85\nnuevo@test.com,70\n"
+            svc = CalificacionService(tenant_id)
+            result = await svc.importar(
+                AsyncMock(), materia_id, ["TP1 (Real)"],
+                csv_content, "test.csv", usuario_id,
+            )
+
+            assert result["insertadas"] == 1
+            # Debe haber una advertencia por el alumno no identificado
+            assert len(result["advertencias"]) == 1
+            assert result["advertencias"][0]["tipo"] == "sin_identificacion"
+
+    @pytest.mark.asyncio
+    async def test_importar_textual_con_valores_aprobatorios(self):
+        from app.services.calificacion_service import CalificacionService
+        tenant_id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+        usuario_id = uuid.uuid4()
+        entrada_id = uuid.uuid4()
+
+        with (
+            patch("app.services.calificacion_service.VersionPadronRepository") as MockVersionRepo,
+            patch("app.services.calificacion_service.EntradaPadronRepository") as MockEntradaRepo,
+            patch("app.services.calificacion_service.CalificacionRepository") as MockCalifRepo,
+            patch("app.services.calificacion_service.UmbralRepository") as MockUmbralRepo,
+            patch("app.services.calificacion_service.AuditLogService") as MockAudit,
+        ):
+            MockVersionRepo.return_value.get_active_by_materia = AsyncMock(
+                return_value=[AsyncMock(id=uuid.uuid4())]
+            )
+
+            mock_entrada = AsyncMock()
+            mock_entrada.id = entrada_id
+            mock_entrada.email = "alumno@test.com"
+            mock_entrada.nombre = "Alumno"
+            mock_entrada.apellidos = "Test"
+            MockEntradaRepo.return_value.get_by_version = AsyncMock(return_value=[mock_entrada])
+
+            mock_umbral = MockUmbralRepo.return_value
+            mock_umbral.get_by_materia = AsyncMock(
+                return_value=AsyncMock(umbral_pct=60.0, valores_aprobatorios=["Satisfactorio", "Supera"])
+            )
+            mock_umbral.get_umbral_efectivo = Mock(
+                return_value=(60.0, ["Satisfactorio", "Supera"])
+            )
+
+            MockCalifRepo.return_value.bulk_upsert = AsyncMock(
+                return_value={"insertadas": 2, "actualizadas": 0}
+            )
+
+            MockAudit.CALIFICACIONES_IMPORTAR = "CALIFICACIONES_IMPORTAR"
+            MockAudit.return_value.log = AsyncMock()
+
+            # CSV con columna textual: "Satisfactorio" debería aprobar, "Regular" no
+            csv_content = b"Email,Participacion,TP1 (Real)\nalumno@test.com,Satisfactorio,75\n"
+            svc = CalificacionService(tenant_id)
+            result = await svc.importar(
+                AsyncMock(), materia_id, ["Participacion", "TP1 (Real)"],
+                csv_content, "test.csv", usuario_id,
+            )
+
+            assert result["insertadas"] == 2
+            assert result["actualizadas"] == 0
+
+            # Verificar que bulk_upsert recibió los datos correctos
+            call_data = MockCalifRepo.return_value.bulk_upsert.call_args[0][1]
+            participacion = [c for c in call_data if c["nombre_actividad"] == "Participacion"][0]
+            tp1 = [c for c in call_data if c["nombre_actividad"] == "TP1 (Real)"][0]
+
+            # Participacion es textual con valor "Satisfactorio" → aprobado
+            assert participacion["nota_textual"] == "Satisfactorio"
+            assert participacion["aprobado"] is True
+
+            # TP1 (Real) es numérico con 75 ≥ 60 → aprobado
+            assert tp1["nota_numerica"] == 75.0
+            assert tp1["aprobado"] is True
 
 
 class TestAprobadoDerivation:
@@ -559,7 +674,7 @@ class TestAuditCalificacionesImport:
 
             mock_version = AsyncMock()
             mock_version.id = uuid.uuid4()
-            MockVersionRepo.return_value.get_active = AsyncMock(return_value=mock_version)
+            MockVersionRepo.return_value.get_active_by_materia = AsyncMock(return_value=[mock_version])
 
             mock_entrada = AsyncMock()
             mock_entrada.id = entrada_id
@@ -569,7 +684,7 @@ class TestAuditCalificacionesImport:
             MockEntradaRepo.return_value.get_by_version = AsyncMock(return_value=[mock_entrada])
 
             mock_umbral_repo = MockUmbralRepo.return_value
-            mock_umbral_repo.get_by_asignacion = AsyncMock(return_value=None)
+            mock_umbral_repo.get_by_materia = AsyncMock(return_value=None)
             mock_umbral_repo.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             MockCalifRepo.return_value.bulk_upsert = AsyncMock(
@@ -620,8 +735,8 @@ class TestAuditCalificacionesImport:
             MockParser._detect_column_types.return_value = (["TP1 (Real)"], ["Email"])
             MockParser._parse_numeric_value.return_value = 90.0
 
-            MockVersionRepo.return_value.get_active = AsyncMock(
-                return_value=AsyncMock(id=uuid.uuid4())
+            MockVersionRepo.return_value.get_active_by_materia = AsyncMock(
+                return_value=[AsyncMock(id=uuid.uuid4())]
             )
 
             mock_entrada = AsyncMock()
@@ -632,7 +747,7 @@ class TestAuditCalificacionesImport:
             MockEntradaRepo.return_value.get_by_version = AsyncMock(return_value=[mock_entrada])
 
             mock_umbral_repo = MockUmbralRepo.return_value
-            mock_umbral_repo.get_by_asignacion = AsyncMock(return_value=None)
+            mock_umbral_repo.get_by_materia = AsyncMock(return_value=None)
             mock_umbral_repo.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             MockCalifRepo.return_value.bulk_upsert = AsyncMock(

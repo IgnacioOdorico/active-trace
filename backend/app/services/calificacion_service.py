@@ -242,11 +242,12 @@ class CalificacionService:
                 if dni_val:
                     rows_by_id[dni_val] = row
 
-        version_activa = await self._version_repo.get_active(db, materia_id, uuid.UUID(int=0))
-        if version_activa is None:
+        activas = await self._version_repo.get_active_by_materia(db, materia_id)
+        if not activas:
             raise DomainError(
                 "No hay un padrón activo para esta materia. Debe importar el padrón primero."
             )
+        version_activa = activas[0]
 
         entradas = await self._entrada_repo.get_by_version(
             db, version_activa.id
@@ -260,7 +261,7 @@ class CalificacionService:
             name_key = (e.nombre.strip().lower(), e.apellidos.strip().lower())
             entrada_by_nombre_apellido[name_key] = e
 
-        umbral = await self._umbral_repo.get_by_asignacion(db, uuid.UUID(int=0))
+        umbral = await self._umbral_repo.get_by_materia(db, materia_id)
         umbral_pct, valores_aprob = self._umbral_repo.get_umbral_efectivo(umbral)
         valores_set = set(valores_aprob) if valores_aprob else set()
 
@@ -393,9 +394,10 @@ class CalificacionService:
             a for a in actividades if a["tipo"] == "textual"
         ]
 
-        version_activa = await self._version_repo.get_active(db, materia_id, uuid.UUID(int=0))
-        if version_activa is None:
+        activas = await self._version_repo.get_active_by_materia(db, materia_id)
+        if not activas:
             raise DomainError("No hay un padrón activo para esta materia")
+        version_activa = activas[0]
 
         entradas = await self._entrada_repo.get_by_version(
             db, version_activa.id

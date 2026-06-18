@@ -41,7 +41,7 @@ class AnalisisService:
 
         calificaciones = await self._calificacion_repo.get_by_materia(db, materia_id)
 
-        umbral = await self._umbral_repo.get_by_asignacion(db, uuid.UUID(int=0))
+        umbral = await self._umbral_repo.get_by_materia(db, materia_id)
         umbral_pct, _ = self._umbral_repo.get_umbral_efectivo(umbral)
 
         calif_por_alumno: dict[uuid.UUID, list] = defaultdict(list)
@@ -212,7 +212,7 @@ class AnalisisService:
                 "nota_textual": calif.nota_textual,
             })
 
-        umbral = await self._umbral_repo.get_by_asignacion(db, uuid.UUID(int=0))
+        umbral = await self._umbral_repo.get_by_materia(db, materia_id)
         umbral_pct, _ = self._umbral_repo.get_umbral_efectivo(umbral)
 
         result = list(alumno_data.values())
