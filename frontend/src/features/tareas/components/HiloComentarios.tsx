@@ -21,7 +21,7 @@ export default function HiloComentarios({ tarea, onCerrar }: HiloComentariosProp
     resolver: zodResolver(comentarioSchema),
   })
 
-  const comentarios = data?.data ?? []
+  const comentarios = data?.items ?? []
 
   const onSubmit = (values: ComentarioFormData) => {
     agregarComentario.mutate(values, { onSuccess: () => reset() })
@@ -32,9 +32,9 @@ export default function HiloComentarios({ tarea, onCerrar }: HiloComentariosProp
       <div className="flex w-full max-w-lg flex-col rounded-lg bg-white shadow-xl" style={{ maxHeight: '80vh' }}>
         <div className="flex items-center justify-between border-b border-gray-200 p-4">
           <div>
-            <h2 className="font-semibold text-gray-900">{tarea.titulo}</h2>
+            <h2 className="font-semibold text-gray-900">{tarea.descripcion}</h2>
             <p className="text-xs text-gray-500">
-              {tarea.asignador_nombre} → {tarea.asignado_nombre}
+              {tarea.asignado_por} → {tarea.asignado_a}
             </p>
           </div>
           <button
@@ -55,12 +55,12 @@ export default function HiloComentarios({ tarea, onCerrar }: HiloComentariosProp
             {comentarios.map((c) => (
               <div key={c.id} className="rounded-lg bg-gray-50 p-3">
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="text-xs font-medium text-gray-700">{c.autor_nombre}</span>
+                  <span className="text-xs font-medium text-gray-700">{c.autor_id}</span>
                   <span className="text-xs text-gray-400">
-                    {new Date(c.creado_en).toLocaleString('es-AR')}
+                    {new Date(c.creado_at).toLocaleString('es-AR')}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700">{c.contenido}</p>
+                <p className="text-sm text-gray-700">{c.texto}</p>
               </div>
             ))}
           </div>
@@ -69,7 +69,7 @@ export default function HiloComentarios({ tarea, onCerrar }: HiloComentariosProp
         <form onSubmit={handleSubmit(onSubmit)} className="border-t border-gray-200 p-4">
           <div className="flex gap-2">
             <textarea
-              {...register('contenido')}
+              {...register('texto')}
               rows={2}
               placeholder="Agregar comentario..."
               className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
@@ -82,8 +82,8 @@ export default function HiloComentarios({ tarea, onCerrar }: HiloComentariosProp
               Enviar
             </button>
           </div>
-          {errors.contenido && (
-            <p className="mt-1 text-xs text-red-600">{errors.contenido.message}</p>
+          {errors.texto && (
+            <p className="mt-1 text-xs text-red-600">{errors.texto.message}</p>
           )}
         </form>
       </div>

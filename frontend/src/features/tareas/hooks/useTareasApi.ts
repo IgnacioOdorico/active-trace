@@ -5,9 +5,11 @@ import type {
   ComentariosResponse,
   CrearTareaRequest,
   CambiarEstadoRequest,
+  EditarTareaRequest,
   AgregarComentarioRequest,
   TareasAdminFilters,
   TareaEstado,
+  UsuarioAsignable,
 } from '../types'
 
 function buildParams(filters: Record<string, string | undefined>): string {
@@ -23,6 +25,16 @@ export function useMisTareas() {
     queryKey: ['tareas-mias'],
     queryFn: async () => {
       const { data } = await apiClient.get<TareasResponse>('/api/tareas/mias')
+      return data
+    },
+  })
+}
+
+export function useUsuariosAsignables() {
+  return useQuery({
+    queryKey: ['tareas-asignables'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<UsuarioAsignable[]>('/api/tareas/asignables')
       return data
     },
   })
@@ -59,6 +71,20 @@ export function useCambiarEstadoTarea() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, payload }: { id: string; payload: CambiarEstadoRequest }) => {
+      const { data } = await apiClient.patch(`/api/tareas/${id}`, payload)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tareas-admin'] })
+      queryClient.invalidateQueries({ queryKey: ['tareas-mias'] })
+    },
+  })
+}
+
+export function useEditarTarea() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: EditarTareaRequest }) => {
       const { data } = await apiClient.patch(`/api/tareas/${id}`, payload)
       return data
     },

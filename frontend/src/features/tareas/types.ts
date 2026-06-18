@@ -1,45 +1,46 @@
-// Tipos derivados de los response_model del router /api/tareas/*
+// Tipos alineados a los response_model reales de app/schemas/tarea.py.
+// El backend no resuelve nombres (asignado/asignador/materia) ni tiene
+// columna "titulo" en Tarea: solo expone IDs y descripcion.
 
 export type TareaEstado = 'Pendiente' | 'En progreso' | 'Resuelta' | 'Cancelada'
 
 export interface Tarea {
   id: string
-  titulo: string
   descripcion: string
   estado: TareaEstado
   materia_id?: string
-  materia_nombre?: string
-  asignado_id: string
-  asignado_nombre: string
-  asignador_id: string
-  asignador_nombre: string
-  creado_en: string
-  actualizado_en: string
+  asignado_a: string
+  asignado_por: string
+  contexto_id?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface TareasResponse {
-  data: Tarea[]
+  items: Tarea[]
   total: number
+  pagina: number
+  page_size: number
 }
 
 export interface ComentarioTarea {
   id: string
   tarea_id: string
   autor_id: string
-  autor_nombre: string
-  contenido: string
-  creado_en: string
+  texto: string
+  creado_at: string
 }
 
 export interface ComentariosResponse {
-  data: ComentarioTarea[]
+  items: ComentarioTarea[]
   total: number
+  pagina: number
+  page_size: number
 }
 
 export interface CrearTareaRequest {
-  titulo: string
   descripcion: string
-  asignado_id: string
+  asignado_a: string
   materia_id?: string
 }
 
@@ -47,14 +48,27 @@ export interface CambiarEstadoRequest {
   estado: TareaEstado
 }
 
+export interface EditarTareaRequest {
+  descripcion?: string
+  asignado_a?: string
+  materia_id?: string
+}
+
 export interface AgregarComentarioRequest {
-  contenido: string
+  texto: string
 }
 
 export interface TareasAdminFilters {
-  asignado_id?: string
-  asignador_id?: string
+  asignado_a?: string
+  asignado_por?: string
   materia_id?: string
   estado?: TareaEstado
-  q?: string
+  busqueda?: string
+}
+
+export interface UsuarioAsignable {
+  id: string
+  nombre: string | null
+  apellidos: string | null
+  email: string
 }

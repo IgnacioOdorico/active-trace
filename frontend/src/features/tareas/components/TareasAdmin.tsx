@@ -1,5 +1,12 @@
-import { useState } from 'react'
-import { useTareasAdmin, useCambiarEstadoTarea, ESTADOS_WORKFLOW } from '../hooks/useTareasApi'
+import { useMemo, useState } from 'react'
+import {
+  useTareasAdmin,
+  useCambiarEstadoTarea,
+  useUsuariosAsignables,
+  ESTADOS_WORKFLOW,
+} from '../hooks/useTareasApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
+import { formatNombreUsuario } from '../utils'
 import type { Tarea, TareasAdminFilters, TareaEstado } from '../types'
 
 const ESTADO_COLORS: Record<TareaEstado, string> = {
@@ -11,12 +18,25 @@ const ESTADO_COLORS: Record<TareaEstado, string> = {
 
 interface TareasAdminProps {
   onVerDetalle: (tarea: Tarea) => void
+  onEditar: (tarea: Tarea) => void
 }
 
-export default function TareasAdmin({ onVerDetalle }: TareasAdminProps) {
+export default function TareasAdmin({ onVerDetalle, onEditar }: TareasAdminProps) {
   const [filters, setFilters] = useState<TareasAdminFilters>({})
   const { data, isLoading, isError } = useTareasAdmin(filters)
   const cambiarEstado = useCambiarEstadoTarea()
+  const { data: asignables } = useUsuariosAsignables()
+  const { data: materias } = useMaterias()
+
+  const nombreUsuario = useMemo(() => {
+    const mapa = new Map(asignables?.map((u) => [u.id, formatNombreUsuario(u)]))
+    return (id: string) => mapa.get(id) ?? id
+  }, [asignables])
+
+  const nombreMateria = useMemo(() => {
+    const mapa = new Map(materias?.map((m) => [m.id, m.nombre]))
+    return (id: string) => mapa.get(id) ?? id
+  }, [materias])
 
   const handleFilter = (key: keyof TareasAdminFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value || undefined }))
@@ -25,7 +45,7 @@ export default function TareasAdmin({ onVerDetalle }: TareasAdminProps) {
   if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando tareas...</div>
   if (isError) return <div className="py-8 text-center text-red-600">Error al cargar tareas.</div>
 
-  const tareas = data?.data ?? []
+  const tareas = data?.items ?? []
 
   return (
     <div>
@@ -34,19 +54,19 @@ export default function TareasAdmin({ onVerDetalle }: TareasAdminProps) {
           type="text"
           placeholder="Buscar..."
           className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          onChange={(e) => handleFilter('q', e.target.value)}
+          onChange={(e) => handleFilter('busqueda', e.target.value)}
         />
         <input
           type="text"
           placeholder="ID asignado"
           className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          onChange={(e) => handleFilter('asignado_id', e.target.value)}
+          onChange={(e) => handleFilter('asignado_a', e.target.value)}
         />
         <input
           type="text"
           placeholder="ID asignador"
           className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          onChange={(e) => handleFilter('asignador_id', e.target.value)}
+          onChange={(e) => handleFilter('asignado_por', e.target.value)}
         />
         <select
           className="rounded-md border border-gray-300 px-3 py-2 text-sm"
@@ -73,14 +93,13 @@ export default function TareasAdmin({ onVerDetalle }: TareasAdminProps) {
                     <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_COLORS[tarea.estado]}`}>
                       {tarea.estado}
                     </span>
-                    {tarea.materia_nombre && (
-                      <span className="text-xs text-gray-500">{tarea.materia_nombre}</span>
+                    {tarea.materia_id && (
+                      <span className="text-xs text-gray-500">Materia: {nombreMateria(tarea.materia_id)}</span>
                     )}
                   </div>
-                  <p className="font-medium text-gray-900">{tarea.titulo}</p>
-                  <p className="mt-1 text-sm text-gray-600">{tarea.descripcion}</p>
+                  <p className="font-medium text-gray-900">{tarea.descripcion}</p>
                   <p className="mt-1 text-xs text-gray-400">
-                    {tarea.asignador_nombre} → {tarea.asignado_nombre}
+                    {nombreUsuario(tarea.asignado_por)} → {nombreUsuario(tarea.asignado_a)}
                   </p>
                 </div>
                 <div className="ml-4 flex flex-col gap-2">
@@ -96,6 +115,13 @@ export default function TareasAdmin({ onVerDetalle }: TareasAdminProps) {
                       <option key={e} value={e}>{e}</option>
                     ))}
                   </select>
+                  <button
+                    type="button"
+                    onClick={() => onEditar(tarea)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    Editar
+                  </button>
                   <button
                     type="button"
                     onClick={() => onVerDetalle(tarea)}

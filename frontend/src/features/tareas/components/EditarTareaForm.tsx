@@ -1,36 +1,37 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { crearTareaSchema, type CrearTareaFormData } from '../schemas'
-import { useCrearTarea, useUsuariosAsignables } from '../hooks/useTareasApi'
+import { useEditarTarea, useUsuariosAsignables } from '../hooks/useTareasApi'
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import { formatNombreUsuario } from '../utils'
+import type { Tarea } from '../types'
 
-interface CrearTareaFormProps {
+interface EditarTareaFormProps {
+  tarea: Tarea
   onSuccess: () => void
   onCancel: () => void
 }
 
-export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormProps) {
+export default function EditarTareaForm({ tarea, onSuccess, onCancel }: EditarTareaFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<CrearTareaFormData>({
     resolver: zodResolver(crearTareaSchema),
+    defaultValues: {
+      descripcion: tarea.descripcion,
+      asignado_a: tarea.asignado_a,
+      materia_id: tarea.materia_id,
+    },
   })
 
-  const mutation = useCrearTarea()
+  const mutation = useEditarTarea()
   const { data: asignables, isLoading: asignablesLoading } = useUsuariosAsignables()
   const { data: materias, isLoading: materiasLoading } = useMaterias()
 
   const onSubmit = (values: CrearTareaFormData) => {
-    mutation.mutate(values, {
-      onSuccess: () => {
-        onSuccess()
-        reset()
-      },
-    })
+    mutation.mutate({ id: tarea.id, payload: values }, { onSuccess })
   }
 
   return (
@@ -53,7 +54,6 @@ export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormPr
           {...register('asignado_a')}
           disabled={asignablesLoading}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          defaultValue=""
         >
           <option value="" disabled>
             {asignablesLoading ? 'Cargando docentes...' : 'Seleccione un docente'}
@@ -77,7 +77,6 @@ export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormPr
           {...register('materia_id')}
           disabled={materiasLoading}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          defaultValue=""
         >
           <option value="">
             {materiasLoading ? 'Cargando materias...' : 'Sin materia asociada'}
@@ -92,7 +91,7 @@ export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormPr
 
       {mutation.isError && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-          Error al crear la tarea.
+          Error al editar la tarea.
         </div>
       )}
 
@@ -102,7 +101,7 @@ export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormPr
           disabled={mutation.isPending}
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {mutation.isPending ? 'Creando...' : 'Crear tarea'}
+          {mutation.isPending ? 'Guardando...' : 'Guardar cambios'}
         </button>
         <button
           type="button"

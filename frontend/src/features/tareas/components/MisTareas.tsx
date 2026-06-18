@@ -1,4 +1,12 @@
-import { useMisTareas, useCambiarEstadoTarea, ESTADOS_WORKFLOW } from '../hooks/useTareasApi'
+import { useMemo } from 'react'
+import {
+  useMisTareas,
+  useCambiarEstadoTarea,
+  useUsuariosAsignables,
+  ESTADOS_WORKFLOW,
+} from '../hooks/useTareasApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
+import { formatNombreUsuario } from '../utils'
 import type { Tarea, TareaEstado } from '../types'
 
 const ESTADO_COLORS: Record<TareaEstado, string> = {
@@ -10,16 +18,29 @@ const ESTADO_COLORS: Record<TareaEstado, string> = {
 
 interface MisTareasProps {
   onVerDetalle: (tarea: Tarea) => void
+  onEditar: (tarea: Tarea) => void
 }
 
-export default function MisTareas({ onVerDetalle }: MisTareasProps) {
+export default function MisTareas({ onVerDetalle, onEditar }: MisTareasProps) {
   const { data, isLoading, isError } = useMisTareas()
   const cambiarEstado = useCambiarEstadoTarea()
+  const { data: asignables } = useUsuariosAsignables()
+  const { data: materias } = useMaterias()
+
+  const nombreUsuario = useMemo(() => {
+    const mapa = new Map(asignables?.map((u) => [u.id, formatNombreUsuario(u)]))
+    return (id: string) => mapa.get(id) ?? id
+  }, [asignables])
+
+  const nombreMateria = useMemo(() => {
+    const mapa = new Map(materias?.map((m) => [m.id, m.nombre]))
+    return (id: string) => mapa.get(id) ?? id
+  }, [materias])
 
   if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando tareas...</div>
   if (isError) return <div className="py-8 text-center text-red-600">Error al cargar tareas.</div>
 
-  const tareas = data?.data ?? []
+  const tareas = data?.items ?? []
 
   if (tareas.length === 0) {
     return (
@@ -39,13 +60,12 @@ export default function MisTareas({ onVerDetalle }: MisTareasProps) {
                 <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_COLORS[tarea.estado]}`}>
                   {tarea.estado}
                 </span>
-                {tarea.materia_nombre && (
-                  <span className="text-xs text-gray-500">{tarea.materia_nombre}</span>
+                {tarea.materia_id && (
+                  <span className="text-xs text-gray-500">Materia: {nombreMateria(tarea.materia_id)}</span>
                 )}
               </div>
-              <p className="font-medium text-gray-900">{tarea.titulo}</p>
-              <p className="mt-1 text-sm text-gray-600">{tarea.descripcion}</p>
-              <p className="mt-1 text-xs text-gray-400">Asignado por: {tarea.asignador_nombre}</p>
+              <p className="font-medium text-gray-900">{tarea.descripcion}</p>
+              <p className="mt-1 text-xs text-gray-400">Asignado por: {nombreUsuario(tarea.asignado_por)}</p>
             </div>
             <div className="ml-4 flex flex-col gap-2">
               <select
@@ -60,6 +80,13 @@ export default function MisTareas({ onVerDetalle }: MisTareasProps) {
                   <option key={e} value={e}>{e}</option>
                 ))}
               </select>
+              <button
+                type="button"
+                onClick={() => onEditar(tarea)}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                Editar
+              </button>
               <button
                 type="button"
                 onClick={() => onVerDetalle(tarea)}

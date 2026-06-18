@@ -2,6 +2,7 @@ import { useState } from 'react'
 import MisTareas from '../components/MisTareas'
 import TareasAdmin from '../components/TareasAdmin'
 import CrearTareaForm from '../components/CrearTareaForm'
+import EditarTareaForm from '../components/EditarTareaForm'
 import HiloComentarios from '../components/HiloComentarios'
 import type { Tarea } from '../types'
 
@@ -11,6 +12,7 @@ export default function TareasPage() {
   const [tab, setTab] = useState<Tab>('mis-tareas')
   const [creando, setCreando] = useState(false)
   const [tareaDetalle, setTareaDetalle] = useState<Tarea | null>(null)
+  const [tareaEditando, setTareaEditando] = useState<Tarea | null>(null)
 
   return (
     <div className="mx-auto max-w-5xl py-8">
@@ -51,8 +53,12 @@ export default function TareasPage() {
       </div>
 
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        {tab === 'mis-tareas' && <MisTareas onVerDetalle={setTareaDetalle} />}
-        {tab === 'admin' && <TareasAdmin onVerDetalle={setTareaDetalle} />}
+        {tab === 'mis-tareas' && (
+          <MisTareas onVerDetalle={setTareaDetalle} onEditar={setTareaEditando} />
+        )}
+        {tab === 'admin' && (
+          <TareasAdmin onVerDetalle={setTareaDetalle} onEditar={setTareaEditando} />
+        )}
       </div>
 
       {creando && (
@@ -81,6 +87,28 @@ export default function TareasPage() {
           tarea={tareaDetalle}
           onCerrar={() => setTareaDetalle(null)}
         />
+      )}
+
+      {tareaEditando && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-800">Editar Tarea</h2>
+              <button
+                type="button"
+                onClick={() => setTareaEditando(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ✕
+              </button>
+            </div>
+            <EditarTareaForm
+              tarea={tareaEditando}
+              onSuccess={() => setTareaEditando(null)}
+              onCancel={() => setTareaEditando(null)}
+            />
+          </div>
+        </div>
       )}
     </div>
   )
