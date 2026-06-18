@@ -2,6 +2,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { avisoSchema, type AvisoFormData } from '../schemas'
 import { useCrearAviso, useEditarAviso } from '../hooks/useAvisosApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
+import { useCohortes } from '../../estructura-academica/hooks/useEstructuraApi'
 import type { Aviso } from '../types'
 
 interface AvisoFormProps {
@@ -40,6 +42,8 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
   const crearMutation = useCrearAviso()
   const editarMutation = useEditarAviso()
   const isPending = crearMutation.isPending || editarMutation.isPending
+  const { data: materias, isLoading: materiasLoading } = useMaterias()
+  const { data: cohortes, isLoading: cohortesLoading } = useCohortes()
 
   const onSubmit = (values: AvisoFormData) => {
     if (aviso) {
@@ -53,8 +57,11 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Alcance</label>
+          <label htmlFor="aviso-alcance" className="mb-1 block text-sm font-medium text-gray-700">
+            Alcance
+          </label>
           <select
+            id="aviso-alcance"
             {...register('alcance')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           >
@@ -80,12 +87,26 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
 
       {alcance === 'PorMateria' && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Materia ID</label>
-          <input
+          <label htmlFor="aviso-materia" className="mb-1 block text-sm font-medium text-gray-700">
+            Materia
+          </label>
+          <select
+            id="aviso-materia"
             {...register('materia_id')}
+            disabled={materiasLoading}
+            defaultValue=""
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="UUID de la materia"
-          />
+          >
+            <option value="" disabled>
+              {materiasLoading ? 'Cargando materias...' : 'Seleccione una materia'}
+            </option>
+            {materias?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nombre}
+                {m.comision ? ` - ${m.comision}` : ''}
+              </option>
+            ))}
+          </select>
           {errors.materia_id && (
             <p className="mt-1 text-xs text-red-600">{errors.materia_id.message}</p>
           )}
@@ -94,12 +115,25 @@ export default function AvisoForm({ aviso, onSuccess, onCancel }: AvisoFormProps
 
       {alcance === 'PorCohorte' && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Cohorte ID</label>
-          <input
+          <label htmlFor="aviso-cohorte" className="mb-1 block text-sm font-medium text-gray-700">
+            Cohorte
+          </label>
+          <select
+            id="aviso-cohorte"
             {...register('cohorte_id')}
+            disabled={cohortesLoading}
+            defaultValue=""
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="UUID de la cohorte"
-          />
+          >
+            <option value="" disabled>
+              {cohortesLoading ? 'Cargando cohortes...' : 'Seleccione una cohorte'}
+            </option>
+            {cohortes?.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
           {errors.cohorte_id && (
             <p className="mt-1 text-xs text-red-600">{errors.cohorte_id.message}</p>
           )}

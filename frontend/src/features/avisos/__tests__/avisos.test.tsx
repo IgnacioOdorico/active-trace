@@ -2,6 +2,8 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders } from '../../../test/test-utils'
+import AvisoForm from '../components/AvisoForm'
+import GestionAvisos from '../components/GestionAvisos'
 
 vi.mock('../../../shared/services/httpClient', () => ({
   default: {
@@ -15,8 +17,117 @@ vi.mock('../../../shared/services/httpClient', () => ({
 import apiClient from '../../../shared/services/httpClient'
 const mockApiClient = vi.mocked(apiClient)
 
+const MATERIAS_FIXTURE = [{ id: 'mat-1', nombre: 'Programación I' }]
+const COHORTES_FIXTURE = [{ id: 'coh-1', nombre: '2026', carrera_id: 'carr-1' }]
+
+function mockGetByUrl(routes: Record<string, unknown>) {
+  const sorted = Object.entries(routes).sort((a, b) => b[0].length - a[0].length)
+  mockApiClient.get.mockImplementation((url: string) => {
+    for (const [path, data] of sorted) {
+      if (url.includes(path)) return Promise.resolve({ data })
+    }
+    return Promise.resolve({ data: undefined })
+  })
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
+})
+
+describe('AvisoForm — selección de materia y cohorte', () => {
+  it('muestra un select de materias (no input de texto) cuando el alcance es PorMateria', async () => {
+    mockGetByUrl({ '/api/v1/estructura/materias': MATERIAS_FIXTURE })
+
+    renderWithProviders(<AvisoForm onSuccess={vi.fn()} onCancel={vi.fn()} />)
+
+    const user = userEvent.setup()
+    await user.selectOptions(screen.getByLabelText('Alcance'), 'PorMateria')
+
+    const materiaSelect = await screen.findByLabelText('Materia')
+    expect(materiaSelect.tagName).toBe('SELECT')
+    expect(await screen.findByRole('option', { name: 'Programación I' })).toBeInTheDocument()
+  })
+
+  it('muestra un select de cohortes (no input de texto) cuando el alcance es PorCohorte', async () => {
+    mockGetByUrl({ '/api/v1/admin/cohortes': COHORTES_FIXTURE })
+
+    renderWithProviders(<AvisoForm onSuccess={vi.fn()} onCancel={vi.fn()} />)
+
+    const user = userEvent.setup()
+    await user.selectOptions(screen.getByLabelText('Alcance'), 'PorCohorte')
+
+    const cohorteSelect = await screen.findByLabelText('Cohorte')
+    expect(cohorteSelect.tagName).toBe('SELECT')
+    expect(await screen.findByRole('option', { name: '2026' })).toBeInTheDocument()
+  })
+})
+
+describe('GestionAvisos — resolución de nombres', () => {
+  it('resuelve materia_id al nombre real de la materia en el listado', async () => {
+    mockGetByUrl({
+      '/api/avisos/gestion': {
+        items: [
+          {
+            id: 'av-1',
+            tenant_id: 't-1',
+            alcance: 'PorMateria',
+            materia_id: 'mat-1',
+            severidad: 'Info',
+            titulo: 'Aviso de materia',
+            cuerpo: 'Cuerpo',
+            inicio_en: '2026-01-01T00:00',
+            fin_en: '2026-12-31T00:00',
+            orden: 0,
+            activo: true,
+            requiere_ack: false,
+            total_acks: 0,
+          },
+        ],
+        total: 1,
+        pagina: 1,
+        page_size: 50,
+      },
+      '/api/v1/estructura/materias': MATERIAS_FIXTURE,
+    })
+
+    renderWithProviders(<GestionAvisos />)
+
+    expect(await screen.findByText('Programación I')).toBeInTheDocument()
+    expect(screen.queryByText('mat-1')).not.toBeInTheDocument()
+  })
+
+  it('formatea inicio_en y fin_en como fecha legible, no el ISO crudo', async () => {
+    mockGetByUrl({
+      '/api/avisos/gestion': {
+        items: [
+          {
+            id: 'av-2',
+            tenant_id: 't-1',
+            alcance: 'Global',
+            severidad: 'Info',
+            titulo: 'Receso de invierno',
+            cuerpo: 'Las clases se retoman el 3 de agosto.',
+            inicio_en: '2026-06-17T02:24:03.042374+00:00',
+            fin_en: '2026-07-18T02:24:03.042374+00:00',
+            orden: 0,
+            activo: true,
+            requiere_ack: false,
+            total_acks: 0,
+          },
+        ],
+        total: 1,
+        pagina: 1,
+        page_size: 50,
+      },
+    })
+
+    renderWithProviders(<GestionAvisos />)
+
+    await screen.findByText('Receso de invierno')
+
+    expect(screen.queryByText(/2026-06-17T02:24:03/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/2026-07-18T02:24:03/)).not.toBeInTheDocument()
+  })
 })
 
 describe('AvisoForm — validaciones de schema Zod', () => {

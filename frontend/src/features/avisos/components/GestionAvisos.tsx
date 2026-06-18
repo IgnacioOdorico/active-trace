@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useAvisosGestion, useEliminarAviso } from '../hooks/useAvisosApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
+import { useCohortes } from '../../estructura-academica/hooks/useEstructuraApi'
 import AvisoForm from './AvisoForm'
 import type { Aviso } from '../types'
 
@@ -14,6 +16,18 @@ export default function GestionAvisos() {
   const eliminar = useEliminarAviso()
   const [editando, setEditando] = useState<Aviso | null>(null)
   const [creando, setCreando] = useState(false)
+  const { data: materias } = useMaterias()
+  const { data: cohortes } = useCohortes()
+
+  const nombreMateria = useMemo(() => {
+    const mapa = new Map(materias?.map((m) => [m.id, m.nombre]))
+    return (id: string) => mapa.get(id) ?? id
+  }, [materias])
+
+  const nombreCohorte = useMemo(() => {
+    const mapa = new Map(cohortes?.map((c) => [c.id, c.nombre]))
+    return (id: string) => mapa.get(id) ?? id
+  }, [cohortes])
 
   if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando avisos...</div>
   if (isError) return <div className="py-8 text-center text-red-600">Error al cargar avisos.</div>
@@ -73,7 +87,15 @@ export default function GestionAvisos() {
                     >
                       {aviso.severidad}
                     </span>
-                    <span className="text-xs text-gray-500">{aviso.alcance}</span>
+                    <span className="text-xs text-gray-500">
+                      {aviso.alcance === 'PorMateria' && aviso.materia_id
+                        ? nombreMateria(aviso.materia_id)
+                        : aviso.alcance === 'PorCohorte' && aviso.cohorte_id
+                          ? nombreCohorte(aviso.cohorte_id)
+                          : aviso.alcance === 'PorRol' && aviso.rol_destino
+                            ? aviso.rol_destino
+                            : aviso.alcance}
+                    </span>
                     {aviso.requiere_ack && (
                       <span className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
                         req. ack
@@ -86,7 +108,8 @@ export default function GestionAvisos() {
                   <p className="font-medium text-gray-900">{aviso.titulo}</p>
                   <p className="mt-1 text-sm text-gray-600">{aviso.cuerpo}</p>
                   <p className="mt-1 text-xs text-gray-400">
-                    {aviso.inicio_en} → {aviso.fin_en}
+                    {new Date(aviso.inicio_en).toLocaleString('es-AR')} →{' '}
+                    {new Date(aviso.fin_en).toLocaleString('es-AR')}
                   </p>
                 </div>
                 <div className="ml-4 flex gap-2">
