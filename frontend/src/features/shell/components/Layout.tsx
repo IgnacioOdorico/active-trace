@@ -17,7 +17,10 @@ interface MenuSection {
 const menuSections: MenuSection[] = [
   {
     label: 'General',
-    items: [{ label: 'Inicio', path: '/', icon: 'home' }],
+    items: [
+      { label: 'Inicio', path: '/', icon: 'home' },
+      { label: 'Avisos', path: '/coordinacion/avisos', icon: 'campaign' },
+    ],
   },
   {
     label: 'Académico',
@@ -68,12 +71,6 @@ const menuSections: MenuSection[] = [
         path: '/coordinacion/equipos',
         icon: 'groups',
         requiredPermission: 'equipos:asignar',
-      },
-      {
-        label: 'Avisos',
-        path: '/coordinacion/avisos',
-        icon: 'campaign',
-        requiredPermission: 'avisos:publicar',
       },
       {
         label: 'Tareas',
