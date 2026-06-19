@@ -55,7 +55,7 @@ async def _resolve_panel_permission(
             )
         )
         materias_ids = list(set(result.scalars().all()))
-        return True, materias_ids if materias_ids else None
+        return True, materias_ids
 
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
 
