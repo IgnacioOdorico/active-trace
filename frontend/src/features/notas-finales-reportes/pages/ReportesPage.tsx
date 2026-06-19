@@ -10,7 +10,7 @@ function downloadCsv(alumnos: NotaFinalAlumno[], filename: string) {
     a.nombre,
     a.apellidos,
     a.comision,
-    String(a.nota_final),
+    a.nota_final !== null ? String(a.nota_final) : 'Sin nota',
     a.actividades_textuales.join('; '),
     a.estado === 'aprobado' ? 'Aprobado' : 'No Aprobado',
   ])
@@ -42,10 +42,10 @@ export default function ReportesPage() {
   function handleCalcular() {
     if (!materiaId || selectedActividadIds.length === 0) return
     calcularNotaFinal.mutate(
-      { materia_id: materiaId, actividad_ids: selectedActividadIds },
+      { materia_id: materiaId, actividades: selectedActividadIds },
       {
         onSuccess: (data) => {
-          setResultados(data.alumnos)
+          setResultados(data)
         },
       },
     )
@@ -253,7 +253,7 @@ export default function ReportesPage() {
                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{alumno.apellidos}</td>
                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{alumno.comision}</td>
                         <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-semibold text-gray-900">
-                          {alumno.nota_final.toFixed(1)}
+                          {alumno.nota_final !== null ? alumno.nota_final.toFixed(1) : '—'}
                         </td>
                         <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
                           {alumno.actividades_textuales.length > 0

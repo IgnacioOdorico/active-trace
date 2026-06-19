@@ -37,16 +37,27 @@ export default function ComunicacionTracking({ loteId, canApprove }: Props) {
   const [statusFilter, setStatusFilter] = useState<string>('')
 
   const data = tracking.data
+  const items = data?.items ?? []
 
-  const estadosDisponibles = data
-    ? [...new Set(data.comunicaciones.map((c: ComunicacionItem) => c.estado))]
-    : []
+  const estadosDisponibles = [...new Set(items.map((c: ComunicacionItem) => c.estado))]
 
-  const filtered = data
-    ? statusFilter
-      ? data.comunicaciones.filter((c: ComunicacionItem) => c.estado === statusFilter)
-      : data.comunicaciones
-    : []
+  const filtered = statusFilter
+    ? items.filter((c: ComunicacionItem) => c.estado === statusFilter)
+    : items
+
+  const requiereAprobacion = items.some((c) => c.estado === 'PendienteAprobacion')
+
+  function derivarEstadoLote(): string {
+    if (items.some((c) => c.estado === 'Error')) return 'Error'
+    if (items.some((c) => c.estado === 'Enviando')) return 'Enviando'
+    if (items.some((c) => c.estado === 'PendienteAprobacion')) return 'PendienteAprobacion'
+    if (items.some((c) => c.estado === 'Pendiente')) return 'Pendiente'
+    if (items.every((c) => c.estado === 'Enviado')) return 'Enviado'
+    if (items.every((c) => c.estado === 'Cancelado')) return 'Cancelado'
+    return 'Pendiente'
+  }
+
+  const estadoLote = data ? derivarEstadoLote() : ''
 
   if (tracking.isLoading) {
     return (
@@ -74,19 +85,19 @@ export default function ComunicacionTracking({ loteId, canApprove }: Props) {
           <h2 className="text-lg font-semibold text-gray-900">
             Tracking de Lote
           </h2>
-          <p className="text-sm text-gray-500">Lote ID: {data.lote_id}</p>
+          <p className="text-sm text-gray-500">Lote ID: {loteId}</p>
         </div>
         <span
-          className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${estadoColor(data.estado_lote)}`}
+          className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${estadoColor(estadoLote)}`}
         >
-          {estadoLabel(data.estado_lote)}
+          {estadoLabel(estadoLote)}
         </span>
       </div>
 
-      {data.requiere_aprobacion && (
+      {requiereAprobacion && (
         <div className="rounded-md bg-yellow-50 p-4">
           <p className="text-sm text-yellow-800">
-            Este lote requiere aprobación antes de ser enviado. Estado actual: {estadoLabel(data.estado_lote)}
+            Este lote requiere aprobación antes de ser enviado. Estado actual: {estadoLabel(estadoLote)}
           </p>
           {canApprove && (
             <div className="mt-3 flex gap-2">
@@ -157,7 +168,7 @@ export default function ComunicacionTracking({ loteId, canApprove }: Props) {
         </table>
       </div>
 
-      <p className="text-sm text-gray-500">{data.total} comunicación(es) en total</p>
+      <p className="text-sm text-gray-500">{data?.total ?? 0} comunicación(es) en total</p>
     </div>
   )
 }

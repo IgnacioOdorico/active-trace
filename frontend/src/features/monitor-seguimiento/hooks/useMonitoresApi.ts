@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import apiClient from '../../../shared/services/httpClient'
-import type { MonitorGeneralResponse, MonitorGeneralFilters, MonitorSeguimientoResponse, MonitorSeguimientoFilters } from '../types'
+import type { MonitorPaginacionResponse, MonitorGeneralFilters, MonitorSeguimientoFilters } from '../types'
 
 function buildParams(filters: Record<string, string | number | undefined>): string {
   const params = new URLSearchParams()
@@ -17,7 +17,7 @@ export function useMonitorGeneral(filters: MonitorGeneralFilters) {
     queryKey: ['monitor-general', filters],
     queryFn: async () => {
       const qs = buildParams(filters)
-      const { data } = await apiClient.get<MonitorGeneralResponse>(
+      const { data } = await apiClient.get<MonitorPaginacionResponse>(
         `/api/analisis/monitor-general?${qs}`,
       )
       return data
@@ -30,7 +30,7 @@ export function useMonitorSeguimiento(filters: MonitorSeguimientoFilters) {
     queryKey: ['monitor-seguimiento', filters],
     queryFn: async () => {
       const qs = buildParams(filters)
-      const { data } = await apiClient.get<MonitorSeguimientoResponse>(
+      const { data } = await apiClient.get<MonitorPaginacionResponse>(
         `/api/analisis/monitor-seguimiento?${qs}`,
       )
       return data

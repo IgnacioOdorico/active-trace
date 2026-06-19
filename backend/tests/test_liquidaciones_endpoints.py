@@ -6,7 +6,13 @@ from fastapi import HTTPException, status
 
 from app.core.exceptions import DomainError
 from app.models.user import User
-from app.routers.liquidaciones import calcular_liquidacion, cerrar_liquidacion, listar_liquidaciones, kpis_liquidaciones
+from app.routers.liquidaciones import (
+    calcular_liquidacion,
+    cerrar_liquidacion,
+    exportar_planilla,
+    listar_liquidaciones,
+    kpis_liquidaciones,
+)
 from app.schemas.liquidacion import CalcularLiquidacionRequest
 
 
@@ -168,3 +174,40 @@ class TestCalcularEndpoint:
                 _=None,
             )
             assert result["total_general"] == 1000.0
+
+
+class TestExportarEndpoint:
+    @pytest.mark.asyncio
+    async def test_exportar_devuelve_xlsx(self):
+        mock_db = AsyncMock()
+        mock_user = MagicMock(spec=User)
+        mock_user.tenant_id = uuid.uuid4()
+        mock_user.id = uuid.uuid4()
+
+        with (
+            patch("app.routers.liquidaciones.LiquidacionService") as MockSvc,
+            patch("app.routers.liquidaciones.AuditLogService") as MockAudit,
+        ):
+            svc_instance = AsyncMock()
+            MockSvc.return_value = svc_instance
+            svc_instance.exportar_planilla = AsyncMock(return_value=b"fake-xlsx-bytes")
+            MockAudit.return_value.log = AsyncMock()
+
+            response = await exportar_planilla(
+                periodo="2026-06",
+                cohorte_id=None,
+                db=mock_db,
+                current_user=mock_user,
+                _=None,
+            )
+
+            assert response.body == b"fake-xlsx-bytes"
+            assert response.media_type == (
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            assert "liquidaciones_2026-06.xlsx" in response.headers["content-disposition"]
+            svc_instance.exportar_planilla.assert_called_once_with(
+                mock_db, "2026-06", None
+            )
+            MockAudit.return_value.log.assert_called_once()
+            mock_db.commit.assert_called_once()

@@ -3,10 +3,10 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
-from app.models.base import EntityMeta
+from app.models.base import RootEntityMeta
 
 
-class Tenant(Base, EntityMeta):
+class Tenant(Base, RootEntityMeta):
     __tablename__ = "tenant"
 
     slug: Mapped[str] = mapped_column(

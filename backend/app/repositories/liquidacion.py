@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime, timezone
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import DomainError, EntityNotFoundError
@@ -11,6 +12,30 @@ from app.repositories.financial_base import FinancialRepository
 class LiquidacionRepository(FinancialRepository[Liquidacion]):
     def __init__(self, tenant_id: uuid.UUID) -> None:
         super().__init__(Liquidacion, tenant_id)
+
+    def _base_query(self):
+        return super()._base_query().where(self._model.deleted_at.is_(None))
+
+    async def soft_delete_abiertas(
+        self,
+        session: AsyncSession,
+        cohorte_id: uuid.UUID,
+        periodo: str,
+    ) -> None:
+        """Soft-delete del borrador: descarta las liquidaciones 'Abierta'
+        previas de esta cohorte+período antes de recalcular. Nunca toca
+        'Cerrada' (esas ya bloquean el recálculo con 409 antes de llegar aquí)."""
+        await session.execute(
+            update(self._model)
+            .where(
+                self._model.tenant_id == self._tenant_id,
+                self._model.cohorte_id == cohorte_id,
+                self._model.periodo == periodo,
+                self._model.estado == "Abierta",
+                self._model.deleted_at.is_(None),
+            )
+            .values(deleted_at=datetime.now(timezone.utc))
+        )
 
     async def listar_por_periodo(
         self,
@@ -37,6 +62,7 @@ class LiquidacionRepository(FinancialRepository[Liquidacion]):
             self._model.cohorte_id == cohorte_id,
             self._model.periodo == periodo,
             self._model.estado == "Cerrada",
+            self._model.deleted_at.is_(None),
         )
         result = await session.execute(query)
         return result.scalar_one() > 0

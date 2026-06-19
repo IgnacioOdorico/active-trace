@@ -19,6 +19,13 @@ class AsignacionMasivaResponse(BaseModel):
     ids_creados: list[uuid.UUID]
 
 
+class DocenteDisponibleResponse(BaseModel):
+    id: uuid.UUID
+    nombre_completo: str
+    email: str
+    roles: list[str]
+
+
 class ClonarRequest(BaseModel):
     materia_id: uuid.UUID
     cohorte_origen_id: uuid.UUID
@@ -49,12 +56,18 @@ class EquipoItemResponse(BaseModel):
     usuario_id: uuid.UUID
     rol: str
     materia_id: uuid.UUID | None = None
+    materia_nombre: str | None = None
     carrera_id: uuid.UUID | None = None
+    carrera: str | None = None
     cohorte_id: uuid.UUID | None = None
+    cohorte: str | None = None
     comisiones: list[str] | None = None
     responsable_id: uuid.UUID | None = None
     desde: datetime
     hasta: datetime | None = None
+    vigencia_desde: str = ""
+    vigencia_hasta: str = "–"
+    activo: bool = True
     estado_vigencia: str = "Vigente"
     created_at: datetime
     updated_at: datetime

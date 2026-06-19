@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+import uuid
+
+from pydantic import BaseModel, ConfigDict
 
 
 class TareaResponse(BaseModel):
@@ -17,16 +19,28 @@ class TareaResponse(BaseModel):
 
 
 class TareaCreateRequest(BaseModel):
-    asignado_a: str
-    materia_id: str | None = None
+    model_config = ConfigDict(extra="forbid")
+
+    asignado_a: uuid.UUID
+    materia_id: uuid.UUID | None = None
     descripcion: str
-    contexto_id: str | None = None
+    contexto_id: uuid.UUID | None = None
 
 
 class TareaUpdateRequest(BaseModel):
-    asignado_a: str | None = None
+    model_config = ConfigDict(extra="forbid")
+
+    asignado_a: uuid.UUID | None = None
+    materia_id: uuid.UUID | None = None
     descripcion: str | None = None
     estado: str | None = None
+
+
+class UsuarioAsignableResponse(BaseModel):
+    id: str
+    nombre: str | None = None
+    apellidos: str | None = None
+    email: str
 
 
 class TareaListResponse(BaseModel):
@@ -47,6 +61,8 @@ class ComentarioResponse(BaseModel):
 
 
 class ComentarioCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     texto: str
 
 

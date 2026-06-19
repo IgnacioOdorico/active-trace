@@ -106,13 +106,13 @@ export default function MonitorGeneral() {
         </div>
       )}
 
-      {data && data.data.length === 0 && (
+      {data && data.items.length === 0 && (
         <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-800">
           No se encontraron resultados con los filtros seleccionados.
         </div>
       )}
 
-      {data && data.data.length > 0 && (
+      {data && data.items.length > 0 && (
         <div className="overflow-x-auto rounded-md border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -128,18 +128,22 @@ export default function MonitorGeneral() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {data.data.map((alumno) => (
+              {data.items.map((alumno) => {
+                const materiaNombre = alumno.materia_id
+                  ? (materias?.find((m) => m.id === alumno.materia_id)?.nombre ?? alumno.materia_id)
+                  : '—'
+                return (
                 <tr
-                  key={alumno.id}
+                  key={alumno.entrada_padron_id}
                   className={alumno.estado === 'atrasado' ? 'bg-red-50' : 'bg-green-50'}
                 >
                   <td className="whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-900">
                     {alumno.nombre} {alumno.apellidos}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.email}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.comision}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.regional}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.materia}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.comision ?? '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.regional ?? '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{materiaNombre}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-center text-sm text-gray-900">{alumno.total_actividades}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-center text-sm text-gray-900">{alumno.aprobadas}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-center">
@@ -154,7 +158,8 @@ export default function MonitorGeneral() {
                     </span>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
 

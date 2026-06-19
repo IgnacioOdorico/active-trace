@@ -9,8 +9,7 @@ export default function MonitorSeguimiento() {
   const isCoordinador = user?.roles.includes('coordinador')
 
   const [materiaId, setMateriaId] = useState('')
-  const [alumnoId, setAlumnoId] = useState('')
-  const [alumnoBusqueda, setAlumnoBusqueda] = useState('')
+  const [comision, setComision] = useState('')
   const [actividadMinima, setActividadMinima] = useState('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
@@ -18,10 +17,10 @@ export default function MonitorSeguimiento() {
 
   const { data, isLoading, isError } = useMonitorSeguimiento({
     materia_id: isCoordinador ? (materiaId || undefined) : undefined,
-    alumno_id: alumnoId || undefined,
+    comision: comision || undefined,
     actividad_minima: actividadMinima || undefined,
-    fecha_desde: isCoordinador ? (fechaDesde || undefined) : undefined,
-    fecha_hasta: isCoordinador ? (fechaHasta || undefined) : undefined,
+    desde: isCoordinador ? (fechaDesde || undefined) : undefined,
+    hasta: isCoordinador ? (fechaHasta || undefined) : undefined,
     pagina,
     por_pagina: 50,
   })
@@ -61,13 +60,13 @@ export default function MonitorSeguimiento() {
         </div>
 
         <div>
-          <label htmlFor="seg-alumno" className="block text-xs font-medium text-gray-700">Alumno</label>
+          <label htmlFor="seg-comision" className="block text-xs font-medium text-gray-700">Comisión</label>
           <input
-            id="seg-alumno"
+            id="seg-comision"
             type="text"
-            value={alumnoBusqueda}
-            onChange={(e) => setAlumnoBusqueda(e.target.value)}
-            placeholder="Nombre del alumno"
+            value={comision}
+            onChange={(e) => { setComision(e.target.value); setPagina(1) }}
+            placeholder="Ej: A"
             className="mt-1 block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
@@ -125,13 +124,13 @@ export default function MonitorSeguimiento() {
         </div>
       )}
 
-      {data && data.data.length === 0 && (
+      {data && data.items.length === 0 && (
         <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-800">
           No se encontraron resultados de seguimiento con los filtros seleccionados.
         </div>
       )}
 
-      {data && data.data.length > 0 && (
+      {data && data.items.length > 0 && (
         <div className="overflow-x-auto rounded-md border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -139,37 +138,31 @@ export default function MonitorSeguimiento() {
                 <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Nombre</th>
                 <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Email</th>
                 <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Comisión</th>
-                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Actividades</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Progreso</th>
+                <th className="px-3 py-2 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Estado</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {data.data.map((alumno) => (
-                <tr key={alumno.id}>
+              {data.items.map((alumno) => (
+                <tr key={alumno.entrada_padron_id} className={alumno.estado === 'atrasado' ? 'bg-red-50' : 'bg-green-50'}>
                   <td className="whitespace-nowrap px-3 py-2 text-sm font-medium text-gray-900">
                     {alumno.nombre} {alumno.apellidos}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.email}</td>
-                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.comision}</td>
-                  <td className="px-3 py-2 text-sm text-gray-700">
-                    {alumno.actividades.length === 0 ? (
-                      <span className="text-gray-400">Sin actividades</span>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {alumno.actividades.map((act, idx) => (
-                          <span
-                            key={idx}
-                            className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-medium ${
-                              act.aprobada
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
-                            }`}
-                            title={`${act.actividad}: ${act.calificacion}`}
-                          >
-                            {act.actividad}: {act.calificacion}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+                  <td className="whitespace-nowrap px-3 py-2 text-sm text-gray-600">{alumno.comision ?? '—'}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-center text-sm text-gray-900">
+                    {alumno.aprobadas}/{alumno.total_actividades}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2 text-center">
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        alumno.estado === 'atrasado'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}
+                    >
+                      {alumno.estado === 'atrasado' ? 'Atrasado' : 'Al Día'}
+                    </span>
                   </td>
                 </tr>
               ))}

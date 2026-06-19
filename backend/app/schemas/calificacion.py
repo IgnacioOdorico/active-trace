@@ -25,11 +25,6 @@ class CalificacionResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class ImportRequest(BaseModel):
-    materia_id: str
-    actividad_ids: list[str]
-
-
 class ImportResponse(BaseModel):
     insertadas: int
     actualizadas: int

@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user, get_db
@@ -8,7 +8,12 @@ from app.core.exceptions import DomainError
 from app.core.permissions import require_permission
 from app.models.user import User
 from app.schemas.liquidacion import CalcularLiquidacionRequest, LiquidacionKPI, LiquidacionResponse
-from app.services.audit_service import AuditLogService, LIQUIDACION_CALCULAR, LIQUIDACION_CERRAR
+from app.services.audit_service import (
+    AuditLogService,
+    LIQUIDACION_CALCULAR,
+    LIQUIDACION_CERRAR,
+    LIQUIDACION_EXPORTAR,
+)
 from app.services.liquidaciones import LiquidacionService
 
 router = APIRouter(prefix="/api/liquidaciones", tags=["liquidaciones"])
@@ -88,6 +93,36 @@ async def kpis_liquidaciones(
 ):
     svc = LiquidacionService(current_user.tenant_id)
     return await svc.obtener_kpis(db, periodo)
+
+
+@router.get("/exportar", status_code=status.HTTP_200_OK)
+async def exportar_planilla(
+    periodo: str = Query(...),
+    cohorte_id: uuid.UUID | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _=Depends(require_permission("liquidaciones:exportar")),
+):
+    svc = LiquidacionService(current_user.tenant_id)
+    xlsx_data = await svc.exportar_planilla(db, periodo, cohorte_id)
+
+    audit = AuditLogService(current_user.tenant_id)
+    await audit.log(
+        db, actor_id=current_user.id, accion=LIQUIDACION_EXPORTAR,
+        detalle={
+            "periodo": periodo,
+            "cohorte_id": str(cohorte_id) if cohorte_id else None,
+        },
+    )
+    await db.commit()
+
+    return Response(
+        content=xlsx_data,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="liquidaciones_{periodo}.xlsx"'
+        },
+    )
 
 
 @router.post("/{id}/cerrar", status_code=status.HTTP_200_OK)

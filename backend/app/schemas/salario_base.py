@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -25,7 +25,7 @@ class SalarioBaseResponse(BaseModel):
     monto: float
     desde: date
     hasta: date | None
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
     model_config = {"from_attributes": True}

@@ -2,8 +2,12 @@ import uuid
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 
+from app.core.dependencies import get_current_user, get_db
 from app.core.exceptions import DomainError
+from app.main import app
+from app.models.user import User
 
 
 class TestCalificacionRepositoryNuevos:
@@ -437,7 +441,7 @@ class TestAnalisisService:
 
         with (
             patch("app.services.analisis_service.CalificacionRepository") as MockCalifRepo,
-            patch("app.services.analisis_service.UmbralRepository"),
+            patch("app.services.analisis_service.UmbralRepository") as MockUmbralRepo,
             patch("app.services.analisis_service.VersionPadronRepository"),
             patch("app.services.analisis_service.EntradaPadronRepository"),
             patch("app.services.analisis_service.AuditLogService"),
@@ -466,6 +470,8 @@ class TestAnalisisService:
                     (mock_calif_2, mock_entrada),
                 ]
             )
+            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
             actividades = [("TP1", "numerica"), ("TP2", "numerica")]
@@ -476,6 +482,7 @@ class TestAnalisisService:
             assert len(result) == 1
             assert result[0]["nombre"] == "Pedro"
             assert result[0]["nota_final"] == 85.0
+            assert result[0]["estado"] == "aprobado"
 
     @pytest.mark.asyncio
     async def test_notas_finales_textuales_excluidas_promedio(self):
@@ -486,7 +493,7 @@ class TestAnalisisService:
 
         with (
             patch("app.services.analisis_service.CalificacionRepository") as MockCalifRepo,
-            patch("app.services.analisis_service.UmbralRepository"),
+            patch("app.services.analisis_service.UmbralRepository") as MockUmbralRepo,
             patch("app.services.analisis_service.VersionPadronRepository"),
             patch("app.services.analisis_service.EntradaPadronRepository"),
             patch("app.services.analisis_service.AuditLogService"),
@@ -515,6 +522,8 @@ class TestAnalisisService:
                     (mock_calif_text, mock_entrada),
                 ]
             )
+            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
 
             svc = AnalisisService(tenant_id)
             actividades = [("TP1", "numerica"), ("Participacion", "textual")]
@@ -525,6 +534,89 @@ class TestAnalisisService:
             assert len(result) == 1
             assert result[0]["nota_final"] == 75.0
             assert "Participacion" in result[0]["actividades_textuales"]
+            assert result[0]["estado"] == "aprobado"
+
+    @pytest.mark.asyncio
+    async def test_notas_finales_estado_no_aprobado_bajo_umbral(self):
+        from app.services.analisis_service import AnalisisService
+        tenant_id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+        entrada_id = uuid.uuid4()
+
+        with (
+            patch("app.services.analisis_service.CalificacionRepository") as MockCalifRepo,
+            patch("app.services.analisis_service.UmbralRepository") as MockUmbralRepo,
+            patch("app.services.analisis_service.VersionPadronRepository"),
+            patch("app.services.analisis_service.EntradaPadronRepository"),
+            patch("app.services.analisis_service.AuditLogService"),
+        ):
+            mock_entrada = AsyncMock()
+            mock_entrada.id = entrada_id
+            mock_entrada.nombre = "Marco"
+            mock_entrada.apellidos = "Diaz"
+            mock_entrada.comision = "A"
+
+            mock_calif = AsyncMock()
+            mock_calif.entrada_padron_id = entrada_id
+            mock_calif.nombre_actividad = "TP1"
+            mock_calif.nota_numerica = 40.0
+            mock_calif.nota_textual = None
+
+            MockCalifRepo.return_value.get_notas_por_alumno = AsyncMock(
+                return_value=[(mock_calif, mock_entrada)]
+            )
+            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
+
+            svc = AnalisisService(tenant_id)
+            actividades = [("TP1", "numerica")]
+            result = await svc.notas_finales(
+                AsyncMock(), materia_id, actividades
+            )
+
+            assert result[0]["nota_final"] == 40.0
+            assert result[0]["estado"] == "no_aprobado"
+
+    @pytest.mark.asyncio
+    async def test_notas_finales_sin_notas_numericas_estado_no_aprobado(self):
+        from app.services.analisis_service import AnalisisService
+        tenant_id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+        entrada_id = uuid.uuid4()
+
+        with (
+            patch("app.services.analisis_service.CalificacionRepository") as MockCalifRepo,
+            patch("app.services.analisis_service.UmbralRepository") as MockUmbralRepo,
+            patch("app.services.analisis_service.VersionPadronRepository"),
+            patch("app.services.analisis_service.EntradaPadronRepository"),
+            patch("app.services.analisis_service.AuditLogService"),
+        ):
+            mock_entrada = AsyncMock()
+            mock_entrada.id = entrada_id
+            mock_entrada.nombre = "Sol"
+            mock_entrada.apellidos = "Vega"
+            mock_entrada.comision = "A"
+
+            mock_calif_text = AsyncMock()
+            mock_calif_text.entrada_padron_id = entrada_id
+            mock_calif_text.nombre_actividad = "Participacion"
+            mock_calif_text.nota_numerica = None
+            mock_calif_text.nota_textual = "Satisfactorio"
+
+            MockCalifRepo.return_value.get_notas_por_alumno = AsyncMock(
+                return_value=[(mock_calif_text, mock_entrada)]
+            )
+            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
+
+            svc = AnalisisService(tenant_id)
+            actividades = [("Participacion", "textual")]
+            result = await svc.notas_finales(
+                AsyncMock(), materia_id, actividades
+            )
+
+            assert result[0]["nota_final"] is None
+            assert result[0]["estado"] == "no_aprobado"
 
     @pytest.mark.asyncio
     async def test_notas_finales_actividad_no_encontrada_422(self):
@@ -555,6 +647,9 @@ class TestAnalisisService:
         from app.services.analisis_service import AnalisisService
         tenant_id = uuid.uuid4()
         materia_id = uuid.uuid4()
+        entrada_a = uuid.uuid4()
+        entrada_b = uuid.uuid4()
+        entrada_c = uuid.uuid4()
 
         with (
             patch("app.services.analisis_service.CalificacionRepository") as MockCalifRepo,
@@ -563,16 +658,21 @@ class TestAnalisisService:
             patch("app.services.analisis_service.EntradaPadronRepository") as MockEntradaRepo,
             patch("app.services.analisis_service.AuditLogService"),
         ):
-            MockCalifRepo.return_value.get_by_materia = AsyncMock(return_value=[
-                AsyncMock(aprobado=True),
-                AsyncMock(aprobado=True),
-                AsyncMock(aprobado=False),
-            ])
+            calificaciones = [
+                Mock(entrada_padron_id=entrada_a, nombre_actividad="TP1", nota_numerica=80.0, aprobado=True),
+                Mock(entrada_padron_id=entrada_a, nombre_actividad="TP2", nota_numerica=90.0, aprobado=True),
+                Mock(entrada_padron_id=entrada_b, nombre_actividad="TP1", nota_numerica=40.0, aprobado=False),
+            ]
+            MockCalifRepo.return_value.get_by_materia = AsyncMock(return_value=calificaciones)
+
+            mock_entradas = [
+                Mock(id=entrada_a), Mock(id=entrada_b), Mock(id=entrada_c),
+            ]
             MockVersionRepo.return_value.get_active_by_materia = AsyncMock(
-                return_value=[AsyncMock(id=uuid.uuid4())]
+                return_value=[Mock(id=uuid.uuid4())]
             )
             MockEntradaRepo.return_value.get_by_version = AsyncMock(
-                return_value=[AsyncMock(id=uuid.uuid4())]
+                return_value=mock_entradas
             )
             MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
             MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
@@ -580,9 +680,50 @@ class TestAnalisisService:
             svc = AnalisisService(tenant_id)
             result = await svc.reportes_rapidos(AsyncMock(), materia_id)
 
-            assert result["total_alumnos"] == 1
+            # entrada_a: 2/2 aprobadas. entrada_b: nota inferior al umbral -> atrasado.
+            # entrada_c: sin calificaciones -> atrasado. Solo entrada_a queda "aprobado".
+            assert result["total_alumnos"] == 3
             assert result["total_calificaciones"] == 3
-            assert result["alumnos_aprobados_count"] == 2
+            assert result["alumnos_atrasados_count"] == 2
+            assert result["alumnos_aprobados_count"] == 1
+            assert result["promedio_aprobacion_general"] == pytest.approx(66.67, abs=0.01)
+
+    @pytest.mark.asyncio
+    async def test_reportes_rapidos_aprobados_no_es_negativo_con_alumnos_sin_notas(self):
+        from app.services.analisis_service import AnalisisService
+        tenant_id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+        entrada_con_notas = uuid.uuid4()
+
+        with (
+            patch("app.services.analisis_service.CalificacionRepository") as MockCalifRepo,
+            patch("app.services.analisis_service.UmbralRepository") as MockUmbralRepo,
+            patch("app.services.analisis_service.VersionPadronRepository") as MockVersionRepo,
+            patch("app.services.analisis_service.EntradaPadronRepository") as MockEntradaRepo,
+            patch("app.services.analisis_service.AuditLogService"),
+        ):
+            calificaciones = [
+                Mock(entrada_padron_id=entrada_con_notas, nombre_actividad="TP1", nota_numerica=80.0, aprobado=True),
+            ]
+            MockCalifRepo.return_value.get_by_materia = AsyncMock(return_value=calificaciones)
+
+            # 4 entradas en el padrón, pero solo 1 tiene calificaciones cargadas.
+            mock_entradas = [Mock(id=entrada_con_notas)] + [Mock(id=uuid.uuid4()) for _ in range(3)]
+            MockVersionRepo.return_value.get_active_by_materia = AsyncMock(
+                return_value=[Mock(id=uuid.uuid4())]
+            )
+            MockEntradaRepo.return_value.get_by_version = AsyncMock(
+                return_value=mock_entradas
+            )
+            MockUmbralRepo.return_value.get_by_asignacion = AsyncMock(return_value=None)
+            MockUmbralRepo.return_value.get_umbral_efectivo = Mock(return_value=(60.0, None))
+
+            svc = AnalisisService(tenant_id)
+            result = await svc.reportes_rapidos(AsyncMock(), materia_id)
+
+            assert result["alumnos_aprobados_count"] >= 0
+            assert result["alumnos_aprobados_count"] == 1
+            assert result["alumnos_atrasados_count"] == 3
 
     @pytest.mark.asyncio
     async def test_reportes_sin_datos(self):
@@ -823,6 +964,93 @@ class TestAnalisisService:
             assert result["total"] == 0
 
 
+class _MockSession:
+    def __init__(self) -> None:
+        execute_result = Mock()
+        execute_result.scalar_one.return_value = 0
+        self.execute = AsyncMock(return_value=execute_result)
+
+
+class TestMonitorSeguimientoRouter:
+    _tenant_id = uuid.uuid4()
+    _user_id = uuid.uuid4()
+
+    @pytest.fixture(autouse=True)
+    def mock_deps(self):
+        async def _mock_user():
+            user = Mock(spec=User)
+            user.id = self._user_id
+            user.tenant_id = self._tenant_id
+            user.is_active = True
+            user.impersonator_id = None
+            return user
+
+        async def _mock_db():
+            return _MockSession()
+
+        app.dependency_overrides[get_current_user] = _mock_user
+        app.dependency_overrides[get_db] = _mock_db
+        yield
+        app.dependency_overrides.clear()
+
+    @pytest.mark.asyncio
+    async def test_reenvia_materia_id_y_actividad_minima_al_service(self):
+        materia_id = uuid.uuid4()
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["COORDINADOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.analisis.AnalisisService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, False))
+            mock_svc = MockSvc.return_value
+            mock_svc.monitor_seguimiento = AsyncMock(return_value={
+                "items": [], "total": 0, "pagina": 1, "por_pagina": 50, "total_paginas": 0,
+            })
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.get(
+                    "/api/analisis/monitor-seguimiento",
+                    params={
+                        "materia_id": str(materia_id),
+                        "actividad_minima": "TP1",
+                        "desde": "2024-03-01",
+                        "hasta": "2024-03-31",
+                    },
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 200
+
+                _, kwargs = mock_svc.monitor_seguimiento.call_args
+                assert kwargs["materias_ids"] == [materia_id]
+                assert kwargs["actividad_minima"] == "TP1"
+                assert kwargs["desde"] is not None
+                assert kwargs["hasta"] is not None
+
+    @pytest.mark.asyncio
+    async def test_sin_materia_id_no_filtra_por_materia(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["COORDINADOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.analisis.AnalisisService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, False))
+            mock_svc = MockSvc.return_value
+            mock_svc.monitor_seguimiento = AsyncMock(return_value={
+                "items": [], "total": 0, "pagina": 1, "por_pagina": 50, "total_paginas": 0,
+            })
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.get(
+                    "/api/analisis/monitor-seguimiento",
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 200
+
+                _, kwargs = mock_svc.monitor_seguimiento.call_args
+                assert kwargs["materias_ids"] is None
+                assert kwargs["actividad_minima"] is None
+
+
 db = pytest.mark.skipif(
     True,
     reason="Requires PostgreSQL running on localhost:5432 with database activia_trace_test",
@@ -931,6 +1159,7 @@ class TestAnalisisEndpoints:
                     ],
                     "nota_final": 80.0,
                     "actividades_textuales": [],
+                    "estado": "aprobado",
                 }
             ])
             response = await async_client.post(

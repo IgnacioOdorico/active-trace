@@ -119,8 +119,11 @@ class TestLiquidacionModel:
     def test_has_updated_at(self):
         assert hasattr(Liquidacion, "updated_at")
 
-    def test_no_deleted_at(self):
-        assert not hasattr(Liquidacion, "deleted_at")
+    def test_has_deleted_at(self):
+        """A diferencia de Factura, Liquidacion sí soporta soft-delete:
+        recalcular un período 'Abierta' reemplaza el borrador (ver
+        LiquidacionRepository.soft_delete_abiertas)."""
+        assert hasattr(Liquidacion, "deleted_at")
 
 
 class TestFacturaModel:

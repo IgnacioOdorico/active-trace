@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from '@tanstack/react-query'
 import apiClient from '../../../shared/services/httpClient'
-import type { ReportesMetrics, ActividadInfo, NotasFinalesResponse, NotaFinalRequest } from '../types'
+import type { ReportesMetrics, ActividadInfo, NotaFinalAlumno, NotaFinalRequest } from '../types'
 
 export function useReportesApi(materiaId: string | null) {
   const metrics = useQuery({
@@ -27,7 +27,7 @@ export function useReportesApi(materiaId: string | null) {
 
   const calcularNotaFinal = useMutation({
     mutationFn: async (params: NotaFinalRequest) => {
-      const { data } = await apiClient.post<NotasFinalesResponse>(
+      const { data } = await apiClient.post<NotaFinalAlumno[]>(
         '/api/analisis/notas-finales',
         params,
       )

@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import DomainError
 from app.models.asignacion import Asignacion
+from app.models.materia import Materia
 from app.models.salario_base import SalarioBase
 from app.models.salario_plus import SalarioPlus
 from app.models.user import User
@@ -28,6 +29,8 @@ class LiquidacionService:
                 detail=f"El período {periodo} ya está cerrado para este cohorte",
                 context={"cohorte_id": str(cohorte_id), "periodo": periodo},
             )
+
+        await self._repo.soft_delete_abiertas(session, cohorte_id, periodo)
 
         anio, mes = periodo.split("-")
         fecha_liq = date(int(anio), int(mes), 1)
@@ -54,9 +57,14 @@ class LiquidacionService:
                     "usuario_id": a.usuario_id,
                     "rol": a.rol,
                     "comisiones": [],
+                    "materias_comisiones": [],
                 }
             if a.comisiones:
                 docentes_map[key]["comisiones"].extend(a.comisiones)
+                if a.materia_id is not None:
+                    docentes_map[key]["materias_comisiones"].append(
+                        (a.materia_id, len(a.comisiones))
+                    )
 
         if not docentes_map:
             return []
@@ -72,13 +80,15 @@ class LiquidacionService:
 
             comisiones = docente["comisiones"]
             monto_plus = 0.0
-            for grupo in comisiones:
+            for materia_id, cantidad_comisiones in docente["materias_comisiones"]:
+                clave_plus = await self._get_clave_plus(session, materia_id)
+                if clave_plus is None:
+                    continue
                 salario_plus = await self._get_salario_plus_vigente(
-                    session, grupo, rol, fecha_liq
+                    session, clave_plus, rol, fecha_liq
                 )
                 if salario_plus:
-                    comision_count = comisiones.count(grupo)
-                    monto_plus += float(salario_plus.monto) * comision_count
+                    monto_plus += float(salario_plus.monto) * cantidad_comisiones
 
             total = monto_base + monto_plus
             es_nexo = rol == "NEXO"
@@ -137,6 +147,19 @@ class LiquidacionService:
         )
         return result.unique().scalar_one_or_none()
 
+    async def _get_clave_plus(
+        self,
+        session: AsyncSession,
+        materia_id: uuid.UUID,
+    ) -> str | None:
+        result = await session.execute(
+            select(Materia.clave_plus).where(
+                Materia.id == materia_id,
+                Materia.tenant_id == self._tenant_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
     async def _get_salario_plus_vigente(
         self,
         session: AsyncSession,
@@ -183,6 +206,72 @@ class LiquidacionService:
             }
             for l in items
         ]
+
+    async def exportar_planilla(
+        self,
+        session: AsyncSession,
+        periodo: str,
+        cohorte_id: uuid.UUID | None = None,
+    ) -> bytes:
+        items = await self._repo.listar_por_periodo(session, periodo, cohorte_id)
+
+        usuario_ids = {item.usuario_id for item in items}
+        usuarios: dict[uuid.UUID, User] = {}
+        if usuario_ids:
+            result = await session.execute(
+                select(User).where(
+                    User.id.in_(usuario_ids),
+                    User.tenant_id == self._tenant_id,
+                )
+            )
+            usuarios = {u.id: u for u in result.unique().scalars().all()}
+
+        import openpyxl
+        from openpyxl.styles import Font
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = f"Liquidaciones {periodo}"
+
+        headers = [
+            "Docente", "Email", "Rol", "Comisiones",
+            "Base", "Plus", "Total", "NEXO", "Facturante", "Estado",
+        ]
+        header_font = Font(bold=True)
+        for col, h in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=h)
+            cell.font = header_font
+
+        for i, item in enumerate(items, 2):
+            usuario = usuarios.get(item.usuario_id)
+            nombre = self._formatear_nombre(usuario) if usuario else str(item.usuario_id)
+            email = usuario.email if usuario else ""
+            ws.cell(row=i, column=1, value=nombre)
+            ws.cell(row=i, column=2, value=email)
+            ws.cell(row=i, column=3, value=item.rol)
+            ws.cell(row=i, column=4, value=", ".join(item.comisiones) if item.comisiones else "")
+            ws.cell(row=i, column=5, value=float(item.monto_base))
+            ws.cell(row=i, column=6, value=float(item.monto_plus))
+            ws.cell(row=i, column=7, value=float(item.total))
+            ws.cell(row=i, column=8, value="Sí" if item.es_nexo else "No")
+            ws.cell(row=i, column=9, value="Sí" if item.excluido_por_factura else "No")
+            ws.cell(row=i, column=10, value=item.estado)
+
+        ws.column_dimensions["A"].width = 30
+        ws.column_dimensions["B"].width = 30
+        ws.column_dimensions["D"].width = 20
+
+        from io import BytesIO
+
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        return output.getvalue()
+
+    @staticmethod
+    def _formatear_nombre(usuario: User) -> str:
+        partes = [p for p in (usuario.nombre, usuario.apellidos) if p]
+        return " ".join(partes) if partes else usuario.email
 
     async def cerrar(
         self,

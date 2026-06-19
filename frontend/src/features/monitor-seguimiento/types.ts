@@ -1,22 +1,26 @@
-export interface MonitorAlumno {
-  id: string
+export interface MonitorItem {
+  entrada_padron_id: string
   nombre: string
   apellidos: string
   email: string
-  comision: string
-  regional: string
-  materia: string
+  comision: string | null
+  regional: string | null
+  materia_id: string | null
   total_actividades: number
   aprobadas: number
   estado: 'atrasado' | 'al_dia'
 }
 
-export interface MonitorGeneralResponse {
-  data: MonitorAlumno[]
+export interface MonitorPaginacionResponse {
+  items: MonitorItem[]
   total: number
   pagina: number
   por_pagina: number
+  total_paginas: number
 }
+
+export type MonitorGeneralResponse = MonitorPaginacionResponse
+export type MonitorSeguimientoResponse = MonitorPaginacionResponse
 
 export interface MonitorGeneralFilters {
   materia_id?: string
@@ -28,35 +32,16 @@ export interface MonitorGeneralFilters {
   por_pagina?: number
 }
 
-export interface ActividadCalificacion {
-  actividad: string
-  tipo: string
-  calificacion: string | number
-  aprobada: boolean
-}
-
-export interface SeguimientoAlumno {
-  id: string
-  nombre: string
-  apellidos: string
-  email: string
-  comision: string
-  actividades: ActividadCalificacion[]
-}
-
-export interface MonitorSeguimientoResponse {
-  data: SeguimientoAlumno[]
-  total: number
-  pagina: number
-  por_pagina: number
-}
-
+// Query params alineados a GET /api/analisis/monitor-seguimiento
+// (backend/app/routers/analisis.py). No existe búsqueda de alumno por
+// nombre en este endpoint — solo "comision" (texto) y "entrada_padron_id"
+// (UUID exacto, sin uso en la UI actual).
 export interface MonitorSeguimientoFilters {
-  alumno_id?: string
-  actividad_minima?: string
-  fecha_desde?: string
-  fecha_hasta?: string
   materia_id?: string
+  comision?: string
+  actividad_minima?: string
+  desde?: string
+  hasta?: string
   pagina?: number
   por_pagina?: number
 }

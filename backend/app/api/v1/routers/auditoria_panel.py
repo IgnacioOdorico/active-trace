@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.dependencies import get_current_user, get_db
 from app.core.permissions import PermissionChecker, decode_access_token
 from app.models.asignacion import Asignacion
-from app.models.user import User
+from app.models.user import User, nombre_completo_usuario
 from app.schemas.audit import AuditLogResponse
 from app.schemas.auditoria_panel import (
     AccionesPorDiaItem,
@@ -192,8 +192,12 @@ async def get_ultimas_acciones(
                 id=str(item.id),
                 fecha_hora=item.fecha_hora,
                 actor_id=str(item.actor_id),
+                actor_nombre=nombre_completo_usuario(
+                    item.actor.nombre, item.actor.apellidos, item.actor.email
+                ) if item.actor else "",
                 impersonado_id=str(item.impersonado_id) if item.impersonado_id else None,
                 materia_id=str(item.materia_id) if item.materia_id else None,
+                materia_nombre=item.materia.nombre if item.materia else None,
                 accion=item.accion,
                 detalle=item.detalle,
                 filas_afectadas=item.filas_afectadas,

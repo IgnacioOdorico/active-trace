@@ -1,16 +1,12 @@
 export interface ActividadDetectada {
-  id: string
   nombre: string
   tipo: 'numerica' | 'textual'
-  columnas: string[]
-  filas_preview: Record<string, string>[]
 }
 
 export interface CalificacionPreviewResponse {
   actividades: ActividadDetectada[]
+  preview: Record<string, string>[]
   total_filas: number
-  materia_id: string
-  materia_nombre: string
 }
 
 export interface Advertencia {
@@ -21,5 +17,7 @@ export interface Advertencia {
 export interface ImportarResultado {
   insertadas: number
   actualizadas: number
+  filas_afectadas: number
+  errores: unknown[]
   advertencias: Advertencia[]
 }
