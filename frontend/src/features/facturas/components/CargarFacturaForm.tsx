@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
 import { useCargarFactura } from '../hooks/useFacturasApi'
+import { Button } from '../../../shared/components/ui/Button'
+import { Input } from '../../../shared/components/ui/Input'
 
 interface Props {
   onSuccess: () => void
@@ -51,54 +53,56 @@ export default function CargarFacturaForm({ onSuccess }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Período (AAAA-MM) *</label>
-        <input
-          type="month"
-          value={periodo}
-          onChange={(e) => setPeriodo(e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-        />
-        {errors.periodo && <p className="text-xs text-red-600">{errors.periodo}</p>}
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Período (AAAA-MM) *</label>
+          <Input
+            type="month"
+            value={periodo}
+            onChange={(e) => setPeriodo(e.target.value)}
+            className="w-full"
+          />
+          {errors.periodo && <p className="mt-1 font-body-md text-[12px] text-error">{errors.periodo}</p>}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Detalle *</label>
+          <Input
+            type="text"
+            value={detalle}
+            onChange={(e) => setDetalle(e.target.value)}
+            className="w-full"
+            placeholder="Describí el comprobante"
+          />
+          {errors.detalle && <p className="mt-1 font-body-md text-[12px] text-error">{errors.detalle}</p>}
+        </div>
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Detalle *</label>
-        <input
-          type="text"
-          value={detalle}
-          onChange={(e) => setDetalle(e.target.value)}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-          placeholder="Describí el comprobante"
-        />
-        {errors.detalle && <p className="text-xs text-red-600">{errors.detalle}</p>}
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Archivo PDF *</label>
-        <input
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Archivo PDF *</label>
+        <Input
           ref={fileRef}
           type="file"
           accept=".pdf"
           onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          className="w-full"
         />
-        {errors.archivo && <p className="text-xs text-red-600">{errors.archivo}</p>}
+        {errors.archivo && <p className="mt-1 font-body-md text-[12px] text-error">{errors.archivo}</p>}
       </div>
 
       {errors.root && (
-        <p className="rounded bg-red-50 p-2 text-xs text-red-700">{errors.root}</p>
+        <p className="rounded neo-latex-border bg-error-container p-3 font-body-md text-on-error-container">{errors.root}</p>
       )}
 
-      <div className="flex justify-end">
-        <button
+      <div className="flex justify-end pt-4 border-t border-outline-variant">
+        <Button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          variant="primary"
         >
           {isPending ? 'Cargando...' : 'Cargar factura'}
-        </button>
+        </Button>
       </div>
     </form>
   )

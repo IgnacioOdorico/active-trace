@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import { useReportesApi } from '../hooks/useReportesApi'
 import type { NotaFinalAlumno } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 
 function downloadCsv(alumnos: NotaFinalAlumno[], filename: string) {
   const headers = ['Nombre', 'Apellidos', 'Comisión', 'Nota Final', 'Actividades Textuales', 'Estado']
@@ -67,225 +70,226 @@ export default function ReportesPage() {
   const showEmpty = met?.sin_datos
 
   return (
-    <div className="mx-auto max-w-6xl py-8">
-      <h1 className="text-2xl font-bold text-gray-900">Reportes y Notas Finales</h1>
-
-      <div className="mt-6">
-        <label htmlFor="materia" className="block text-sm font-medium text-gray-700">
-          Materia
-        </label>
-        <select
-          id="materia"
-          value={materiaId}
-          onChange={(e) => handleMateriaChange(e.target.value)}
-          className="mt-1 block w-full max-w-md rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Seleccione una materia</option>
-          {materiasLoading && <option value="" disabled>Cargando materias...</option>}
-          {materias?.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.nombre}{m.comision ? ` - ${m.comision}` : ''}
-            </option>
-          ))}
-        </select>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Reportes y Notas Finales</h1>
       </div>
 
-      {!materiaId && (
-        <p className="mt-8 text-center text-sm text-gray-500">
-          Seleccione una materia para ver reportes y notas finales.
-        </p>
-      )}
-
-      {metrics.isLoading && materiaId && (
-        <div className="mt-8 flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-          <p className="ml-3 text-sm text-gray-600">Cargando métricas...</p>
-        </div>
-      )}
-
-      {metrics.isError && materiaId && (
-        <div className="mt-8 rounded-md bg-red-50 p-4 text-sm text-red-800">
-          Error al cargar las métricas. Intente nuevamente.
-        </div>
-      )}
-
-      {showEmpty && (
-        <div className="mt-8 rounded-md bg-yellow-50 p-6 text-center">
-          <p className="text-sm font-medium text-yellow-800">
-            No hay datos de calificaciones para esta materia.
-          </p>
-          <button
-            onClick={() => navigate('/calificaciones/importar')}
-            className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+      <BentoCard>
+        <div className="flex flex-col gap-1 mb-6">
+          <label htmlFor="materia" className="font-label-caps text-label-caps text-on-surface-variant uppercase">
+            Materia
+          </label>
+          <select
+            id="materia"
+            value={materiaId}
+            onChange={(e) => handleMateriaChange(e.target.value)}
+            className="w-full max-w-md neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            Ir a Importar Calificaciones
-          </button>
+            <option value="">Seleccione una materia</option>
+            {materiasLoading && <option value="" disabled>Cargando materias...</option>}
+            {materias?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nombre}{m.comision ? ` - ${m.comision}` : ''}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
 
-      {met && !showEmpty && (
-        <>
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-sm font-medium text-gray-500">Total Alumnos</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">{met.total_alumnos}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-sm font-medium text-gray-500">Total Actividades</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">{met.total_actividades}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-sm font-medium text-gray-500">Total Calificaciones</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">{met.total_calificaciones}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-sm font-medium text-gray-500">Promedio Aprobación</p>
-              <p className={`mt-1 text-2xl font-bold ${met.promedio_aprobacion_general >= 60 ? 'text-green-600' : 'text-red-600'}`}>
-                {met.promedio_aprobacion_general}%
-              </p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-sm font-medium text-gray-500">Alumnos Aprobados</p>
-              <p className="mt-1 text-2xl font-bold text-green-600">{met.alumnos_aprobados_count}</p>
-            </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
-              <p className="text-sm font-medium text-gray-500">Alumnos Atrasados</p>
-              <p className="mt-1 text-2xl font-bold text-red-600">{met.alumnos_atrasados_count}</p>
-            </div>
+        {!materiaId && (
+          <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
+            Seleccione una materia para ver reportes y notas finales.
           </div>
+        )}
 
-          <div className="mt-10">
-            <h2 className="text-lg font-semibold text-gray-900">Calcular Nota Final</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Seleccione las actividades numéricas a incluir en el promedio.
+        {metrics.isLoading && materiaId && (
+          <div className="mt-8 flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="ml-3 font-body-md text-on-surface-variant">Cargando métricas...</p>
+          </div>
+        )}
+
+        {metrics.isError && materiaId && (
+          <div className="mt-8 rounded neo-latex-border bg-error-container p-4 font-body-md text-on-error-container">
+            Error al cargar las métricas. Intente nuevamente.
+          </div>
+        )}
+
+        {showEmpty && (
+          <div className="mt-8 rounded neo-latex-border bg-surface-container p-6 text-center">
+            <p className="font-body-md font-medium text-on-surface-variant">
+              No hay datos de calificaciones para esta materia.
             </p>
-
-            {actividades.isLoading && (
-              <div className="mt-4 flex items-center gap-2 text-sm text-gray-600">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                Cargando actividades...
-              </div>
-            )}
-
-            {actividades.data && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {actividades.data.map((act) => {
-                  const isTextual = act.tipo === 'textual'
-                  const selected = selectedActividadIds.includes(act.id)
-                  return (
-                    <button
-                      key={act.id}
-                      type="button"
-                      disabled={isTextual}
-                      onClick={() => !isTextual && toggleActividad(act.id)}
-                      className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${
-                        isTextual
-                          ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400'
-                          : selected
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                      }`}
-                      onMouseEnter={() => isTextual && setShowTooltipId(act.id)}
-                      onMouseLeave={() => setShowTooltipId(null)}
-                    >
-                      {act.nombre}
-                      {isTextual && (
-                        <span className="relative inline-flex items-center rounded bg-gray-200 px-1.5 py-0.5 text-xs font-semibold text-gray-600">
-                          Textual
-                          {showTooltipId === act.id && (
-                            <span className="absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white">
-                              Las actividades textuales no se incluyen en el promedio numérico
-                            </span>
-                          )}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-
-            <button
-              onClick={handleCalcular}
-              disabled={selectedActividadIds.length === 0 || calcularNotaFinal.isPending}
-              className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            <Button
+              onClick={() => navigate('/calificaciones/importar')}
+              variant="primary"
+              className="mt-4"
             >
-              {calcularNotaFinal.isPending ? 'Calculando...' : 'Calcular Nota Final'}
-            </button>
+              Ir a Importar Calificaciones
+            </Button>
+          </div>
+        )}
 
-            {calcularNotaFinal.isError && (
-              <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-800">
-                {calcularNotaFinal.error instanceof Error
-                  ? calcularNotaFinal.error.message
-                  : 'Error al calcular nota final'}
+        {met && !showEmpty && (
+          <>
+            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="rounded neo-latex-border bg-surface-container-lowest p-4">
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Alumnos</p>
+                <p className="mt-1 font-mono-data text-[24px] font-bold text-on-surface">{met.total_alumnos}</p>
+              </div>
+              <div className="rounded neo-latex-border bg-surface-container-lowest p-4">
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Actividades</p>
+                <p className="mt-1 font-mono-data text-[24px] font-bold text-on-surface">{met.total_actividades}</p>
+              </div>
+              <div className="rounded neo-latex-border bg-surface-container-lowest p-4">
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Total Calificaciones</p>
+                <p className="mt-1 font-mono-data text-[24px] font-bold text-on-surface">{met.total_calificaciones}</p>
+              </div>
+              <div className="rounded neo-latex-border bg-surface-container-lowest p-4">
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Promedio Aprobación</p>
+                <p className={`mt-1 font-mono-data text-[24px] font-bold ${met.promedio_aprobacion_general >= 60 ? 'text-success' : 'text-error'}`}>
+                  {met.promedio_aprobacion_general}%
+                </p>
+              </div>
+              <div className="rounded neo-latex-border bg-surface-container-lowest p-4">
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Alumnos Aprobados</p>
+                <p className="mt-1 font-mono-data text-[24px] font-bold text-success">{met.alumnos_aprobados_count}</p>
+              </div>
+              <div className="rounded neo-latex-border bg-surface-container-lowest p-4">
+                <p className="font-label-caps text-label-caps text-on-surface-variant uppercase">Alumnos Atrasados</p>
+                <p className="mt-1 font-mono-data text-[24px] font-bold text-error">{met.alumnos_atrasados_count}</p>
+              </div>
+            </div>
+
+            <div className="mt-10">
+              <h2 className="font-headline-sm text-headline-sm text-on-surface">Calcular Nota Final</h2>
+              <p className="mt-1 font-body-md text-on-surface-variant">
+                Seleccione las actividades numéricas a incluir en el promedio.
+              </p>
+
+              {actividades.isLoading && (
+                <div className="mt-4 flex items-center gap-2 font-body-md text-on-surface-variant">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  Cargando actividades...
+                </div>
+              )}
+
+              {actividades.data && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {actividades.data.map((act) => {
+                    const isTextual = act.tipo === 'textual'
+                    const selected = selectedActividadIds.includes(act.id)
+                    return (
+                      <button
+                        key={act.id}
+                        type="button"
+                        disabled={isTextual}
+                        onClick={() => !isTextual && toggleActividad(act.id)}
+                        className={`inline-flex items-center gap-1.5 rounded neo-latex-border px-3 py-1.5 font-body-md transition-colors ${
+                          isTextual
+                            ? 'cursor-not-allowed border-outline-variant bg-surface-container text-outline'
+                            : selected
+                              ? 'border-primary bg-primary/10 text-primary font-medium'
+                              : 'bg-surface-container-lowest text-on-surface hover:bg-surface-container'
+                        }`}
+                        onMouseEnter={() => isTextual && setShowTooltipId(act.id)}
+                        onMouseLeave={() => setShowTooltipId(null)}
+                      >
+                        {act.nombre}
+                        {isTextual && (
+                          <span className="relative inline-flex items-center">
+                            <Badge variant="neutral">Textual</Badge>
+                            {showTooltipId === act.id && (
+                              <span className="absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded bg-[#002045] px-2 py-1 font-body-md text-[12px] text-white">
+                                Las actividades textuales no se incluyen en el promedio numérico
+                              </span>
+                            )}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
+              <Button
+                onClick={handleCalcular}
+                disabled={selectedActividadIds.length === 0 || calcularNotaFinal.isPending}
+                variant="primary"
+                className="mt-6"
+              >
+                {calcularNotaFinal.isPending ? 'Calculando...' : 'Calcular Nota Final'}
+              </Button>
+
+              {calcularNotaFinal.isError && (
+                <div className="mt-4 rounded neo-latex-border bg-error-container p-3 font-body-md text-on-error-container">
+                  {calcularNotaFinal.error instanceof Error
+                    ? calcularNotaFinal.error.message
+                    : 'Error al calcular nota final'}
+                </div>
+              )}
+            </div>
+
+            {resultados && resultados.length > 0 && (
+              <div className="mt-8 border-t border-outline-variant pt-8">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="font-headline-sm text-headline-sm text-on-surface">Resultados</h3>
+                  <Button
+                    onClick={() => downloadCsv(resultados, `notas-finales-${materiaId}.csv`)}
+                    variant="primary"
+                  >
+                    <span className="material-symbols-outlined mr-1 text-[18px]">download</span>
+                    Descargar CSV
+                  </Button>
+                </div>
+
+                <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+                  <table className="min-w-full divide-y divide-outline-variant">
+                    <thead className="bg-surface">
+                      <tr>
+                        <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Nombre</th>
+                        <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Apellidos</th>
+                        <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Comisión</th>
+                        <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Nota Final</th>
+                        <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Act. Textuales</th>
+                        <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+                      {resultados.map((alumno, idx) => (
+                        <tr key={idx} className={`hover:bg-surface-container transition-colors ${alumno.estado === 'aprobado' ? '' : 'bg-error-container/10'}`}>
+                          <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{alumno.nombre}</td>
+                          <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md text-on-surface-variant">{alumno.apellidos}</td>
+                          <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md text-on-surface-variant">{alumno.comision}</td>
+                          <td className="whitespace-nowrap px-4 py-3 text-center font-mono-data text-mono-data font-medium text-on-surface">
+                            {alumno.nota_final !== null ? alumno.nota_final.toFixed(1) : '—'}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md text-on-surface-variant">
+                            {alumno.actividades_textuales.length > 0
+                              ? alumno.actividades_textuales.join(', ')
+                              : '-'}
+                          </td>
+                          <td className="whitespace-nowrap px-4 py-3 text-center">
+                            <Badge variant={alumno.estado === 'aprobado' ? 'success' : 'error'}>
+                              {alumno.estado === 'aprobado' ? 'Aprobado' : 'No Aprobado'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
-          </div>
 
-          {resultados && resultados.length > 0 && (
-            <div className="mt-8">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Resultados</h3>
-                <button
-                  onClick={() => downloadCsv(resultados, `notas-finales-${materiaId}.csv`)}
-                  className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
-                >
-                  Descargar CSV
-                </button>
+            {resultados && resultados.length === 0 && (
+              <div className="mt-8 rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
+                No se encontraron resultados para las actividades seleccionadas.
               </div>
-
-              <div className="overflow-x-auto rounded-md border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Nombre</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Apellidos</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Comisión</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Nota Final</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Act. Textuales</th>
-                      <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {resultados.map((alumno, idx) => (
-                      <tr key={idx} className={alumno.estado === 'aprobado' ? '' : 'bg-red-50'}>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">{alumno.nombre}</td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{alumno.apellidos}</td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{alumno.comision}</td>
-                        <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-semibold text-gray-900">
-                          {alumno.nota_final !== null ? alumno.nota_final.toFixed(1) : '—'}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">
-                          {alumno.actividades_textuales.length > 0
-                            ? alumno.actividades_textuales.join(', ')
-                            : '-'}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-3 text-center">
-                          <span
-                            className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                              alumno.estado === 'aprobado'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {alumno.estado === 'aprobado' ? 'Aprobado' : 'No Aprobado'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {resultados && resultados.length === 0 && (
-            <div className="mt-8 rounded-md bg-blue-50 p-4 text-sm text-blue-800">
-              No se encontraron resultados para las actividades seleccionadas.
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </>
+        )}
+      </BentoCard>
     </div>
   )
 }

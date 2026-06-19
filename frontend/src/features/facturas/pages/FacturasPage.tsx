@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import FacturasListado from '../components/FacturasListado'
 import CargarFacturaForm from '../components/CargarFacturaForm'
+import { Button } from '../../../shared/components/ui/Button'
 
 export default function FacturasPage() {
   const { user } = useAuth()
@@ -14,29 +15,29 @@ export default function FacturasPage() {
 
   if (!puedeVer) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center text-sm text-red-700">
-        Acceso denegado. No tenés el permiso <code>facturas:ver</code>.
+      <div className="rounded neo-latex-border bg-error-container p-6 text-center font-body-md text-on-error-container">
+        Acceso denegado. No tenés el permiso <code className="font-mono-data bg-white/50 px-1 rounded">facturas:ver</code>.
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Facturas</h1>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Facturas</h1>
         {puedeCargar && (
-          <button
+          <Button
             onClick={() => setShowForm(!showForm)}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            variant={showForm ? 'secondary' : 'primary'}
           >
             {showForm ? 'Cancelar carga' : '+ Cargar factura'}
-          </button>
+          </Button>
         )}
       </div>
 
       {showForm && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">Cargar nuevo comprobante</h2>
+        <div className="rounded neo-latex-border bg-surface-container-high p-4">
+          <h2 className="mb-4 font-headline-sm text-headline-sm text-on-surface">Cargar nuevo comprobante</h2>
           <CargarFacturaForm onSuccess={() => setShowForm(false)} />
         </div>
       )}

@@ -5,6 +5,8 @@ import CrearTareaForm from '../components/CrearTareaForm'
 import EditarTareaForm from '../components/EditarTareaForm'
 import HiloComentarios from '../components/HiloComentarios'
 import type { Tarea } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
 
 type Tab = 'mis-tareas' | 'admin'
 
@@ -15,44 +17,33 @@ export default function TareasPage() {
   const [tareaEditando, setTareaEditando] = useState<Tarea | null>(null)
 
   return (
-    <div className="mx-auto max-w-5xl py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Tareas</h1>
-        <button
-          type="button"
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Tareas</h1>
+        <Button
           onClick={() => setCreando(true)}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          variant="primary"
         >
           + Nueva tarea
-        </button>
+        </Button>
       </div>
 
-      <div className="mb-6 flex gap-4 border-b border-gray-200">
-        <button
-          type="button"
+      <div className="flex gap-2 mb-6 border-b border-outline-variant pb-2">
+        <Button
           onClick={() => setTab('mis-tareas')}
-          className={`pb-2 text-sm font-medium ${
-            tab === 'mis-tareas'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          variant={tab === 'mis-tareas' ? 'primary' : 'ghost'}
         >
           Mis Tareas
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={() => setTab('admin')}
-          className={`pb-2 text-sm font-medium ${
-            tab === 'admin'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+          variant={tab === 'admin' ? 'primary' : 'ghost'}
         >
           Administración Global
-        </button>
+        </Button>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="rounded neo-latex-border bg-surface-container-lowest p-6">
         {tab === 'mis-tareas' && (
           <MisTareas onVerDetalle={setTareaDetalle} onEditar={setTareaEditando} />
         )}
@@ -62,51 +53,61 @@ export default function TareasPage() {
       </div>
 
       {creando && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">Nueva Tarea</h2>
-              <button
-                type="button"
-                onClick={() => setCreando(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            <CrearTareaForm
-              onSuccess={() => setCreando(false)}
-              onCancel={() => setCreando(false)}
-            />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim/40 backdrop-blur-sm">
+          <div className="w-full max-w-lg">
+            <BentoCard>
+              <div className="mb-4 flex items-center justify-between border-b border-outline-variant pb-4">
+                <h2 className="font-headline-sm text-headline-sm text-on-surface">Nueva Tarea</h2>
+                <button
+                  type="button"
+                  onClick={() => setCreando(false)}
+                  className="text-on-surface-variant hover:text-on-surface transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <CrearTareaForm
+                onSuccess={() => setCreando(false)}
+                onCancel={() => setCreando(false)}
+              />
+            </BentoCard>
           </div>
         </div>
       )}
 
       {tareaDetalle && (
-        <HiloComentarios
-          tarea={tareaDetalle}
-          onCerrar={() => setTareaDetalle(null)}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim/40 backdrop-blur-sm">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <BentoCard>
+              <HiloComentarios
+                tarea={tareaDetalle}
+                onCerrar={() => setTareaDetalle(null)}
+              />
+            </BentoCard>
+          </div>
+        </div>
       )}
 
       {tareaEditando && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">Editar Tarea</h2>
-              <button
-                type="button"
-                onClick={() => setTareaEditando(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
-            <EditarTareaForm
-              tarea={tareaEditando}
-              onSuccess={() => setTareaEditando(null)}
-              onCancel={() => setTareaEditando(null)}
-            />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim/40 backdrop-blur-sm">
+          <div className="w-full max-w-lg">
+            <BentoCard>
+              <div className="mb-4 flex items-center justify-between border-b border-outline-variant pb-4">
+                <h2 className="font-headline-sm text-headline-sm text-on-surface">Editar Tarea</h2>
+                <button
+                  type="button"
+                  onClick={() => setTareaEditando(null)}
+                  className="text-on-surface-variant hover:text-on-surface transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <EditarTareaForm
+                tarea={tareaEditando}
+                onSuccess={() => setTareaEditando(null)}
+                onCancel={() => setTareaEditando(null)}
+              />
+            </BentoCard>
           </div>
         </div>
       )}

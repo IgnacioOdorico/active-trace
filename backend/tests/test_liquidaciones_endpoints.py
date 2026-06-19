@@ -10,6 +10,7 @@ from app.routers.liquidaciones import (
     calcular_liquidacion,
     cerrar_liquidacion,
     exportar_planilla,
+    historial_liquidaciones,
     listar_liquidaciones,
     kpis_liquidaciones,
 )
@@ -144,6 +145,42 @@ class TestCalcularEndpoint:
                 _=None,
             )
             assert result["total"] == 1
+
+    @pytest.mark.asyncio
+    async def test_historial_ok(self):
+        mock_db = AsyncMock()
+        mock_user = MagicMock(spec=User)
+        mock_user.tenant_id = uuid.uuid4()
+        mock_user.id = uuid.uuid4()
+
+        with patch("app.routers.liquidaciones.LiquidacionService") as MockSvc:
+            svc_instance = AsyncMock()
+            MockSvc.return_value = svc_instance
+            svc_instance.historial = AsyncMock(
+                return_value=[
+                    {
+                        "id": "c1:2026-05",
+                        "periodo": "2026-05",
+                        "cohorte_id": str(uuid.uuid4()),
+                        "estado": "Cerrada",
+                        "total_docentes": 3,
+                        "monto_total": 1500.0,
+                    }
+                ]
+            )
+
+            result = await historial_liquidaciones(
+                cohorte_id=None,
+                desde=None,
+                hasta=None,
+                estado=None,
+                db=mock_db,
+                current_user=mock_user,
+                _=None,
+            )
+            assert result["total"] == 1
+            assert result["items"][0]["monto_total"] == 1500.0
+            svc_instance.historial.assert_awaited_once_with(mock_db, None, None, None, None)
 
     @pytest.mark.asyncio
     async def test_kpis_ok(self):

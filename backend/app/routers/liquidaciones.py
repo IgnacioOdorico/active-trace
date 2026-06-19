@@ -72,15 +72,7 @@ async def historial_liquidaciones(
     _=Depends(require_permission("liquidaciones:ver")),
 ):
     svc = LiquidacionService(current_user.tenant_id)
-    items = await svc.listar(db, hasta or "2099-12")
-    result = []
-    for item in items:
-        if desde and item["periodo"] < desde:
-            continue
-        if estado and item["estado"] != estado:
-            continue
-        result.append(item)
-    result.sort(key=lambda x: x["periodo"], reverse=True)
+    result = await svc.historial(db, cohorte_id, desde, hasta, estado)
     return {"items": result, "total": len(result)}
 
 

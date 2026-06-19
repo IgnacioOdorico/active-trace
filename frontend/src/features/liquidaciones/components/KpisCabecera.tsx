@@ -47,9 +47,9 @@ export default function KpisCabecera({ periodo }: Props) {
         label="Facturas abonadas"
         value={formatARS(data.total_facturas_abonadas)}
       />
-      <KpiCard label="Docentes generales" value={String(data.cantidad_general)} />
-      <KpiCard label="Docentes NEXO" value={String(data.cantidad_nexo)} />
-      <KpiCard label="Docentes facturantes" value={String(data.cantidad_facturantes)} />
+      <KpiCard label="Docentes generales" value={String(data.cantidad_docentes_general)} />
+      <KpiCard label="Docentes NEXO" value={String(data.cantidad_docentes_nexo)} />
+      <KpiCard label="Docentes facturantes" value={String(data.cantidad_docentes_facturantes)} />
     </div>
   )
 }

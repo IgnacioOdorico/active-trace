@@ -4,6 +4,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../hooks/useAuth'
 import { loginSchema, type LoginFormData } from '../schemas'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Input } from '../../../shared/components/ui/Input'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -41,74 +44,79 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
-          Active Trace
-        </h1>
-        <h2 className="mb-6 text-center text-lg text-gray-600">Iniciar Sesión</h2>
+    <div className="flex min-h-screen items-center justify-center bg-surface-container-lowest p-4">
+      <div className="w-full max-w-md">
+        <BentoCard>
+          <div className="px-8 py-10">
+            <h1 className="mb-2 text-center font-headline-lg text-headline-lg text-on-surface">
+              Active Trace
+            </h1>
+            <h2 className="mb-8 text-center font-body-md text-body-md text-on-surface-variant">
+              Iniciar Sesión
+            </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          {backendError && (
-            <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700">
-              {backendError}
-            </div>
-          )}
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+              {backendError && (
+                <div className="rounded neo-latex-border bg-error-container p-3 font-body-md text-[12px] text-on-error-container">
+                  {backendError}
+                </div>
+              )}
 
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              {...register('email')}
-            />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-            )}
+              <div className="space-y-1">
+                <label
+                  htmlFor="email"
+                  className="block font-label-caps text-label-caps text-on-surface-variant uppercase"
+                >
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="font-body-md text-[12px] text-on-error-container">{errors.email.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <label
+                  htmlFor="password"
+                  className="block font-label-caps text-label-caps text-on-surface-variant uppercase"
+                >
+                  Contraseña
+                </label>
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  {...register('password')}
+                />
+                {errors.password && (
+                  <p className="font-body-md text-[12px] text-on-error-container">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="primary"
+                className="w-full justify-center"
+              >
+                {isSubmitting ? 'Ingresando...' : 'Ingresar'}
+              </Button>
+            </form>
+
+            <p className="mt-6 text-center font-body-md text-[12px]">
+              <Link to="/forgot-password" className="text-primary hover:text-primary/80 transition-colors">
+                ¿Olvidó su contraseña?
+              </Link>
+            </p>
           </div>
-
-          <div className="mb-4">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              {...register('password')}
-            />
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isSubmitting ? 'Ingresando...' : 'Ingresar'}
-          </button>
-        </form>
-
-        <p className="mt-4 text-center text-sm text-gray-600">
-          <Link to="/forgot-password" className="text-blue-600 hover:text-blue-800">
-            ¿Olvidó su contraseña?
-          </Link>
-        </p>
+        </BentoCard>
       </div>
     </div>
   )

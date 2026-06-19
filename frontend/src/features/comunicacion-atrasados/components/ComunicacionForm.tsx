@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import type { PreviewResponse, PreviewRequest, EnviarRequest, EnviarResponse } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Input } from '../../../shared/components/ui/Input'
 
 interface Props {
   initialMateriaId?: string
@@ -78,182 +81,191 @@ export default function ComunicacionForm({ initialMateriaId, initialDestinatario
 
   return (
     <div className="space-y-6">
-      <div>
-        <label htmlFor="materia" className="block text-sm font-medium text-gray-700">Materia</label>
-        <select
-          id="materia"
-          value={materiaId}
-          onChange={(e) => setMateriaId(e.target.value)}
-          className="mt-1 block w-full max-w-md rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Seleccione una materia</option>
-          {materiasLoading && <option value="" disabled>Cargando materias...</option>}
-          {materias?.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.nombre}{m.comision ? ` - ${m.comision}` : ''}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label htmlFor="asunto" className="block text-sm font-medium text-gray-700">
-          Asunto (template)
-        </label>
-        <p className="text-xs text-gray-500">Use {'{nombre}'}, {'{apellidos}'}, {'{materia}'} como variables.</p>
-        <input
-          id="asunto"
-          type="text"
-          value={asuntoTemplate}
-          onChange={(e) => setAsuntoTemplate(e.target.value)}
-          placeholder="Ej: Notificación de materias atrasadas - {materia}"
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="cuerpo" className="block text-sm font-medium text-gray-700">
-          Cuerpo (template)
-        </label>
-        <p className="text-xs text-gray-500">Use {'{nombre}'}, {'{apellidos}'}, {'{materia}'}, {'{actividades}'} como variables.</p>
-        <textarea
-          id="cuerpo"
-          rows={6}
-          value={cuerpoTemplate}
-          onChange={(e) => setCuerpoTemplate(e.target.value)}
-          placeholder="Estimado/a {nombre} {apellidos},&#10;&#10;Le informamos que tiene actividades pendientes en {materia}..."
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="destinatarioPreview" className="block text-sm font-medium text-gray-700">
-          Destinatario para preview
-        </label>
-        <input
-          id="destinatarioPreview"
-          type="email"
-          value={destinatarioPreview}
-          onChange={(e) => setDestinatarioPreview(e.target.value)}
-          placeholder="email@ejemplo.com"
-          className="mt-1 block w-full max-w-md rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-        <button
-          type="button"
-          onClick={handlePreview}
-          disabled={!materiaId || !destinatarioPreview || !asuntoTemplate || !cuerpoTemplate || previewLoading}
-          className="mt-2 rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {previewLoading ? 'Generando preview...' : 'Vista Previa'}
-        </button>
-      </div>
-
-      {previewError && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">{previewError}</div>
-      )}
-
-      {previewData && (
-        <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wider text-blue-600">Preview</p>
-            <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-              Solo lectura — preview del destinatario seleccionado
-            </span>
+      <BentoCard>
+        <div className="space-y-6">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="materia" className="font-label-caps text-label-caps text-on-surface-variant uppercase">Materia</label>
+            <select
+              id="materia"
+              value={materiaId}
+              onChange={(e) => setMateriaId(e.target.value)}
+              className="w-full max-w-md neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Seleccione una materia</option>
+              {materiasLoading && <option value="" disabled>Cargando materias...</option>}
+              {materias?.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nombre}{m.comision ? ` - ${m.comision}` : ''}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="rounded border border-blue-100 bg-white p-3">
-            <p className="text-sm font-medium text-gray-900">
-              <span className="text-gray-500">Asunto:</span> {previewData.asunto}
-            </p>
-            <hr className="my-2 border-blue-100" />
-            <p className="whitespace-pre-wrap text-sm text-gray-700">{previewData.cuerpo}</p>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="asunto" className="font-label-caps text-label-caps text-on-surface-variant uppercase">
+              Asunto (template)
+            </label>
+            <p className="font-body-md text-[12px] text-on-surface-variant mb-1">Use {'{nombre}'}, {'{apellidos}'}, {'{materia}'} como variables.</p>
+            <Input
+              id="asunto"
+              type="text"
+              value={asuntoTemplate}
+              onChange={(e) => setAsuntoTemplate(e.target.value)}
+              placeholder="Ej: Notificación de materias atrasadas - {materia}"
+              className="w-full"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="cuerpo" className="font-label-caps text-label-caps text-on-surface-variant uppercase">
+              Cuerpo (template)
+            </label>
+            <p className="font-body-md text-[12px] text-on-surface-variant mb-1">Use {'{nombre}'}, {'{apellidos}'}, {'{materia}'}, {'{actividades}'} como variables.</p>
+            <textarea
+              id="cuerpo"
+              rows={6}
+              value={cuerpoTemplate}
+              onChange={(e) => setCuerpoTemplate(e.target.value)}
+              placeholder="Estimado/a {nombre} {apellidos},&#10;&#10;Le informamos que tiene actividades pendientes en {materia}..."
+              className="w-full neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
           </div>
         </div>
-      )}
+      </BentoCard>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Destinatarios</label>
-        <p className="text-xs text-gray-500">Agregue los emails a quienes enviar la comunicación.</p>
-
-        {destinatarios.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {destinatarios.map((email) => (
-              <span
-                key={email}
-                className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-800"
+      <BentoCard>
+        <div className="space-y-4">
+          <div className="flex flex-col gap-1">
+            <label htmlFor="destinatarioPreview" className="font-label-caps text-label-caps text-on-surface-variant uppercase">
+              Destinatario para preview
+            </label>
+            <div className="flex items-center gap-3">
+              <Input
+                id="destinatarioPreview"
+                type="email"
+                value={destinatarioPreview}
+                onChange={(e) => setDestinatarioPreview(e.target.value)}
+                placeholder="email@ejemplo.com"
+                className="w-full max-w-md"
+              />
+              <Button
+                onClick={handlePreview}
+                disabled={!materiaId || !destinatarioPreview || !asuntoTemplate || !cuerpoTemplate || previewLoading}
+                variant="secondary"
               >
-                {email}
-                <button
-                  type="button"
-                  onClick={() => eliminarDestinatario(email)}
-                  className="ml-2 text-blue-600 hover:text-blue-800"
-                  aria-label={`Eliminar ${email}`}
-                >
-                  &times;
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="mt-2 flex gap-2">
-          <input
-            type="email"
-            value={nuevoDestinatario}
-            onChange={(e) => setNuevoDestinatario(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); agregarDestinatario() } }}
-            placeholder="email@ejemplo.com"
-            className="block flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-          <button
-            type="button"
-            onClick={agregarDestinatario}
-            className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-          >
-            Agregar
-          </button>
-        </div>
-      </div>
-
-      {sendError && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">{sendError}</div>
-      )}
-
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={() => setShowConfirm(true)}
-          disabled={!materiaId || destinatarios.length === 0 || !asuntoTemplate || !cuerpoTemplate || sending}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {sending ? 'Enviando...' : 'Enviar'}
-        </button>
-      </div>
-
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-900">Confirmar envío</h3>
-            <p className="mt-2 text-sm text-gray-600">
-              Se enviará la comunicación a <strong>{destinatarios.length}</strong> destinatario(s).
-            </p>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSend}
-                disabled={sending}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {sending ? 'Enviando...' : 'Confirmar Envío'}
-              </button>
+                {previewLoading ? 'Generando preview...' : 'Vista Previa'}
+              </Button>
             </div>
           </div>
+
+          {previewError && (
+            <div className="rounded neo-latex-border bg-error-container p-4 font-body-md text-on-error-container">{previewError}</div>
+          )}
+
+          {previewData && (
+            <div className="rounded neo-latex-border bg-surface-container-high p-4 border-l-4 border-l-primary">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="font-label-caps text-label-caps uppercase text-primary">Preview</p>
+                <span className="rounded bg-primary/10 px-2 py-0.5 font-body-md text-[12px] font-medium text-primary border border-primary/20">
+                  Solo lectura — preview del destinatario seleccionado
+                </span>
+              </div>
+              <div className="rounded neo-latex-border bg-surface-container-lowest p-3">
+                <p className="font-body-md text-body-md font-medium text-on-surface">
+                  <span className="text-on-surface-variant">Asunto:</span> {previewData.asunto}
+                </p>
+                <hr className="my-2 border-outline-variant" />
+                <p className="whitespace-pre-wrap font-body-md text-body-md text-on-surface">{previewData.cuerpo}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </BentoCard>
+
+      <BentoCard>
+        <div className="space-y-4">
+          <div className="flex flex-col gap-1">
+            <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Destinatarios</label>
+            <p className="font-body-md text-[12px] text-on-surface-variant mb-1">Agregue los emails a quienes enviar la comunicación.</p>
+
+            {destinatarios.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2 mb-2">
+                {destinatarios.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center rounded-full bg-primary/10 border border-primary/20 px-3 py-1 font-body-md text-[14px] text-primary"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => eliminarDestinatario(email)}
+                      className="ml-2 text-primary hover:text-primary/70"
+                      aria-label={`Eliminar ${email}`}
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                value={nuevoDestinatario}
+                onChange={(e) => setNuevoDestinatario(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); agregarDestinatario() } }}
+                placeholder="email@ejemplo.com"
+                className="flex-1"
+              />
+              <Button
+                onClick={agregarDestinatario}
+                variant="secondary"
+              >
+                Agregar
+              </Button>
+            </div>
+          </div>
+
+          {sendError && (
+            <div className="rounded neo-latex-border bg-error-container p-4 font-body-md text-on-error-container">{sendError}</div>
+          )}
+
+          <div className="flex gap-3 pt-4 border-t border-outline-variant">
+            <Button
+              onClick={() => setShowConfirm(true)}
+              disabled={!materiaId || destinatarios.length === 0 || !asuntoTemplate || !cuerpoTemplate || sending}
+              variant="primary"
+            >
+              {sending ? 'Enviando...' : 'Enviar'}
+            </Button>
+          </div>
+        </div>
+      </BentoCard>
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-scrim/40 backdrop-blur-sm">
+          <BentoCard className="mx-4 w-full max-w-md shadow-xl bg-surface-container-lowest">
+            <h3 className="font-headline-sm text-headline-sm text-on-surface">Confirmar envío</h3>
+            <p className="mt-2 font-body-md text-body-md text-on-surface-variant">
+              Se enviará la comunicación a <strong className="font-mono-data text-on-surface">{destinatarios.length}</strong> destinatario(s).
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                onClick={() => setShowConfirm(false)}
+                variant="secondary"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSend}
+                disabled={sending}
+                variant="primary"
+              >
+                {sending ? 'Enviando...' : 'Confirmar Envío'}
+              </Button>
+            </div>
+          </BentoCard>
         </div>
       )}
     </div>

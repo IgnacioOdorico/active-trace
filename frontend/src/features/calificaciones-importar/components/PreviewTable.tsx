@@ -1,4 +1,5 @@
 import type { ActividadDetectada } from '../types'
+import { Badge } from '../../../shared/components/ui/Badge'
 
 interface PreviewTableProps {
   actividades: ActividadDetectada[]
@@ -36,15 +37,15 @@ export default function PreviewTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          {materiaNombre} &mdash; {totalFilas} filas detectadas
+      <div className="flex items-center justify-between px-2">
+        <p className="font-body-md text-on-surface-variant">
+          <span className="font-medium text-on-surface">{materiaNombre}</span> &mdash; {totalFilas} filas detectadas
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+        <table className="min-w-full divide-y divide-outline-variant">
+          <thead className="bg-surface">
             <tr>
               <th className="w-12 px-4 py-3 text-left">
                 <input
@@ -54,43 +55,39 @@ export default function PreviewTable({
                     if (el) el.indeterminate = someSelected
                   }}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-lowest"
                   aria-label="Seleccionar todo"
                 />
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+              <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">
                 Actividad
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase text-gray-500">
+              <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">
                 Tipo
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
+          <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
             {actividades.map((actividad) => (
-              <tr key={actividad.nombre} className="hover:bg-gray-50">
+              <tr key={actividad.nombre} className="hover:bg-surface-container transition-colors">
                 <td className="px-4 py-3">
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(actividad.nombre)}
                     onChange={() => handleToggle(actividad.nombre)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-outline-variant text-primary focus:ring-primary bg-surface-container-lowest"
                     aria-label={`Seleccionar ${actividad.nombre}`}
                   />
                 </td>
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">
                   {actividad.nombre}
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      actividad.tipo === 'numerica'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-purple-100 text-purple-800'
-                    }`}
+                  <Badge 
+                    variant={actividad.tipo === 'numerica' ? 'info' : 'warning'}
                   >
                     {actividad.tipo === 'numerica' ? 'Numérica' : 'Textual'}
-                  </span>
+                  </Badge>
                 </td>
               </tr>
             ))}

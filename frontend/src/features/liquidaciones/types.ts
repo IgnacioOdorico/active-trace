@@ -1,19 +1,14 @@
 export type EstadoLiquidacion = 'Abierta' | 'Cerrada'
 
-export interface PlusDetalle {
-  grupo: string
-  monto: number
-}
-
 export interface Liquidacion {
   id: string
   usuario_id: string
   docente_nombre: string
   rol: string
-  comisiones: number
+  comisiones: string[]
   monto_base: number
-  plus_detalle: PlusDetalle[]
-  monto_total: number
+  monto_plus: number
+  total: number
   es_nexo: boolean
   excluido_por_factura: boolean
   estado: EstadoLiquidacion
@@ -31,9 +26,9 @@ export interface KpisPeriodo {
   total_nexo: number
   total_facturas_pendientes: number
   total_facturas_abonadas: number
-  cantidad_general: number
-  cantidad_nexo: number
-  cantidad_facturantes: number
+  cantidad_docentes_general: number
+  cantidad_docentes_nexo: number
+  cantidad_docentes_facturantes: number
 }
 
 export interface HistorialItem {
@@ -53,7 +48,6 @@ export interface HistorialResponse {
 export interface LiquidacionesFilters {
   cohorte_id?: string
   periodo?: string
-  docente_id?: string
 }
 
 export interface HistorialFilters {

@@ -4,6 +4,8 @@ import AsignacionMasivaForm from '../components/AsignacionMasivaForm'
 import ClonarEquipoForm from '../components/ClonarEquipoForm'
 import { VigenciaIndividualForm, VigenciaMasivaForm } from '../components/VigenciaForm'
 import type { MiEquipo } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
 
 type Panel = 'listado' | 'asignacion' | 'clonar' | 'vigencia-masiva'
 
@@ -23,60 +25,50 @@ export default function EquiposPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Equipos Docentes</h1>
+    <div className="mx-auto max-w-7xl">
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Equipos Docentes</h1>
         <div className="flex gap-2">
-          <button
-            type="button"
+          <Button
             onClick={() => setPanel('listado')}
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              panel === 'listado' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            variant={panel === 'listado' ? 'primary' : 'ghost'}
           >
             Mis Equipos
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={() => setPanel('asignacion')}
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              panel === 'asignacion' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            variant={panel === 'asignacion' ? 'primary' : 'ghost'}
           >
             Asignación Masiva
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={() => setPanel('clonar')}
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              panel === 'clonar' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            variant={panel === 'clonar' ? 'primary' : 'ghost'}
           >
             Clonar Equipo
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={() => setPanel('vigencia-masiva')}
-            className={`rounded-md px-3 py-2 text-sm font-medium ${
-              panel === 'vigencia-masiva' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            variant={panel === 'vigencia-masiva' ? 'primary' : 'ghost'}
           >
             Vigencia Masiva
-          </button>
+          </Button>
         </div>
       </div>
 
       {successMsg && (
-        <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">{successMsg}</div>
+        <div className="mb-6 rounded neo-latex-border bg-[#d4edda] p-4 font-body-md text-[#155724]">
+          {successMsg}
+        </div>
       )}
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <BentoCard>
         {panel === 'listado' && (
           <MisEquipos onVigencia={handleVigenciaOpen} />
         )}
         {panel === 'asignacion' && (
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-gray-800">Asignación Masiva</h2>
+            <h2 className="mb-4 font-label-caps text-label-caps text-on-surface-variant uppercase">Asignación Masiva</h2>
             <AsignacionMasivaForm
               onSuccess={(ids) => {
                 setSuccessMsg(`${ids.length} asignaciones creadas.`)
@@ -88,7 +80,7 @@ export default function EquiposPage() {
         )}
         {panel === 'clonar' && (
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-gray-800">Clonar Equipo</h2>
+            <h2 className="mb-4 font-label-caps text-label-caps text-on-surface-variant uppercase">Clonar Equipo</h2>
             <ClonarEquipoForm
               onSuccess={() => {
                 setSuccessMsg('Equipo clonado correctamente.')
@@ -100,7 +92,7 @@ export default function EquiposPage() {
         )}
         {panel === 'vigencia-masiva' && (
           <div>
-            <h2 className="mb-4 text-lg font-semibold text-gray-800">Modificar Vigencia Masiva</h2>
+            <h2 className="mb-4 font-label-caps text-label-caps text-on-surface-variant uppercase">Modificar Vigencia Masiva</h2>
             <VigenciaMasivaForm
               onSuccess={(filas) => {
                 setSuccessMsg(`${filas} fila(s) afectada(s).`)
@@ -109,23 +101,20 @@ export default function EquiposPage() {
             />
           </div>
         )}
-      </div>
+      </BentoCard>
 
       {equipoVigencia && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">Modificar Vigencia</h2>
-              <button
-                type="button"
-                onClick={() => setEquipoVigencia(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <BentoCard className="w-full max-w-md shadow-xl" title="Modificar Vigencia" action={
+            <button
+              onClick={() => setEquipoVigencia(null)}
+              className="material-symbols-outlined text-outline hover:text-on-surface"
+            >
+              close
+            </button>
+          }>
             <VigenciaIndividualForm equipo={equipoVigencia} onSuccess={handleVigenciaClose} />
-          </div>
+          </BentoCard>
         </div>
       )}
     </div>

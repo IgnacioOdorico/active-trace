@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import GestionAvisos from '../components/GestionAvisos'
 import AvisosUsuario from '../components/AvisosUsuario'
+import { Button } from '../../../shared/components/ui/Button'
 
 type Tab = 'mis-avisos' | 'gestion'
 
@@ -8,35 +9,27 @@ export default function AvisosPage() {
   const [tab, setTab] = useState<Tab>('mis-avisos')
 
   return (
-    <div className="mx-auto max-w-4xl py-8">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Avisos</h1>
-
-      <div className="mb-6 flex gap-4 border-b border-gray-200">
-        <button
-          type="button"
-          onClick={() => setTab('mis-avisos')}
-          className={`pb-2 text-sm font-medium ${
-            tab === 'mis-avisos'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Mis avisos
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('gestion')}
-          className={`pb-2 text-sm font-medium ${
-            tab === 'gestion'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Gestión
-        </button>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Avisos</h1>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="flex gap-2 mb-6 border-b border-outline-variant pb-2">
+        <Button
+          onClick={() => setTab('mis-avisos')}
+          variant={tab === 'mis-avisos' ? 'primary' : 'ghost'}
+        >
+          Mis avisos
+        </Button>
+        <Button
+          onClick={() => setTab('gestion')}
+          variant={tab === 'gestion' ? 'primary' : 'ghost'}
+        >
+          Gestión
+        </Button>
+      </div>
+
+      <div>
         {tab === 'mis-avisos' && <AvisosUsuario />}
         {tab === 'gestion' && <GestionAvisos />}
       </div>

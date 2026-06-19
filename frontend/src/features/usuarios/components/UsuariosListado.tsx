@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useUsuarios, useToggleUsuarioEstado } from '../hooks/useUsuariosApi'
 import type { UsuariosFilters, Usuario } from '../types'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
 
 interface Props {
   puedeGestionar: boolean
@@ -13,12 +15,12 @@ export default function UsuariosListado({ puedeGestionar, onEditar }: Props) {
   const { mutate: toggle } = useToggleUsuarioEstado()
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3 rounded-lg bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Estado</label>
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col gap-2">
+          <label className="font-label-caps text-label-caps uppercase text-on-surface-variant">Estado</label>
           <select
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-48 neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             value={filters.estado ?? ''}
             onChange={(e) => setFilters((f) => ({ ...f, estado: e.target.value || undefined, page: 1 }))}
           >
@@ -32,70 +34,77 @@ export default function UsuariosListado({ puedeGestionar, onEditar }: Props) {
       {isLoading && (
         <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-10 animate-pulse rounded bg-gray-200" />
+            <div key={i} className="h-10 animate-pulse rounded bg-surface-container" />
           ))}
         </div>
       )}
 
       {!isLoading && data?.data.length === 0 && (
-        <p className="py-6 text-center text-sm text-gray-500">
+        <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
           No hay usuarios para los filtros seleccionados.
-        </p>
+        </div>
       )}
 
       {!isLoading && data && data.data.length > 0 && (
         <>
-          <table className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Nombre</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Email</th>
-                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Regional</th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Modalidad</th>
-                <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Estado</th>
-                {puedeGestionar && (
-                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Acciones</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {data.data.map((u) => (
-                <tr key={u.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-4 py-2 text-sm font-medium text-gray-900">
-                    {u.nombre} {u.apellidos}
-                  </td>
-                  <td className="px-4 py-2 text-sm text-gray-600">{u.email}</td>
-                  <td className="px-4 py-2 text-sm text-gray-600">{u.regional ?? '—'}</td>
-                  <td className="px-4 py-2 text-center">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${u.facturador ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {u.facturador ? 'Factura' : 'Liquidación'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-center">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${u.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {u.estado}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+            <table className="min-w-full divide-y divide-outline-variant">
+              <thead className="bg-surface">
+                <tr>
+                  <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Nombre</th>
+                  <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Email</th>
+                  <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Regional</th>
+                  <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Modalidad</th>
+                  <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Estado</th>
                   {puedeGestionar && (
-                    <td className="px-4 py-2 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button onClick={() => onEditar(u)} className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50">
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => toggle({ id: u.id, activo: !u.is_active })}
-                          className="rounded px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
-                        >
-                          {u.is_active ? 'Desactivar' : 'Activar'}
-                        </button>
-                      </div>
-                    </td>
+                    <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Acciones</th>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex items-center justify-between text-sm text-gray-500">
+              </thead>
+              <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+                {data.data.map((u) => (
+                  <tr key={u.id} className="hover:bg-surface-container transition-colors">
+                    <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">
+                      {u.nombre} {u.apellidos}
+                    </td>
+                    <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{u.email}</td>
+                    <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{u.regional ?? '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <Badge variant={u.facturador ? 'warning' : 'info'}>
+                        {u.facturador ? 'Factura' : 'Liquidación'}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <Badge variant={u.is_active ? 'success' : 'neutral'}>
+                        {u.estado}
+                      </Badge>
+                    </td>
+                    {puedeGestionar && (
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex justify-center gap-2">
+                          <Button 
+                            onClick={() => onEditar(u)} 
+                            variant="ghost" 
+                            size="sm"
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            onClick={() => toggle({ id: u.id, activo: !u.is_active })}
+                            variant="ghost"
+                            size="sm"
+                          >
+                            {u.is_active ? 'Desactivar' : 'Activar'}
+                          </Button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between font-body-md text-on-surface-variant">
             <span>Total: {data.total} usuarios</span>
           </div>
         </>

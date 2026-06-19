@@ -6,6 +6,7 @@ import ComunicacionesPorDocente from '../components/ComunicacionesPorDocente'
 import InteraccionesDocenteMateria from '../components/InteraccionesDocenteMateria'
 import UltimasAcciones from '../components/UltimasAcciones'
 import type { PanelFilters } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
 
 type Tab = 'acciones' | 'comunicaciones' | 'interacciones' | 'log'
 
@@ -22,8 +23,8 @@ export default function PanelAuditoriaPage() {
 
   if (!puedeVer) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center text-sm text-red-700">
-        Acceso denegado. No tenés el permiso <code>auditoria:ver</code>.
+      <div className="rounded neo-latex-border bg-error-container p-6 text-center font-body-md text-on-error-container mt-8">
+        Acceso denegado. No tenés el permiso <code className="font-mono-data text-on-error-container font-semibold">auditoria:ver</code>.
       </div>
     )
   }
@@ -37,30 +38,28 @@ export default function PanelAuditoriaPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Panel de Auditoría</h1>
+      <h1 className="font-headline-md text-headline-md text-on-surface">Panel de Auditoría</h1>
 
       <FiltrosPanel filters={filters} onChange={setFilters} />
 
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-outline-variant pb-2">
         {tabs.map((t) => (
-          <button
+          <Button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium ${
-              tab === t.key
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            variant={tab === t.key ? 'primary' : 'ghost'}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
-      {tab === 'acciones' && <AccionesPorDia filters={filters} />}
-      {tab === 'comunicaciones' && <ComunicacionesPorDocente filters={filters} />}
-      {tab === 'interacciones' && <InteraccionesDocenteMateria filters={filters} />}
-      {tab === 'log' && <UltimasAcciones filters={filters} />}
+      <div>
+        {tab === 'acciones' && <AccionesPorDia filters={filters} />}
+        {tab === 'comunicaciones' && <ComunicacionesPorDocente filters={filters} />}
+        {tab === 'interacciones' && <InteraccionesDocenteMateria filters={filters} />}
+        {tab === 'log' && <UltimasAcciones filters={filters} />}
+      </div>
     </div>
   )
 }

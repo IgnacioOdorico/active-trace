@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useImportarAlumnos } from '../hooks/useColoquiosApi'
+import { Button } from '../../../shared/components/ui/Button'
 
 interface ImportarAlumnosFormProps {
   convocatoriaId: string
@@ -31,9 +32,9 @@ export default function ImportarAlumnosForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="flex flex-col gap-1">
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">
           IDs de alumnos habilitados (uno por línea)
         </label>
         <textarea
@@ -41,37 +42,37 @@ export default function ImportarAlumnosForm({
           value={alumnoIdsText}
           onChange={(e) => setAlumnoIdsText(e.target.value)}
           placeholder="uuid-alumno-1&#10;uuid-alumno-2&#10;..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm font-mono"
+          className="w-full neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-mono-data text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
       </div>
 
       {mutation.isSuccess && (
-        <div className="rounded-md bg-green-50 p-3 text-sm text-green-700">
+        <div className="rounded neo-latex-border bg-success-container/20 p-3 font-body-md text-success">
           {mutation.data.cantidad_importados} alumno(s) importados.
         </div>
       )}
 
       {mutation.isError && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded neo-latex-border bg-error-container p-3 font-body-md text-on-error-container">
           Error al importar alumnos.
         </div>
       )}
 
-      <div className="flex gap-3">
-        <button
+      <div className="flex gap-3 pt-4 border-t border-outline-variant">
+        <Button
           type="submit"
           disabled={mutation.isPending || !alumnoIdsText.trim()}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          variant="primary"
         >
           {mutation.isPending ? 'Importando...' : 'Importar alumnos'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={onCancel}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          variant="secondary"
         >
           Cancelar
-        </button>
+        </Button>
       </div>
     </form>
   )

@@ -1,20 +1,24 @@
 import { useState } from 'react'
 import { useComunicacionesApi } from '../hooks/useComunicacionesApi'
 import type { ComunicacionItem } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 
-function estadoColor(estado: string): string {
+function estadoVariant(estado: string): 'success' | 'warning' | 'error' | 'neutral' {
   switch (estado) {
     case 'Enviado':
-      return 'bg-green-100 text-green-800'
+      return 'success'
     case 'Pendiente':
     case 'PendienteAprobacion':
-      return 'bg-yellow-100 text-yellow-800'
+    case 'Enviando':
+      return 'warning'
     case 'Error':
-      return 'bg-red-100 text-red-800'
+      return 'error'
     case 'Cancelado':
-      return 'bg-gray-100 text-gray-800'
+      return 'neutral'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'neutral'
   }
 }
 
@@ -62,15 +66,15 @@ export default function ComunicacionTracking({ loteId, canApprove }: Props) {
   if (tracking.isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="h-6 w-6 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-        <p className="ml-3 text-sm text-gray-600">Cargando tracking...</p>
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <p className="ml-3 font-body-md text-on-surface-variant">Cargando tracking...</p>
       </div>
     )
   }
 
   if (tracking.isError) {
     return (
-      <div className="rounded-md bg-red-50 p-4 text-sm text-red-800">
+      <div className="rounded neo-latex-border bg-error-container p-4 font-body-md text-on-error-container">
         Error al cargar el tracking del lote.
       </div>
     )
@@ -80,95 +84,98 @@ export default function ComunicacionTracking({ loteId, canApprove }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">
-            Tracking de Lote
-          </h2>
-          <p className="text-sm text-gray-500">Lote ID: {loteId}</p>
+      <BentoCard>
+        <div className="flex items-center justify-between border-b border-outline-variant pb-4 mb-4">
+          <div>
+            <h2 className="font-headline-sm text-headline-sm text-on-surface">
+              Tracking de Lote
+            </h2>
+            <p className="font-mono-data text-mono-data text-on-surface-variant mt-1">Lote ID: {loteId}</p>
+          </div>
+          <Badge variant={estadoVariant(estadoLote)}>
+            {estadoLabel(estadoLote)}
+          </Badge>
         </div>
-        <span
-          className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${estadoColor(estadoLote)}`}
-        >
-          {estadoLabel(estadoLote)}
-        </span>
-      </div>
 
-      {requiereAprobacion && (
-        <div className="rounded-md bg-yellow-50 p-4">
-          <p className="text-sm text-yellow-800">
-            Este lote requiere aprobación antes de ser enviado. Estado actual: {estadoLabel(estadoLote)}
-          </p>
-          {canApprove && (
-            <div className="mt-3 flex gap-2">
-              <button
-                type="button"
-                onClick={() => aprobarLote.mutate(loteId)}
-                disabled={aprobarLote.isPending}
-                className="rounded-md bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-              >
-                {aprobarLote.isPending ? 'Aprobando...' : 'Aprobar Lote'}
-              </button>
-              <button
-                type="button"
-                onClick={() => rechazarLote.mutate(loteId)}
-                disabled={rechazarLote.isPending}
-                className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-              >
-                {rechazarLote.isPending ? 'Rechazando...' : 'Rechazar Lote'}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+        {requiereAprobacion && (
+          <div className="rounded neo-latex-border bg-[#F2C94C]/10 border-l-4 border-[#F2C94C] p-4 mb-6">
+            <p className="font-body-md font-medium text-on-surface">
+              Este lote requiere aprobación antes de ser enviado. Estado actual: <span className="font-bold">{estadoLabel(estadoLote)}</span>
+            </p>
+            {canApprove && (
+              <div className="mt-4 flex gap-3">
+                <Button
+                  onClick={() => aprobarLote.mutate(loteId)}
+                  disabled={aprobarLote.isPending}
+                  variant="primary"
+                >
+                  {aprobarLote.isPending ? 'Aprobando...' : 'Aprobar Lote'}
+                </Button>
+                <Button
+                  onClick={() => rechazarLote.mutate(loteId)}
+                  disabled={rechazarLote.isPending}
+                  variant="secondary"
+                  className="!text-error hover:!bg-error/10 border-error/50"
+                >
+                  {rechazarLote.isPending ? 'Rechazando...' : 'Rechazar Lote'}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
-      <div>
-        <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700">
-          Filtrar por estado
-        </label>
-        <select
-          id="statusFilter"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="mt-1 block w-full max-w-xs rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Todos</option>
-          {estadosDisponibles.map((est: string) => (
-            <option key={est} value={est}>{estadoLabel(est)}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="overflow-x-auto rounded-md border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Destinatario</th>
-              <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Estado</th>
-              <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Intentos</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Error</th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Enviado</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {filtered.map((c: ComunicacionItem) => (
-              <tr key={c.id}>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-900">{c.destinatario}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-center">
-                  <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${estadoColor(c.estado)}`}>
-                    {estadoLabel(c.estado)}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-gray-600">{c.intentos}</td>
-                <td className="max-w-xs truncate px-4 py-3 text-sm text-gray-600">{c.error_msg || '-'}</td>
-                <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{c.enviado_at || '-'}</td>
-              </tr>
+        <div className="mb-4">
+          <label htmlFor="statusFilter" className="font-label-caps text-label-caps text-on-surface-variant uppercase mb-1 block">
+            Filtrar por estado
+          </label>
+          <select
+            id="statusFilter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="block w-full max-w-xs neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Todos</option>
+            {estadosDisponibles.map((est: string) => (
+              <option key={est} value={est}>{estadoLabel(est)}</option>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </select>
+        </div>
 
-      <p className="text-sm text-gray-500">{data?.total ?? 0} comunicación(es) en total</p>
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
+              <tr>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Destinatario</th>
+                <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Estado</th>
+                <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Intentos</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Error</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Enviado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+              {filtered.map((c: ComunicacionItem) => (
+                <tr key={c.id} className="hover:bg-surface-container transition-colors">
+                  <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{c.destinatario}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-center">
+                    <Badge variant={estadoVariant(c.estado)}>
+                      {estadoLabel(c.estado)}
+                    </Badge>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-center font-mono-data text-mono-data text-on-surface-variant">{c.intentos}</td>
+                  <td className="max-w-xs truncate px-4 py-3 font-body-md text-body-md text-on-surface-variant">{c.error_msg || '-'}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono-data text-mono-data text-on-surface-variant">{c.enviado_at || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-outline-variant flex justify-end">
+          <p className="font-body-md text-on-surface-variant">
+            <span className="font-mono-data font-bold text-on-surface">{data?.total ?? 0}</span> comunicación(es) en total
+          </p>
+        </div>
+      </BentoCard>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../../auth/hooks/useAuth'
 import SalarioBaseABM from '../components/SalarioBaseABM'
 import SalarioPlusABM from '../components/SalarioPlusABM'
+import { Button } from '../../../shared/components/ui/Button'
 
 type Tab = 'base' | 'plus'
 
@@ -15,35 +16,35 @@ export default function GrillaSalarialPage() {
 
   if (!puedeConfigurar) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center text-sm text-red-700">
+      <div className="rounded neo-latex-border bg-error-container p-6 text-center font-body-md text-on-error-container">
         Acceso denegado. No tenés el permiso{' '}
-        <code>liquidaciones:configurar-salarios</code>.
+        <code className="font-mono-data bg-white/50 px-1 rounded">liquidaciones:configurar-salarios</code>.
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Grilla Salarial</h1>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Grilla Salarial</h1>
+      </div>
 
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 mb-6 border-b border-outline-variant pb-2">
         {(['base', 'plus'] as const).map((t) => (
-          <button
+          <Button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium ${
-              tab === t
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            variant={tab === t ? 'primary' : 'ghost'}
           >
             {t === 'base' ? 'Salario Base' : 'Salario Plus'}
-          </button>
+          </Button>
         ))}
       </div>
 
-      {tab === 'base' && <SalarioBaseABM />}
-      {tab === 'plus' && <SalarioPlusABM />}
+      <div>
+        {tab === 'base' && <SalarioBaseABM />}
+        {tab === 'plus' && <SalarioPlusABM />}
+      </div>
     </div>
   )
 }

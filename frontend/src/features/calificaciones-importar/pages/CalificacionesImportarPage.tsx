@@ -3,6 +3,9 @@ import { useMaterias } from '../../academico/hooks/useMaterias'
 import { useCalificacionesApi } from '../hooks/useCalificacionesApi'
 import PreviewTable from '../components/PreviewTable'
 import type { CalificacionPreviewResponse, ImportarResultado } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 
 type WizardStep = 'select' | 'loading' | 'preview' | 'importing' | 'result' | 'error' | 'empty'
 
@@ -71,197 +74,170 @@ export default function CalificacionesImportarPage() {
     setAdvertenciasOpen(false)
   }
 
-  if (step === 'loading') {
+  if (step === 'loading' || step === 'importing') {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-        <p className="mt-4 text-sm text-gray-600">Procesando archivo...</p>
-      </div>
-    )
-  }
-
-  if (step === 'importing') {
-    return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-        <p className="mt-4 text-sm text-gray-600">Importando calificaciones...</p>
+      <div className="flex flex-col items-center justify-center py-24">
+        <span className="material-symbols-outlined text-primary text-4xl animate-spin">refresh</span>
+        <p className="mt-4 font-body-md text-on-surface-variant">
+          {step === 'loading' ? 'Procesando archivo...' : 'Importando calificaciones...'}
+        </p>
       </div>
     )
   }
 
   if (step === 'error') {
     return (
-      <div className="mx-auto max-w-2xl py-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Importar Calificaciones
-        </h1>
-
-        <div className="mt-6 rounded-md bg-red-50 p-4">
-          <p className="text-sm font-medium text-red-800">{errorMessage}</p>
-        </div>
-
-        <button
-          onClick={handleReset}
-          className="mt-4 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-        >
-          Volver a intentar
-        </button>
+      <div className="mx-auto max-w-2xl">
+        <BentoCard title="Importar Calificaciones">
+          <div className="rounded bg-error-container p-4 mb-6">
+            <p className="font-body-md text-on-error-container">{errorMessage}</p>
+          </div>
+          <Button onClick={handleReset} variant="ghost">Volver a intentar</Button>
+        </BentoCard>
       </div>
     )
   }
 
   if (step === 'empty') {
     return (
-      <div className="mx-auto max-w-2xl py-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Importar Calificaciones
-        </h1>
-
-        <div className="mt-6 rounded-md bg-yellow-50 p-4">
-          <p className="text-sm font-medium text-yellow-800">
-            No se detectaron actividades evaluables en el archivo.
-          </p>
-        </div>
-
-        <button
-          onClick={handleReset}
-          className="mt-4 rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-        >
-          Subir otro archivo
-        </button>
+      <div className="mx-auto max-w-2xl">
+        <BentoCard title="Importar Calificaciones">
+          <div className="rounded bg-tertiary-container p-4 mb-6">
+            <p className="font-body-md text-on-tertiary-container">
+              No se detectaron actividades evaluables en el archivo.
+            </p>
+          </div>
+          <Button onClick={handleReset} variant="ghost">Subir otro archivo</Button>
+        </BentoCard>
       </div>
     )
   }
 
   if (step === 'result' && resultado) {
     return (
-      <div className="mx-auto max-w-3xl py-8">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Importar Calificaciones
-        </h1>
-
-        <div className="mt-6 rounded-md border border-green-200 bg-green-50 p-4">
-          <p className="text-sm font-medium text-green-800">
-            {resultado.insertadas} calificaciones insertadas
-            {resultado.actualizadas > 0 && `, ${resultado.actualizadas} actualizadas`}
-          </p>
-        </div>
-
-        {resultado.advertencias.length > 0 && (
-          <div className="mt-4 rounded-md border border-yellow-200 bg-yellow-50">
-            <button
-              onClick={() => setAdvertenciasOpen(!advertenciasOpen)}
-              className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-yellow-800"
-            >
-              <span>
-                {resultado.advertencias.length} advertencia(s)
-              </span>
-              <span>{advertenciasOpen ? '▲' : '▼'}</span>
-            </button>
-
-            {advertenciasOpen && (
-              <div className="border-t border-yellow-200 px-4 py-2">
-                <ul className="space-y-1">
-                  {resultado.advertencias.map((adv, i) => (
-                    <li key={i} className="text-sm text-yellow-700">
-                      Fila {adv.fila}: {adv.motivo}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+      <div className="mx-auto max-w-3xl">
+        <BentoCard title="Importar Calificaciones">
+          <div className="rounded neo-latex-border bg-surface-container-low p-4 mb-6">
+            <p className="font-body-md text-on-surface">
+              <span className="font-bold">{resultado.insertadas}</span> calificaciones insertadas
+              {resultado.actualizadas > 0 && `, ${resultado.actualizadas} actualizadas`}
+            </p>
           </div>
-        )}
 
-        <button
-          onClick={handleReset}
-          className="mt-6 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-        >
-          Importar otro archivo
-        </button>
+          {resultado.advertencias.length > 0 && (
+            <div className="mb-6 rounded neo-latex-border bg-tertiary-container overflow-hidden">
+              <button
+                onClick={() => setAdvertenciasOpen(!advertenciasOpen)}
+                className="flex w-full items-center justify-between px-4 py-3 font-label-caps text-label-caps uppercase text-on-tertiary-container hover:bg-opacity-90"
+              >
+                <span>{resultado.advertencias.length} advertencia(s)</span>
+                <span className="material-symbols-outlined">{advertenciasOpen ? 'expand_less' : 'expand_more'}</span>
+              </button>
+
+              {advertenciasOpen && (
+                <div className="border-t border-outline-variant px-4 py-2 bg-surface">
+                  <ul className="space-y-1">
+                    {resultado.advertencias.map((adv, i) => (
+                      <li key={i} className="font-mono-data text-mono-data text-on-surface-variant">
+                        Fila {adv.fila}: {adv.motivo}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          <Button onClick={handleReset} variant="primary">Importar otro archivo</Button>
+        </BentoCard>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto max-w-3xl py-8">
-      <h1 className="text-2xl font-bold text-gray-900">
+    <div className="mx-auto max-w-3xl">
+      <h1 className="font-headline-md text-headline-md text-on-surface mb-8">
         Importar Calificaciones
       </h1>
 
-      <div className="mt-6 space-y-6">
-        <div>
-          <label
-            htmlFor="materia"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Materia
-          </label>
-          <select
-            id="materia"
-            value={materiaId}
-            onChange={(e) => setMateriaId(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="">Seleccione una materia</option>
-            {materiasLoading && (
-              <option value="" disabled>
-                Cargando materias...
-              </option>
-            )}
-            {materias?.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.nombre}
-                {m.comision ? ` - ${m.comision}` : ''}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="space-y-6">
+        <BentoCard title="Selección de Archivo">
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="materia"
+                className="block font-label-caps text-label-caps text-on-surface-variant uppercase mb-2"
+              >
+                Materia
+              </label>
+              <select
+                id="materia"
+                value={materiaId}
+                onChange={(e) => setMateriaId(e.target.value)}
+                className="block w-full neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+              >
+                <option value="">Seleccione una materia</option>
+                {materiasLoading && (
+                  <option value="" disabled>Cargando materias...</option>
+                )}
+                {materias?.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.nombre}
+                    {m.comision ? ` - ${m.comision}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div>
-          <label
-            htmlFor="file"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Archivo (.xlsx o .csv)
-          </label>
-          <input
-            id="file"
-            type="file"
-            accept=".xlsx,.csv"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 hover:file:bg-blue-100"
-          />
-        </div>
+            <div>
+              <label
+                htmlFor="file"
+                className="block font-label-caps text-label-caps text-on-surface-variant uppercase mb-2"
+              >
+                Archivo (.xlsx o .csv)
+              </label>
+              <input
+                id="file"
+                type="file"
+                accept=".xlsx,.csv"
+                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                className="block w-full font-body-md text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:font-label-caps file:text-label-caps file:uppercase file:bg-surface-container-high file:text-on-surface hover:file:bg-surface-container"
+              />
+            </div>
 
-        <button
-          onClick={handlePreview}
-          disabled={!materiaId || !file}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Vista Previa
-        </button>
+            <Button
+              onClick={handlePreview}
+              disabled={!materiaId || !file}
+              variant="primary"
+            >
+              Vista Previa
+            </Button>
+          </div>
+        </BentoCard>
+
+        {step === 'preview' && previewData && (
+          <BentoCard title="Vista Previa de Actividades">
+            <div className="space-y-6">
+              <PreviewTable
+                actividades={previewData.actividades}
+                selectedIds={selectedIds}
+                onSelectionChange={setSelectedIds}
+                materiaNombre={materiaNombre}
+                totalFilas={previewData.total_filas}
+              />
+
+              <Button
+                onClick={handleImportar}
+                disabled={selectedIds.length === 0}
+                variant="primary"
+                className="w-full sm:w-auto"
+              >
+                Importar Seleccionadas ({selectedIds.length})
+              </Button>
+            </div>
+          </BentoCard>
+        )}
       </div>
-
-      {step === 'preview' && previewData && (
-        <div className="mt-8 space-y-4">
-          <PreviewTable
-            actividades={previewData.actividades}
-            selectedIds={selectedIds}
-            onSelectionChange={setSelectedIds}
-            materiaNombre={materiaNombre}
-            totalFilas={previewData.total_filas}
-          />
-
-          <button
-            onClick={handleImportar}
-            disabled={selectedIds.length === 0}
-            className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Importar Seleccionadas ({selectedIds.length})
-          </button>
-        </div>
-      )}
     </div>
   )
 }

@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useSalariosBase } from '../hooks/useGrillaSalarialApi'
 import SalarioBaseForm from './SalarioBaseForm'
 import type { SalarioBase } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 
 function formatARS(amount: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount)
@@ -13,20 +15,20 @@ export default function SalarioBaseABM() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-headline-sm text-headline-sm text-on-surface">
           Salario Base
         </h3>
-        <button
+        <Button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          variant={showForm ? 'secondary' : 'primary'}
         >
           {showForm ? 'Cancelar' : '+ Nuevo salario base'}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div className="rounded neo-latex-border bg-surface-container-high p-4">
           <SalarioBaseForm onSuccess={() => setShowForm(false)} />
         </div>
       )}
@@ -34,52 +36,50 @@ export default function SalarioBaseABM() {
       {isLoading && (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-10 animate-pulse rounded bg-gray-200" />
+            <div key={i} className="h-10 animate-pulse rounded bg-surface-container" />
           ))}
         </div>
       )}
 
       {!isLoading && data?.length === 0 && (
-        <p className="py-4 text-center text-sm text-gray-500">
+        <p className="py-4 text-center font-body-md text-on-surface-variant">
           No hay salarios base configurados.
         </p>
       )}
 
       {!isLoading && data && data.length > 0 && (
-        <table className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Rol</th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Monto</th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Desde</th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Hasta</th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(data as SalarioBase[]).map((item) => (
-              <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="px-4 py-2 text-sm font-medium text-gray-900">{item.rol}</td>
-                <td className="px-4 py-2 text-right text-sm text-gray-700">
-                  {formatARS(item.monto)}
-                </td>
-                <td className="px-4 py-2 text-center text-sm text-gray-600">{item.desde}</td>
-                <td className="px-4 py-2 text-center text-sm text-gray-600">
-                  {item.hasta ?? '—'}
-                </td>
-                <td className="px-4 py-2 text-center">
-                  <span
-                    className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                      item.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                    }`}
-                  >
-                    {item.activo ? 'Vigente' : 'Cerrado'}
-                  </span>
-                </td>
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
+              <tr>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Rol</th>
+                <th className="px-4 py-3 text-right font-label-caps text-label-caps uppercase text-on-surface-variant">Monto</th>
+                <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Desde</th>
+                <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Hasta</th>
+                <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Estado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+              {(data as SalarioBase[]).map((item) => (
+                <tr key={item.id} className="hover:bg-surface-container transition-colors">
+                  <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{item.rol}</td>
+                  <td className="px-4 py-3 text-right font-mono-data text-mono-data text-on-surface">
+                    {formatARS(item.monto)}
+                  </td>
+                  <td className="px-4 py-3 text-center font-mono-data text-mono-data text-on-surface-variant">{item.desde}</td>
+                  <td className="px-4 py-3 text-center font-mono-data text-mono-data text-on-surface-variant">
+                    {item.hasta ?? '—'}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <Badge variant={item.activo ? 'success' : 'neutral'}>
+                      {item.activo ? 'Vigente' : 'Cerrado'}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import MonitorGeneral from '../components/MonitorGeneral'
 import MonitorSeguimiento from '../components/MonitorSeguimiento'
+import { Button } from '../../../shared/components/ui/Button'
 
 type Tab = 'general' | 'seguimiento'
 
@@ -8,35 +9,27 @@ export default function MonitoresPage() {
   const [tab, setTab] = useState<Tab>('general')
 
   return (
-    <div className="mx-auto max-w-7xl py-8">
-      <h1 className="text-2xl font-bold text-gray-900">Monitores</h1>
-
-      <div className="mt-6 flex gap-4 border-b border-gray-200">
-        <button
-          type="button"
-          onClick={() => setTab('general')}
-          className={`pb-2 text-sm font-medium ${
-            tab === 'general'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          General
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('seguimiento')}
-          className={`pb-2 text-sm font-medium ${
-            tab === 'seguimiento'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Seguimiento
-        </button>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Monitores</h1>
       </div>
 
-      <div className="mt-6">
+      <div className="flex gap-2 mb-6 border-b border-outline-variant pb-2">
+        <Button
+          onClick={() => setTab('general')}
+          variant={tab === 'general' ? 'primary' : 'ghost'}
+        >
+          General
+        </Button>
+        <Button
+          onClick={() => setTab('seguimiento')}
+          variant={tab === 'seguimiento' ? 'primary' : 'ghost'}
+        >
+          Seguimiento
+        </Button>
+      </div>
+
+      <div>
         {tab === 'general' && <MonitorGeneral />}
         {tab === 'seguimiento' && <MonitorSeguimiento />}
       </div>

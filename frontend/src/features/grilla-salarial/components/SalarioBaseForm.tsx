@@ -3,6 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { salarioBaseSchema, type SalarioBaseFormValues } from '../schemas'
 import { useCrearSalarioBase } from '../hooks/useGrillaSalarialApi'
 import type { SalarioBase } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
+import { Input } from '../../../shared/components/ui/Input'
 
 interface Props {
   onSuccess: () => void
@@ -37,66 +39,66 @@ export default function SalarioBaseForm({ onSuccess }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Rol *</label>
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Rol *</label>
         <select
           {...register('rol')}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          className="w-full neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         >
           <option value="">Seleccioná un rol</option>
           {ROLES.map((r) => (
             <option key={r} value={r}>{r}</option>
           ))}
         </select>
-        {errors.rol && <p className="text-xs text-red-600">{errors.rol.message}</p>}
+        {errors.rol && <p className="mt-1 font-body-md text-[12px] text-error">{errors.rol.message}</p>}
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-gray-700">Monto *</label>
-        <input
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Monto *</label>
+        <Input
           type="number"
           step="0.01"
           {...register('monto')}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          className="w-full"
           placeholder="0.00"
         />
-        {errors.monto && <p className="text-xs text-red-600">{errors.monto.message}</p>}
+        {errors.monto && <p className="mt-1 font-body-md text-[12px] text-error">{errors.monto.message}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">Desde *</label>
-          <input
+          <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Desde *</label>
+          <Input
             type="date"
             {...register('desde')}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full"
           />
-          {errors.desde && <p className="text-xs text-red-600">{errors.desde.message}</p>}
+          {errors.desde && <p className="mt-1 font-body-md text-[12px] text-error">{errors.desde.message}</p>}
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-gray-700">Hasta</label>
-          <input
+          <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Hasta</label>
+          <Input
             type="date"
             {...register('hasta')}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full"
           />
-          {errors.hasta && <p className="text-xs text-red-600">{errors.hasta.message}</p>}
+          {errors.hasta && <p className="mt-1 font-body-md text-[12px] text-error">{errors.hasta.message}</p>}
         </div>
       </div>
 
       {errors.root && (
-        <p className="rounded bg-red-50 p-2 text-xs text-red-700">{errors.root.message}</p>
+        <p className="rounded neo-latex-border bg-error-container p-3 font-body-md text-on-error-container">{errors.root.message}</p>
       )}
 
-      <div className="flex justify-end">
-        <button
+      <div className="flex justify-end pt-4 border-t border-outline-variant">
+        <Button
           type="submit"
           disabled={isPending}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          variant="primary"
         >
           {isPending ? 'Guardando...' : 'Guardar salario base'}
-        </button>
+        </Button>
       </div>
     </form>
   )
