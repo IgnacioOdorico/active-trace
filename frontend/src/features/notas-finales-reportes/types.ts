@@ -23,7 +23,7 @@ export interface NotaFinalAlumno {
   nombre: string
   apellidos: string
   comision: string
-  nota_final: number
+  nota_final: number | null
   actividades_textuales: string[]
   estado: 'aprobado' | 'no_aprobado'
 }
