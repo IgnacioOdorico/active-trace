@@ -21,31 +21,39 @@ export interface MisEquiposResponse {
 export interface AsignacionMasivaRequest {
   usuario_ids: string[]
   materia_id: string
-  carrera: string
-  cohorte: string
+  carrera_id: string
+  cohorte_id: string
   rol: string
-  vigencia_desde: string
-  vigencia_hasta: string
+  desde: string
+  hasta?: string
 }
 
 export interface AsignacionMasivaResponse {
   ids_creados: string[]
-  total: number
+}
+
+export interface DocenteDisponible {
+  id: string
+  nombre_completo: string
+  email: string
+  roles: string[]
 }
 
 export interface ClonarEquipoRequest {
-  equipo_origen_id: string
-  cohorte_destino: string
+  materia_id: string
+  cohorte_origen_id: string
+  cohorte_destino_id: string
+  desde: string
+  hasta?: string
 }
 
 export interface ClonarEquipoResponse {
   ids_creados: string[]
-  total: number
 }
 
 export interface ModificarVigenciaRequest {
-  vigencia_desde: string
-  vigencia_hasta: string
+  desde: string
+  hasta: string
 }
 
 export interface ModificarVigenciaResponse {
@@ -55,9 +63,10 @@ export interface ModificarVigenciaResponse {
 }
 
 export interface VigenciaMasivaRequest {
-  equipo_origen_id: string
-  vigencia_desde: string
-  vigencia_hasta: string
+  materia_id: string
+  cohorte_id: string
+  desde: string
+  hasta?: string
 }
 
 export interface VigenciaMasivaResponse {

@@ -18,6 +18,7 @@ from app.schemas.equipos import (
     AsignacionMasivaResponse,
     ClonarRequest,
     ClonarResponse,
+    DocenteDisponibleResponse,
     EquipoItemResponse,
     EquipoListResponse,
     VigenciaMasivaRequest,
@@ -105,6 +106,16 @@ async def list_mis_equipos(
         ))
 
     return EquipoListResponse(data=items, total=len(items))
+
+
+@router.get("/docentes-disponibles", response_model=list[DocenteDisponibleResponse])
+async def docentes_disponibles(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _=Depends(require_permission("equipos:asignar")),
+):
+    svc = EquipoService(current_user.tenant_id)
+    return await svc.listar_docentes_disponibles(db)
 
 
 @router.post(

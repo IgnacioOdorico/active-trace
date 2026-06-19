@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import EntityNotFoundError
 from app.models.asignacion import Asignacion
+from app.models.user import User, nombre_completo_usuario
 from app.repositories.asignacion import AsignacionRepository
 from app.schemas.equipos import (
     AsignacionMasivaRequest,
@@ -14,12 +15,38 @@ from app.schemas.equipos import (
 )
 from app.services.audit_service import AuditLogService, ASIGNACION_MODIFICAR
 
+ROLES_ASIGNABLES_EQUIPO = ("PROFESOR", "TUTOR", "NEXO")
+
 
 class EquipoService:
     def __init__(self, tenant_id: uuid.UUID) -> None:
         self._tenant_id = tenant_id
         self._repo = AsignacionRepository(tenant_id)
         self._audit = AuditLogService(tenant_id)
+
+    async def listar_docentes_disponibles(self, db: AsyncSession) -> list[dict]:
+        result = await db.execute(
+            select(User).where(
+                User.tenant_id == self._tenant_id,
+                User.deleted_at.is_(None),
+                User.is_active.is_(True),
+            )
+        )
+        usuarios = result.unique().scalars().all()
+
+        docentes = []
+        for u in usuarios:
+            roles_usuario = sorted(
+                {r.codigo for r in u.roles} & set(ROLES_ASIGNABLES_EQUIPO)
+            )
+            if roles_usuario:
+                docentes.append({
+                    "id": u.id,
+                    "nombre_completo": nombre_completo_usuario(u.nombre, u.apellidos, u.email),
+                    "email": u.email,
+                    "roles": roles_usuario,
+                })
+        return docentes
 
     async def listar_mis_equipos(
         self,

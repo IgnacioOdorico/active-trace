@@ -167,6 +167,144 @@ class TestMisEquipos:
         assert response.status_code == 403
 
 
+class TestListarDocentesDisponiblesService:
+    @pytest.mark.asyncio
+    async def test_filtra_solo_roles_asignables(self):
+        from app.services.equipo_service import EquipoService
+        from app.models.rol import Rol
+
+        tenant_id = uuid.uuid4()
+        svc = EquipoService(tenant_id)
+
+        profesor = Mock()
+        profesor.id = uuid.uuid4()
+        profesor.nombre = "Marina"
+        profesor.apellidos = "Suárez"
+        profesor.email = "profesor1@demo.local"
+        profesor.roles = [Mock(spec=Rol, codigo="PROFESOR")]
+
+        alumno = Mock()
+        alumno.id = uuid.uuid4()
+        alumno.nombre = "Lucía"
+        alumno.apellidos = "Fernández"
+        alumno.email = "alumno1@demo.local"
+        alumno.roles = [Mock(spec=Rol, codigo="ALUMNO")]
+
+        mock_result = MagicMock()
+        mock_result.unique.return_value.scalars.return_value.all.return_value = [profesor, alumno]
+        mock_db = AsyncMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        docentes = await svc.listar_docentes_disponibles(mock_db)
+
+        assert len(docentes) == 1
+        assert docentes[0]["id"] == profesor.id
+        assert docentes[0]["nombre_completo"] == "Marina Suárez"
+        assert docentes[0]["roles"] == ["PROFESOR"]
+
+    @pytest.mark.asyncio
+    async def test_usuario_sin_nombre_usa_email(self):
+        from app.services.equipo_service import EquipoService
+        from app.models.rol import Rol
+
+        tenant_id = uuid.uuid4()
+        svc = EquipoService(tenant_id)
+
+        usuario = Mock()
+        usuario.id = uuid.uuid4()
+        usuario.nombre = None
+        usuario.apellidos = None
+        usuario.email = "tutor1@demo.local"
+        usuario.roles = [Mock(spec=Rol, codigo="TUTOR")]
+
+        mock_result = MagicMock()
+        mock_result.unique.return_value.scalars.return_value.all.return_value = [usuario]
+        mock_db = AsyncMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        docentes = await svc.listar_docentes_disponibles(mock_db)
+
+        assert docentes[0]["nombre_completo"] == "tutor1@demo.local"
+
+    @pytest.mark.asyncio
+    async def test_usuario_con_multiples_roles_asignables(self):
+        from app.services.equipo_service import EquipoService
+        from app.models.rol import Rol
+
+        tenant_id = uuid.uuid4()
+        svc = EquipoService(tenant_id)
+
+        usuario = Mock()
+        usuario.id = uuid.uuid4()
+        usuario.nombre = "Diego"
+        usuario.apellidos = "Herrera"
+        usuario.email = "coordinador1@demo.local"
+        usuario.roles = [
+            Mock(spec=Rol, codigo="PROFESOR"),
+            Mock(spec=Rol, codigo="NEXO"),
+        ]
+
+        mock_result = MagicMock()
+        mock_result.unique.return_value.scalars.return_value.all.return_value = [usuario]
+        mock_db = AsyncMock()
+        mock_db.execute = AsyncMock(return_value=mock_result)
+
+        docentes = await svc.listar_docentes_disponibles(mock_db)
+
+        assert docentes[0]["roles"] == ["NEXO", "PROFESOR"]
+
+
+class TestDocentesDisponibles:
+    @pytest.mark.asyncio
+    async def test_docentes_disponibles_returns_200(self, async_client, mock_deps):
+        user_id, _ = mock_deps
+        docentes = [
+            {
+                "id": uuid.uuid4(),
+                "nombre_completo": "Marina Suárez",
+                "email": "profesor1@demo.local",
+                "roles": ["PROFESOR"],
+            },
+            {
+                "id": uuid.uuid4(),
+                "nombre_completo": "Roberto Acosta",
+                "email": "nexo1@demo.local",
+                "roles": ["NEXO"],
+            },
+        ]
+
+        with _auth_patches(user_id, uuid.uuid4()):
+            with patch("app.routers.equipos.EquipoService") as mock_svc_cls:
+                mock_svc = mock_svc_cls.return_value
+                mock_svc.listar_docentes_disponibles = AsyncMock(return_value=docentes)
+
+                response = await async_client.get(
+                    "/api/equipos/docentes-disponibles", headers=AUTH_HEADER
+                )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 2
+        assert data[0]["nombre_completo"] == "Marina Suárez"
+        assert data[0]["roles"] == ["PROFESOR"]
+
+    @pytest.mark.asyncio
+    async def test_docentes_disponibles_sin_permiso_returns_403(
+        self, async_client, mock_deps
+    ):
+        user_id, tenant_id = mock_deps
+
+        with patch(
+            "app.core.permissions.decode_access_token",
+            return_value={"sub": str(user_id), "tenant_id": str(tenant_id), "rols": []},
+        ):
+            response = await async_client.get(
+                "/api/equipos/docentes-disponibles", headers=AUTH_HEADER
+            )
+
+        assert response.status_code == 403
+
+
 class TestAsignacionMasiva:
     @pytest.mark.asyncio
     async def test_asignacion_masiva_returns_201(self, async_client, mock_deps):

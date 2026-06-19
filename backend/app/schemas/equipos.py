@@ -19,6 +19,13 @@ class AsignacionMasivaResponse(BaseModel):
     ids_creados: list[uuid.UUID]
 
 
+class DocenteDisponibleResponse(BaseModel):
+    id: uuid.UUID
+    nombre_completo: str
+    email: str
+    roles: list[str]
+
+
 class ClonarRequest(BaseModel):
     materia_id: uuid.UUID
     cohorte_origen_id: uuid.UUID

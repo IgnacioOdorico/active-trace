@@ -1,7 +1,9 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { asignacionMasivaSchema, type AsignacionMasivaFormData } from '../schemas'
-import { useAsignacionMasiva } from '../hooks/useEquiposApi'
+import { asignacionMasivaSchema, ROLES_EQUIPO, type AsignacionMasivaFormData } from '../schemas'
+import { useAsignacionMasiva, useDocentesDisponibles } from '../hooks/useEquiposApi'
+import { useMaterias } from '../../academico/hooks/useMaterias'
+import { useCarreras, useCohortes } from '../../estructura-academica/hooks/useEstructuraApi'
 
 interface AsignacionMasivaFormProps {
   onSuccess: (idsCreados: string[]) => void
@@ -20,9 +22,13 @@ export default function AsignacionMasivaForm({ onSuccess }: AsignacionMasivaForm
   })
 
   const mutation = useAsignacionMasiva()
+  const { data: docentes, isLoading: docentesLoading } = useDocentesDisponibles()
+  const { data: materias, isLoading: materiasLoading } = useMaterias()
+  const { data: carreras, isLoading: carrerasLoading } = useCarreras()
+  const { data: cohortes, isLoading: cohortesLoading } = useCohortes()
 
   const onSubmit = (values: AsignacionMasivaFormData) => {
-    mutation.mutate(values, {
+    mutation.mutate({ ...values, hasta: values.hasta || undefined }, {
       onSuccess: (data) => {
         onSuccess(data.ids_creados)
         reset()
@@ -41,24 +47,22 @@ export default function AsignacionMasivaForm({ onSuccess }: AsignacionMasivaForm
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
-          IDs de docentes (separados por coma)
+        <label htmlFor="usuario_ids" className="mb-1 block text-sm font-medium text-gray-700">
+          Docentes
         </label>
-        <input
-          type="text"
-          placeholder="uuid1, uuid2, ..."
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-          onChange={(e) => {
-            const ids = e.target.value
-              .split(',')
-              .map((s) => s.trim())
-              .filter(Boolean)
-            // inject as array via setValue workaround — handled via hidden input trick
-            ;(document.querySelector('input[name="usuario_ids_raw"]') as HTMLInputElement | null)
-            void ids
-          }}
-          {...register('usuario_ids.0')}
-        />
+        <select
+          id="usuario_ids"
+          multiple
+          {...register('usuario_ids')}
+          className="h-32 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+        >
+          {docentesLoading && <option disabled>Cargando docentes...</option>}
+          {docentes?.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.nombre_completo} ({d.roles.join(', ')})
+            </option>
+          ))}
+        </select>
         {errors.usuario_ids && (
           <p className="mt-1 text-xs text-red-600">{errors.usuario_ids.message}</p>
         )}
@@ -66,71 +70,92 @@ export default function AsignacionMasivaForm({ onSuccess }: AsignacionMasivaForm
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Materia ID</label>
-          <input
+          <label htmlFor="materia_id" className="mb-1 block text-sm font-medium text-gray-700">Materia</label>
+          <select
+            id="materia_id"
             {...register('materia_id')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="ID de la materia"
-          />
+          >
+            <option value="">Seleccione una materia</option>
+            {materiasLoading && <option disabled>Cargando materias...</option>}
+            {materias?.map((m) => (
+              <option key={m.id} value={m.id}>{m.nombre}</option>
+            ))}
+          </select>
           {errors.materia_id && (
             <p className="mt-1 text-xs text-red-600">{errors.materia_id.message}</p>
           )}
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Carrera</label>
-          <input
-            {...register('carrera')}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="Ej: Ingeniería en Sistemas"
-          />
-          {errors.carrera && (
-            <p className="mt-1 text-xs text-red-600">{errors.carrera.message}</p>
-          )}
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Cohorte</label>
-          <input
-            {...register('cohorte')}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-            placeholder="Ej: 2024-1"
-          />
-          {errors.cohorte && (
-            <p className="mt-1 text-xs text-red-600">{errors.cohorte.message}</p>
-          )}
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Rol</label>
+          <label htmlFor="carrera_id" className="mb-1 block text-sm font-medium text-gray-700">Carrera</label>
           <select
+            id="carrera_id"
+            {...register('carrera_id')}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="">Seleccione una carrera</option>
+            {carrerasLoading && <option disabled>Cargando carreras...</option>}
+            {carreras?.map((c) => (
+              <option key={c.id} value={c.id}>{c.nombre}</option>
+            ))}
+          </select>
+          {errors.carrera_id && (
+            <p className="mt-1 text-xs text-red-600">{errors.carrera_id.message}</p>
+          )}
+        </div>
+        <div>
+          <label htmlFor="cohorte_id" className="mb-1 block text-sm font-medium text-gray-700">Cohorte</label>
+          <select
+            id="cohorte_id"
+            {...register('cohorte_id')}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          >
+            <option value="">Seleccione una cohorte</option>
+            {cohortesLoading && <option disabled>Cargando cohortes...</option>}
+            {cohortes?.map((c) => (
+              <option key={c.id} value={c.id}>{c.nombre}</option>
+            ))}
+          </select>
+          {errors.cohorte_id && (
+            <p className="mt-1 text-xs text-red-600">{errors.cohorte_id.message}</p>
+          )}
+        </div>
+        <div>
+          <label htmlFor="rol" className="mb-1 block text-sm font-medium text-gray-700">Rol</label>
+          <select
+            id="rol"
             {...register('rol')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           >
             <option value="">Seleccione rol</option>
-            <option value="titular">Titular</option>
-            <option value="tutor">Tutor</option>
-            <option value="ayudante">Ayudante</option>
+            {ROLES_EQUIPO.map((rol) => (
+              <option key={rol} value={rol}>{rol}</option>
+            ))}
           </select>
           {errors.rol && <p className="mt-1 text-xs text-red-600">{errors.rol.message}</p>}
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Vigencia desde</label>
+          <label htmlFor="desde" className="mb-1 block text-sm font-medium text-gray-700">Vigencia desde</label>
           <input
+            id="desde"
             type="date"
-            {...register('vigencia_desde')}
+            {...register('desde')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           />
-          {errors.vigencia_desde && (
-            <p className="mt-1 text-xs text-red-600">{errors.vigencia_desde.message}</p>
+          {errors.desde && (
+            <p className="mt-1 text-xs text-red-600">{errors.desde.message}</p>
           )}
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Vigencia hasta</label>
+          <label htmlFor="hasta" className="mb-1 block text-sm font-medium text-gray-700">Vigencia hasta (opcional)</label>
           <input
+            id="hasta"
             type="date"
-            {...register('vigencia_hasta')}
+            {...register('hasta')}
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
           />
-          {errors.vigencia_hasta && (
-            <p className="mt-1 text-xs text-red-600">{errors.vigencia_hasta.message}</p>
+          {errors.hasta && (
+            <p className="mt-1 text-xs text-red-600">{errors.hasta.message}</p>
           )}
         </div>
       </div>
@@ -141,7 +166,7 @@ export default function AsignacionMasivaForm({ onSuccess }: AsignacionMasivaForm
 
       {mutation.isSuccess && (
         <div className="rounded-md bg-green-50 p-3 text-sm text-green-700">
-          Asignación masiva completada. {mutation.data?.total} asignaciones creadas.
+          Asignación masiva completada. {mutation.data?.ids_creados.length} asignaciones creadas.
         </div>
       )}
 

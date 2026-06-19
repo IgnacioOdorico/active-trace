@@ -7,11 +7,24 @@ import type {
   AsignacionMasivaResponse,
   ClonarEquipoRequest,
   ClonarEquipoResponse,
+  DocenteDisponible,
   ModificarVigenciaRequest,
   ModificarVigenciaResponse,
   VigenciaMasivaRequest,
   VigenciaMasivaResponse,
 } from '../types'
+
+export function useDocentesDisponibles() {
+  return useQuery({
+    queryKey: ['equipos-docentes-disponibles'],
+    queryFn: async () => {
+      const { data } = await apiClient.get<DocenteDisponible[]>(
+        '/api/equipos/docentes-disponibles',
+      )
+      return data
+    },
+  })
+}
 
 function buildParams(filters: Record<string, string | boolean | undefined>): string {
   const params = new URLSearchParams()
