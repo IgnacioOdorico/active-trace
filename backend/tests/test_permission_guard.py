@@ -120,3 +120,47 @@ class TestRequirePermissionDependency:
     def test_factory_with_propio_perm(self):
         dep = require_permission("atrasados:ver(propio)")
         assert callable(dep)
+
+
+class TestRequirePermissionDependencyExecution:
+    """La dependencia devuelve is_propio para que el router sepa con qué scope se resolvió el permiso."""
+
+    @staticmethod
+    def _fake_request() -> MagicMock:
+        request = MagicMock(spec=Request)
+        request.headers = {"Authorization": "Bearer faketoken"}
+        return request
+
+    @pytest.mark.asyncio
+    async def test_devuelve_true_cuando_el_grant_es_propio(self):
+        dep = require_permission("tareas:gestionar(propio)")
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+            result = await dep(self._fake_request(), db=MagicMock(), current_user=MagicMock(spec=User))
+            assert result is True
+
+    @pytest.mark.asyncio
+    async def test_devuelve_false_cuando_el_grant_es_full(self):
+        dep = require_permission("tareas:gestionar")
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["COORDINADOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, False))
+            result = await dep(self._fake_request(), db=MagicMock(), current_user=MagicMock(spec=User))
+            assert result is False
+
+    @pytest.mark.asyncio
+    async def test_403_sin_permiso(self):
+        dep = require_permission("tareas:gestionar")
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["ALUMNO"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(False, False))
+            with pytest.raises(HTTPException) as exc_info:
+                await dep(self._fake_request(), db=MagicMock(), current_user=MagicMock(spec=User))
+            assert exc_info.value.status_code == 403

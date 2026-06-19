@@ -1,5 +1,6 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 interface MenuItem {
   label: string
@@ -31,13 +32,13 @@ const menuSections: MenuSection[] = [
         label: 'Umbral de Aprobación',
         path: '/calificaciones/umbral',
         icon: 'tune',
-        requiredPermission: 'calificaciones:umbral',
+        requiredPermission: 'calificaciones:importar',
       },
       {
         label: 'Alumnos Atrasados',
         path: '/alumnos/atrasados',
         icon: 'warning',
-        requiredPermission: 'alumnos:atrasados',
+        requiredPermission: 'atrasados:ver',
       },
       {
         label: 'Reportes y Notas',
@@ -78,7 +79,7 @@ const menuSections: MenuSection[] = [
         label: 'Tareas',
         path: '/coordinacion/tareas',
         icon: 'task',
-        requiredPermission: 'tareas:gestionar',
+        requiredPermission: 'tareas:gestionar(propio)',
       },
       {
         label: 'Encuentros (Admin)',
@@ -171,7 +172,7 @@ export default function Layout() {
             const visibleItems = section.items.filter((item) => {
               if (!item.requiredPermission) return true
               const perms = user?.permissions ?? []
-              return perms.includes('*:*') || perms.includes(item.requiredPermission)
+              return hasPermission(perms, item.requiredPermission)
             })
 
             if (visibleItems.length === 0) return null

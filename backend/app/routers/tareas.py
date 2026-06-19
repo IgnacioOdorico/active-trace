@@ -28,13 +28,35 @@ def _get_svc(current_user: User) -> TareaService:
     return TareaService(current_user.tenant_id)
 
 
+async def _verificar_propiedad(
+    svc: TareaService,
+    tarea_id: uuid.UUID,
+    current_user: User,
+    es_propio: bool,
+    db: AsyncSession,
+) -> None:
+    """Si el permiso resuelto es (propio), solo puede operar sobre tareas asignadas a él mismo."""
+    if not es_propio:
+        return
+    tarea = await svc.obtener(tarea_id, db)
+    if tarea is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tarea no encontrada")
+    if tarea["asignado_a"] != str(current_user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your resource")
+
+
 @router.post("", response_model=TareaResponse, status_code=status.HTTP_201_CREATED)
 async def crear_tarea(
     body: TareaCreateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    es_propio: bool = Depends(require_permission("tareas:gestionar(propio)")),
 ):
+    if es_propio and str(body.asignado_a) != str(current_user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No puede asignar tareas a otros usuarios",
+        )
     svc = _get_svc(current_user)
     data = body.model_dump()
     result = await svc.crear(data, current_user.id, db)
@@ -49,7 +71,7 @@ async def listar_mis_tareas(
     page_size: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    _=Depends(require_permission("tareas:gestionar(propio)")),
 ):
     svc = _get_svc(current_user)
     return await svc.listar_mias(
@@ -65,7 +87,7 @@ async def listar_mis_tareas(
 async def listar_asignables(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    _=Depends(require_permission("tareas:gestionar(propio)")),
 ):
     svc = UsuarioService(current_user.tenant_id)
     users, _ = await svc.get_all(db, page=1, page_size=200, estado="Activo")
@@ -112,7 +134,7 @@ async def obtener_tarea(
     id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    es_propio: bool = Depends(require_permission("tareas:gestionar(propio)")),
 ):
     svc = _get_svc(current_user)
     result = await svc.obtener(id, db)
@@ -121,6 +143,8 @@ async def obtener_tarea(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Tarea no encontrada",
         )
+    if es_propio and result["asignado_a"] != str(current_user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your resource")
     return result
 
 
@@ -130,9 +154,10 @@ async def editar_tarea(
     body: TareaUpdateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    es_propio: bool = Depends(require_permission("tareas:gestionar(propio)")),
 ):
     svc = _get_svc(current_user)
+    await _verificar_propiedad(svc, id, current_user, es_propio, db)
     data = {k: v for k, v in body.model_dump().items() if v is not None}
     try:
         result = await svc.editar(id, data, current_user.id, db)
@@ -155,9 +180,10 @@ async def eliminar_tarea(
     id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    es_propio: bool = Depends(require_permission("tareas:gestionar(propio)")),
 ):
     svc = _get_svc(current_user)
+    await _verificar_propiedad(svc, id, current_user, es_propio, db)
     try:
         await svc.eliminar(id, db)
         await db.commit()
@@ -175,9 +201,10 @@ async def listar_comentarios_tarea(
     page_size: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    es_propio: bool = Depends(require_permission("tareas:gestionar(propio)")),
 ):
     svc = _get_svc(current_user)
+    await _verificar_propiedad(svc, id, current_user, es_propio, db)
     return await svc.listar_comentarios(
         tarea_id=id,
         pagina=pagina,
@@ -192,9 +219,10 @@ async def agregar_comentario_tarea(
     body: ComentarioCreateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("tareas:gestionar")),
+    es_propio: bool = Depends(require_permission("tareas:gestionar(propio)")),
 ):
     svc = _get_svc(current_user)
+    await _verificar_propiedad(svc, id, current_user, es_propio, db)
     try:
         result = await svc.agregar_comentario(
             id, body.texto, current_user.id, db

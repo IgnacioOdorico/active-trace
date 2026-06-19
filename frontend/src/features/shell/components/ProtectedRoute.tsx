@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import type { ReactNode } from 'react'
 import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { hasAllPermissions } from '../../../shared/utils/permissions'
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -31,10 +32,7 @@ export default function ProtectedRoute({
   }
 
   if (requiredPermissions && requiredPermissions.length > 0 && user) {
-    const hasAllPermissions =
-      user.permissions.includes('*:*') ||
-      requiredPermissions.every((perm) => user.permissions.includes(perm))
-    if (!hasAllPermissions) {
+    if (!hasAllPermissions(user.permissions, requiredPermissions)) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-surface-container-lowest p-4">
           <div className="w-full max-w-md">

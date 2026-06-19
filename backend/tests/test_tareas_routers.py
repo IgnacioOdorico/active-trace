@@ -875,3 +875,173 @@ class TestTareasRouters:
                     headers={"Authorization": "Bearer fake-token"},
                 )
                 assert response.status_code == 200
+
+    # ---- 8.7: Permiso (propio) — PROFESOR solo puede gestionar sus propias tareas ----
+
+    def _tarea_dict(self, asignado_a: uuid.UUID) -> dict:
+        return {
+            "id": str(self._tarea_id),
+            "tenant_id": str(self._tenant_id),
+            "materia_id": None,
+            "asignado_a": str(asignado_a),
+            "asignado_por": str(self._otro_user_id),
+            "estado": "Pendiente",
+            "descripcion": "Tarea",
+            "contexto_id": None,
+            "created_at": "2026-06-11T00:00:00+00:00",
+            "updated_at": "2026-06-11T00:00:00+00:00",
+        }
+
+    @pytest.mark.asyncio
+    async def test_propio_crear_tarea_asignada_a_otro_403(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post(
+                    "/api/tareas",
+                    json={
+                        "asignado_a": str(self._otro_user_id),
+                        "descripcion": "Para otro",
+                    },
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_propio_crear_tarea_autoasignada_201(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.tareas.TareaService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+            mock_svc = MockSvc.return_value
+            mock_svc.crear = AsyncMock(return_value=self._tarea_dict(self._user_id))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post(
+                    "/api/tareas",
+                    json={
+                        "asignado_a": str(self._user_id),
+                        "descripcion": "Recordatorio propio",
+                    },
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 201
+
+    @pytest.mark.asyncio
+    async def test_propio_editar_tarea_de_otro_403(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.tareas.TareaService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+            mock_svc = MockSvc.return_value
+            mock_svc.obtener = AsyncMock(return_value=self._tarea_dict(self._otro_user_id))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.patch(
+                    f"/api/tareas/{self._tarea_id}",
+                    json={"descripcion": "Intento ajeno"},
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 403
+                mock_svc.editar.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_propio_editar_tarea_propia_200(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.tareas.TareaService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+            mock_svc = MockSvc.return_value
+            mock_svc.obtener = AsyncMock(return_value=self._tarea_dict(self._user_id))
+            mock_svc.editar = AsyncMock(return_value=self._tarea_dict(self._user_id))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.patch(
+                    f"/api/tareas/{self._tarea_id}",
+                    json={"descripcion": "Actualizo mi tarea"},
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 200
+
+    @pytest.mark.asyncio
+    async def test_propio_eliminar_tarea_de_otro_403(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.tareas.TareaService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+            mock_svc = MockSvc.return_value
+            mock_svc.obtener = AsyncMock(return_value=self._tarea_dict(self._otro_user_id))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.delete(
+                    f"/api/tareas/{self._tarea_id}",
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 403
+                mock_svc.eliminar.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_propio_obtener_tarea_de_otro_403(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.tareas.TareaService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+            mock_svc = MockSvc.return_value
+            mock_svc.obtener = AsyncMock(return_value=self._tarea_dict(self._otro_user_id))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.get(
+                    f"/api/tareas/{self._tarea_id}",
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 403
+
+    @pytest.mark.asyncio
+    async def test_propio_comentar_tarea_de_otro_403(self):
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+            patch("app.routers.tareas.TareaService") as MockSvc,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(True, True))
+            mock_svc = MockSvc.return_value
+            mock_svc.obtener = AsyncMock(return_value=self._tarea_dict(self._otro_user_id))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.post(
+                    f"/api/tareas/{self._tarea_id}/comentarios",
+                    json={"texto": "Intruso"},
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 403
+                mock_svc.agregar_comentario.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_propio_listar_todas_las_tareas_403(self):
+        """El listado global (admin) NO debe aceptar el permiso (propio)."""
+        with (
+            patch("app.core.permissions.decode_access_token", return_value={"rols": ["PROFESOR"]}),
+            patch("app.core.permissions.PermissionChecker") as MockPerm,
+        ):
+            MockPerm.return_value.has_permission = AsyncMock(return_value=(False, False))
+
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                response = await client.get(
+                    "/api/tareas",
+                    headers={"Authorization": "Bearer fake-token"},
+                )
+                assert response.status_code == 403
