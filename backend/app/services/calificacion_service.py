@@ -242,11 +242,16 @@ class CalificacionService:
                 if dni_val:
                     rows_by_id[dni_val] = row
 
-        version_activa = await self._version_repo.get_active(db, materia_id, uuid.UUID(int=0))
-        if version_activa is None:
+        versiones_activas = await self._version_repo.get_active_by_materia(db, materia_id)
+        if not versiones_activas:
             raise DomainError(
                 "No hay un padrón activo para esta materia. Debe importar el padrón primero."
             )
+        if len(versiones_activas) > 1:
+            raise DomainError(
+                "Hay más de un padrón activo para esta materia, no se puede determinar cuál usar."
+            )
+        version_activa = versiones_activas[0]
 
         entradas = await self._entrada_repo.get_by_version(
             db, version_activa.id
@@ -393,9 +398,14 @@ class CalificacionService:
             a for a in actividades if a["tipo"] == "textual"
         ]
 
-        version_activa = await self._version_repo.get_active(db, materia_id, uuid.UUID(int=0))
-        if version_activa is None:
+        versiones_activas = await self._version_repo.get_active_by_materia(db, materia_id)
+        if not versiones_activas:
             raise DomainError("No hay un padrón activo para esta materia")
+        if len(versiones_activas) > 1:
+            raise DomainError(
+                "Hay más de un padrón activo para esta materia, no se puede determinar cuál usar."
+            )
+        version_activa = versiones_activas[0]
 
         entradas = await self._entrada_repo.get_by_version(
             db, version_activa.id

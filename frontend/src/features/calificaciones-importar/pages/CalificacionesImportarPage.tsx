@@ -19,10 +19,7 @@ export default function CalificacionesImportarPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [advertenciasOpen, setAdvertenciasOpen] = useState(false)
 
-  const materiaNombre =
-    previewData?.materia_nombre ??
-    materias?.find((m) => m.id === materiaId)?.nombre ??
-    ''
+  const materiaNombre = materias?.find((m) => m.id === materiaId)?.nombre ?? ''
 
   async function handlePreview() {
     if (!materiaId || !file) return
@@ -34,7 +31,7 @@ export default function CalificacionesImportarPage() {
       if (data.actividades.length === 0) {
         setStep('empty')
       } else {
-        setSelectedIds(data.actividades.map((a) => a.id))
+        setSelectedIds(data.actividades.map((a) => a.nombre))
         setStep('preview')
       }
     } catch (err) {
@@ -46,12 +43,13 @@ export default function CalificacionesImportarPage() {
   }
 
   async function handleImportar() {
-    if (!materiaId || selectedIds.length === 0) return
+    if (!materiaId || selectedIds.length === 0 || !file) return
     setStep('importing')
     try {
       const data = await importar.mutateAsync({
         materia_id: materiaId,
-        actividad_ids: selectedIds,
+        actividades: selectedIds,
+        file,
       })
       setResultado(data)
       setStep('result')

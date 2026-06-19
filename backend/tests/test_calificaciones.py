@@ -1,7 +1,11 @@
+import io
+import json
 import uuid
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
+from fastapi import HTTPException
+from starlette.datastructures import UploadFile
 
 from app.core.exceptions import DomainError
 
@@ -251,10 +255,74 @@ class TestCalificacionService:
             MockParser._detect_column_types.return_value = (["TP1 (Real)"], ["Email"])
 
             mock_version_repo = MockVersionRepo.return_value
-            mock_version_repo.get_active = AsyncMock(return_value=None)
+            mock_version_repo.get_active_by_materia = AsyncMock(return_value=[])
 
             svc = CalificacionService(tenant_id)
             with pytest.raises(DomainError, match="No hay un padrón activo"):
+                await svc.importar(
+                    AsyncMock(), materia_id, ["TP1 (Real)"],
+                    b"", "test.csv", uuid.uuid4(),
+                )
+
+    @pytest.mark.asyncio
+    async def test_importar_busca_padron_por_materia_sin_cohorte_dummy(self):
+        """Bug real: get_active() recibia un UUID dummy como cohorte_id y
+        nunca encontraba el padron activo. Debe usar get_active_by_materia,
+        que no depende de ese parametro."""
+        from app.services.calificacion_service import CalificacionService
+        tenant_id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+
+        with (
+            patch("app.services.calificacion_service.VersionPadronRepository") as MockVersionRepo,
+            patch("app.services.calificacion_service.CalificacionParser") as MockParser,
+        ):
+            MockParser.parse_file.return_value = {
+                "headers": ["Email", "TP1 (Real)"],
+                "rows": [{"Email": "a@b.com", "TP1 (Real)": "85"}],
+            }
+            MockParser.detect_actividades.return_value = [{"nombre": "TP1 (Real)", "tipo": "numerica"}]
+
+            mock_version_repo = MockVersionRepo.return_value
+            mock_version_repo.get_active_by_materia = AsyncMock(return_value=[])
+
+            svc = CalificacionService(tenant_id)
+            with pytest.raises(DomainError):
+                await svc.importar(
+                    AsyncMock(), materia_id, ["TP1 (Real)"],
+                    b"", "test.csv", uuid.uuid4(),
+                )
+
+            mock_version_repo.get_active_by_materia.assert_awaited_once()
+            assert mock_version_repo.get_active_by_materia.await_args.args[1] == materia_id
+            mock_version_repo.get_active.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_importar_multiples_padrones_activos_raises(self):
+        """Si hay mas de un padron activo para la materia (ej. dos cohortes
+        activas al mismo tiempo), no hay forma de saber cual usar — debe
+        fallar explicito en vez de elegir uno arbitrariamente."""
+        from app.services.calificacion_service import CalificacionService
+        tenant_id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+
+        with (
+            patch("app.services.calificacion_service.VersionPadronRepository") as MockVersionRepo,
+            patch("app.services.calificacion_service.CalificacionParser") as MockParser,
+        ):
+            MockParser.parse_file.return_value = {
+                "headers": ["Email", "TP1 (Real)"],
+                "rows": [{"Email": "a@b.com", "TP1 (Real)": "85"}],
+            }
+            MockParser.detect_actividades.return_value = [{"nombre": "TP1 (Real)", "tipo": "numerica"}]
+
+            mock_version_repo = MockVersionRepo.return_value
+            mock_version_repo.get_active_by_materia = AsyncMock(
+                return_value=[AsyncMock(id=uuid.uuid4()), AsyncMock(id=uuid.uuid4())]
+            )
+
+            svc = CalificacionService(tenant_id)
+            with pytest.raises(DomainError, match="más de un padrón activo"):
                 await svc.importar(
                     AsyncMock(), materia_id, ["TP1 (Real)"],
                     b"", "test.csv", uuid.uuid4(),
@@ -337,7 +405,7 @@ class TestCalificacionService:
             MockParser.detect_actividades.return_value = [{"nombre": "TP Final", "tipo": "textual"}]
 
             mock_version_repo = MockVersionRepo.return_value
-            mock_version_repo.get_active = AsyncMock(return_value=None)
+            mock_version_repo.get_active_by_materia = AsyncMock(return_value=[])
 
             svc = CalificacionService(tenant_id)
             with pytest.raises(DomainError, match="No hay un padrón activo"):
@@ -559,7 +627,7 @@ class TestAuditCalificacionesImport:
 
             mock_version = AsyncMock()
             mock_version.id = uuid.uuid4()
-            MockVersionRepo.return_value.get_active = AsyncMock(return_value=mock_version)
+            MockVersionRepo.return_value.get_active_by_materia = AsyncMock(return_value=[mock_version])
 
             mock_entrada = AsyncMock()
             mock_entrada.id = entrada_id
@@ -620,8 +688,8 @@ class TestAuditCalificacionesImport:
             MockParser._detect_column_types.return_value = (["TP1 (Real)"], ["Email"])
             MockParser._parse_numeric_value.return_value = 90.0
 
-            MockVersionRepo.return_value.get_active = AsyncMock(
-                return_value=AsyncMock(id=uuid.uuid4())
+            MockVersionRepo.return_value.get_active_by_materia = AsyncMock(
+                return_value=[AsyncMock(id=uuid.uuid4())]
             )
 
             mock_entrada = AsyncMock()
@@ -649,6 +717,106 @@ class TestAuditCalificacionesImport:
 
             assert result["actualizadas"] == 1
             assert result["insertadas"] == 0
+
+
+class TestImportarEndpointDirect:
+    """El router /importar antes ignoraba el archivo subido (solo flipeaba
+    `aprobado` en Calificacion preexistentes por nombre_actividad). Ahora
+    reenvía el archivo y llama a CalificacionService.importar(), el método
+    real que matchea contra el padrón. Se testea llamando la función del
+    router directamente, sin pasar por HTTP/DI (mismo patrón que
+    test_liquidaciones_endpoints.py)."""
+
+    def _make_upload(self, content: bytes = b"Email,TP1 (Real)\na@b.com,80", filename: str = "test.csv"):
+        return UploadFile(filename=filename, file=io.BytesIO(content))
+
+    @pytest.mark.asyncio
+    async def test_importar_ok_llama_servicio_y_commitea(self):
+        from app.routers.calificaciones import importar_calificaciones
+        from app.models.user import User
+
+        mock_db = AsyncMock()
+        mock_user = MagicMock(spec=User)
+        mock_user.tenant_id = uuid.uuid4()
+        mock_user.id = uuid.uuid4()
+        materia_id = uuid.uuid4()
+
+        with patch("app.routers.calificaciones.CalificacionService") as MockSvc:
+            svc_instance = AsyncMock()
+            MockSvc.return_value = svc_instance
+            svc_instance.importar = AsyncMock(return_value={
+                "insertadas": 1, "actualizadas": 0, "filas_afectadas": 1,
+                "errores": [], "advertencias": [],
+            })
+
+            result = await importar_calificaciones(
+                materia_id=str(materia_id),
+                actividades=json.dumps(["TP1 (Real)"]),
+                file=self._make_upload(),
+                db=mock_db,
+                current_user=mock_user,
+                _=None,
+            )
+
+            assert result["insertadas"] == 1
+            svc_instance.importar.assert_awaited_once_with(
+                mock_db,
+                materia_id,
+                ["TP1 (Real)"],
+                b"Email,TP1 (Real)\na@b.com,80",
+                "test.csv",
+                mock_user.id,
+            )
+            mock_db.commit.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_importar_actividades_no_es_json_raise_422(self):
+        from app.routers.calificaciones import importar_calificaciones
+        from app.models.user import User
+
+        mock_user = MagicMock(spec=User)
+        mock_user.tenant_id = uuid.uuid4()
+        mock_user.id = uuid.uuid4()
+
+        with pytest.raises(HTTPException) as exc_info:
+            await importar_calificaciones(
+                materia_id=str(uuid.uuid4()),
+                actividades="no-es-json",
+                file=self._make_upload(),
+                db=AsyncMock(),
+                current_user=mock_user,
+                _=None,
+            )
+        assert exc_info.value.status_code == 422
+
+    @pytest.mark.asyncio
+    async def test_importar_domain_error_raise_422_y_no_commitea(self):
+        from app.routers.calificaciones import importar_calificaciones
+        from app.models.user import User
+
+        mock_db = AsyncMock()
+        mock_user = MagicMock(spec=User)
+        mock_user.tenant_id = uuid.uuid4()
+        mock_user.id = uuid.uuid4()
+
+        with patch("app.routers.calificaciones.CalificacionService") as MockSvc:
+            svc_instance = AsyncMock()
+            MockSvc.return_value = svc_instance
+            svc_instance.importar = AsyncMock(
+                side_effect=DomainError(detail="No hay un padrón activo para esta materia", context={})
+            )
+
+            with pytest.raises(HTTPException) as exc_info:
+                await importar_calificaciones(
+                    materia_id=str(uuid.uuid4()),
+                    actividades=json.dumps(["TP1 (Real)"]),
+                    file=self._make_upload(),
+                    db=mock_db,
+                    current_user=mock_user,
+                    _=None,
+                )
+            assert exc_info.value.status_code == 422
+            mock_db.commit.assert_not_awaited()
 
 
 db = pytest.mark.skipif(
