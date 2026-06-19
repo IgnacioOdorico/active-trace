@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date, datetime, timedelta
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from httpx import AsyncClient
@@ -204,6 +204,101 @@ class TestResolvePanelPermission:
         db = _make_mock_db()
         with pytest.raises(Exception):
             await _resolve_panel_permission(request, db, MockUser())
+
+    @staticmethod
+    def _fake_request() -> MagicMock:
+        request = MagicMock()
+        request.headers = {"Authorization": "Bearer faketoken"}
+        return request
+
+    @staticmethod
+    def _db_with_materias(materia_ids: list) -> AsyncMock:
+        """_resolve_panel_permission llama result.scalars().all() directo (sin .unique())."""
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = materia_ids
+        db = AsyncMock(spec=["execute", "close"])
+        db.execute = AsyncMock(return_value=mock_result)
+        return db
+
+    @pytest.mark.asyncio
+    async def test_full_grant_returns_sin_filtro(self):
+        with (
+            patch(
+                "app.api.v1.routers.auditoria_panel.decode_access_token",
+                return_value={"rols": ["ADMIN"]},
+            ),
+            patch("app.api.v1.routers.auditoria_panel.PermissionChecker") as MockChecker,
+        ):
+            MockChecker.return_value.has_permission = AsyncMock(return_value=(True, False))
+            db = _make_mock_db()
+
+            has_perm, materias_ids = await _resolve_panel_permission(
+                self._fake_request(), db, MockUser()
+            )
+
+            assert has_perm is True
+            assert materias_ids is None
+
+    @pytest.mark.asyncio
+    async def test_propio_con_asignaciones_filtra_a_esas_materias(self):
+        materia_id = uuid.uuid4()
+        with (
+            patch(
+                "app.api.v1.routers.auditoria_panel.decode_access_token",
+                return_value={"rols": ["PROFESOR"]},
+            ),
+            patch("app.api.v1.routers.auditoria_panel.PermissionChecker") as MockChecker,
+        ):
+            MockChecker.return_value.has_permission = AsyncMock(
+                side_effect=[(False, False), (True, True)]
+            )
+            db = self._db_with_materias([materia_id])
+
+            has_perm, materias_ids = await _resolve_panel_permission(
+                self._fake_request(), db, MockUser()
+            )
+
+            assert has_perm is True
+            assert materias_ids == [materia_id]
+
+    @pytest.mark.asyncio
+    async def test_propio_sin_asignaciones_no_ve_nada_no_ve_todo(self):
+        """Regresion: antes, sin asignaciones devolvia None (sin filtro = ve TODO el tenant).
+        Fail-closed: sin asignaciones debe devolver lista vacia (filtra a cero filas)."""
+        with (
+            patch(
+                "app.api.v1.routers.auditoria_panel.decode_access_token",
+                return_value={"rols": ["COORDINADOR"]},
+            ),
+            patch("app.api.v1.routers.auditoria_panel.PermissionChecker") as MockChecker,
+        ):
+            MockChecker.return_value.has_permission = AsyncMock(
+                side_effect=[(False, False), (True, True)]
+            )
+            db = self._db_with_materias([])
+
+            has_perm, materias_ids = await _resolve_panel_permission(
+                self._fake_request(), db, MockUser()
+            )
+
+            assert has_perm is True
+            assert materias_ids == []
+            assert materias_ids is not None
+
+    @pytest.mark.asyncio
+    async def test_403_sin_ningun_permiso(self):
+        with (
+            patch(
+                "app.api.v1.routers.auditoria_panel.decode_access_token",
+                return_value={"rols": ["ALUMNO"]},
+            ),
+            patch("app.api.v1.routers.auditoria_panel.PermissionChecker") as MockChecker,
+        ):
+            MockChecker.return_value.has_permission = AsyncMock(return_value=(False, False))
+            db = _make_mock_db()
+
+            with pytest.raises(Exception):
+                await _resolve_panel_permission(self._fake_request(), db, MockUser())
 
 
 # ============================================================

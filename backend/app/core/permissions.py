@@ -69,7 +69,7 @@ def require_permission(
         request: Request,
         db: AsyncSession = Depends(get_db),
         current_user: User = Depends(get_current_user),
-    ) -> None:
+    ) -> bool:
         auth = request.headers.get("Authorization", "")
         if not auth.startswith("Bearer "):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
@@ -94,5 +94,7 @@ def require_permission(
                 ok = await result
             if not ok:
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your resource")
+
+        return is_propio
 
     return _dependency

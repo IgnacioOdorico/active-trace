@@ -9,9 +9,11 @@ import { Button } from '../../../shared/components/ui/Button'
 interface CrearTareaFormProps {
   onSuccess: () => void
   onCancel: () => void
+  /** Si está presente, la tarea se autoasigna a este usuario y no se puede elegir otro destinatario. */
+  asignadoFijo?: string
 }
 
-export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormProps) {
+export default function CrearTareaForm({ onSuccess, onCancel, asignadoFijo }: CrearTareaFormProps) {
   const {
     register,
     handleSubmit,
@@ -19,6 +21,7 @@ export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormPr
     reset,
   } = useForm<CrearTareaFormData>({
     resolver: zodResolver(crearTareaSchema),
+    defaultValues: asignadoFijo ? { asignado_a: asignadoFijo } : undefined,
   })
 
   const mutation = useCrearTarea()
@@ -48,27 +51,31 @@ export default function CrearTareaForm({ onSuccess, onCancel }: CrearTareaFormPr
         )}
       </div>
 
-      <div>
-        <label className="mb-1 block font-label-caps text-label-caps text-on-surface-variant uppercase">Asignado a</label>
-        <select
-          {...register('asignado_a')}
-          disabled={asignablesLoading}
-          className="w-full rounded neo-latex-border bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
-          defaultValue=""
-        >
-          <option value="" disabled>
-            {asignablesLoading ? 'Cargando docentes...' : 'Seleccione un docente'}
-          </option>
-          {asignables?.map((u) => (
-            <option key={u.id} value={u.id}>
-              {formatNombreUsuario(u)} ({u.email})
+      {asignadoFijo ? (
+        <input type="hidden" {...register('asignado_a')} />
+      ) : (
+        <div>
+          <label className="mb-1 block font-label-caps text-label-caps text-on-surface-variant uppercase">Asignado a</label>
+          <select
+            {...register('asignado_a')}
+            disabled={asignablesLoading}
+            className="w-full rounded neo-latex-border bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              {asignablesLoading ? 'Cargando docentes...' : 'Seleccione un docente'}
             </option>
-          ))}
-        </select>
-        {errors.asignado_a && (
-          <p className="mt-1 font-body-md text-[12px] text-on-error-container">{errors.asignado_a.message}</p>
-        )}
-      </div>
+            {asignables?.map((u) => (
+              <option key={u.id} value={u.id}>
+                {formatNombreUsuario(u)} ({u.email})
+              </option>
+            ))}
+          </select>
+          {errors.asignado_a && (
+            <p className="mt-1 font-body-md text-[12px] text-on-error-container">{errors.asignado_a.message}</p>
+          )}
+        </div>
+      )}
 
       <div>
         <label className="mb-1 block font-label-caps text-label-caps text-on-surface-variant uppercase">

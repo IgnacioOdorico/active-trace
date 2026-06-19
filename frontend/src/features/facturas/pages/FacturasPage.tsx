@@ -3,13 +3,14 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import FacturasListado from '../components/FacturasListado'
 import CargarFacturaForm from '../components/CargarFacturaForm'
 import { Button } from '../../../shared/components/ui/Button'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 export default function FacturasPage() {
   const { user } = useAuth()
   const perms = user?.permissions ?? []
-  const puedeVer = perms.includes('*:*') || perms.includes('facturas:ver')
-  const puedeCargar = perms.includes('*:*') || perms.includes('facturas:cargar')
-  const puedeAbonar = perms.includes('*:*') || perms.includes('facturas:abonar')
+  const puedeVer = hasPermission(perms, 'facturas:ver')
+  const puedeCargar = hasPermission(perms, 'facturas:cargar')
+  const puedeAbonar = hasPermission(perms, 'facturas:abonar')
 
   const [showForm, setShowForm] = useState(false)
 

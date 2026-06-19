@@ -7,10 +7,14 @@ import HiloComentarios from '../components/HiloComentarios'
 import type { Tarea } from '../types'
 import { Button } from '../../../shared/components/ui/Button'
 import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 type Tab = 'mis-tareas' | 'admin'
 
 export default function TareasPage() {
+  const { user } = useAuth()
+  const puedeGestionarTodas = hasPermission(user?.permissions ?? [], 'tareas:gestionar')
   const [tab, setTab] = useState<Tab>('mis-tareas')
   const [creando, setCreando] = useState(false)
   const [tareaDetalle, setTareaDetalle] = useState<Tarea | null>(null)
@@ -28,26 +32,28 @@ export default function TareasPage() {
         </Button>
       </div>
 
-      <div className="flex gap-2 mb-6 border-b border-outline-variant pb-2">
-        <Button
-          onClick={() => setTab('mis-tareas')}
-          variant={tab === 'mis-tareas' ? 'primary' : 'ghost'}
-        >
-          Mis Tareas
-        </Button>
-        <Button
-          onClick={() => setTab('admin')}
-          variant={tab === 'admin' ? 'primary' : 'ghost'}
-        >
-          Administración Global
-        </Button>
-      </div>
+      {puedeGestionarTodas && (
+        <div className="flex gap-2 mb-6 border-b border-outline-variant pb-2">
+          <Button
+            onClick={() => setTab('mis-tareas')}
+            variant={tab === 'mis-tareas' ? 'primary' : 'ghost'}
+          >
+            Mis Tareas
+          </Button>
+          <Button
+            onClick={() => setTab('admin')}
+            variant={tab === 'admin' ? 'primary' : 'ghost'}
+          >
+            Administración Global
+          </Button>
+        </div>
+      )}
 
       <div className="rounded neo-latex-border bg-surface-container-lowest p-6">
-        {tab === 'mis-tareas' && (
+        {(tab === 'mis-tareas' || !puedeGestionarTodas) && (
           <MisTareas onVerDetalle={setTareaDetalle} onEditar={setTareaEditando} />
         )}
-        {tab === 'admin' && (
+        {tab === 'admin' && puedeGestionarTodas && (
           <TareasAdmin onVerDetalle={setTareaDetalle} onEditar={setTareaEditando} />
         )}
       </div>
@@ -69,6 +75,7 @@ export default function TareasPage() {
               <CrearTareaForm
                 onSuccess={() => setCreando(false)}
                 onCancel={() => setCreando(false)}
+                asignadoFijo={puedeGestionarTodas ? undefined : user?.id}
               />
             </BentoCard>
           </div>

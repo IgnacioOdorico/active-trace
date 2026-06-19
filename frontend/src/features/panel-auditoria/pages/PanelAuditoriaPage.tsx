@@ -7,16 +7,14 @@ import InteraccionesDocenteMateria from '../components/InteraccionesDocenteMater
 import UltimasAcciones from '../components/UltimasAcciones'
 import type { PanelFilters } from '../types'
 import { Button } from '../../../shared/components/ui/Button'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 type Tab = 'acciones' | 'comunicaciones' | 'interacciones' | 'log'
 
 export default function PanelAuditoriaPage() {
   const { user } = useAuth()
   const perms = user?.permissions ?? []
-  const puedeVer =
-    perms.includes('*:*') ||
-    perms.includes('auditoria:ver') ||
-    perms.includes('auditoria:ver(propio)')
+  const puedeVer = hasPermission(perms, 'auditoria:ver') || hasPermission(perms, 'auditoria:ver(propio)')
 
   const [filters, setFilters] = useState<PanelFilters>({})
   const [tab, setTab] = useState<Tab>('acciones')
