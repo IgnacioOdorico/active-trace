@@ -5,6 +5,7 @@ import { useComunicacionesApi } from '../hooks/useComunicacionesApi'
 import ComunicacionForm from '../components/ComunicacionForm'
 import ComunicacionTracking from '../components/ComunicacionTracking'
 import type { PreviewRequest, PreviewResponse, EnviarRequest, EnviarResponse } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
 
 type ViewMode = 'form' | 'tracking'
 
@@ -41,35 +42,27 @@ export default function ComunicacionesPage() {
   )
 
   return (
-    <div className="mx-auto max-w-4xl py-8">
-      <h1 className="text-2xl font-bold text-gray-900">Comunicaciones</h1>
-
-      <div className="mt-6 flex gap-4 border-b border-gray-200">
-        <button
-          type="button"
-          onClick={() => setViewMode('form')}
-          className={`pb-2 text-sm font-medium ${
-            viewMode === 'form'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Redactar
-        </button>
-        <button
-          type="button"
-          onClick={() => setViewMode('tracking')}
-          className={`pb-2 text-sm font-medium ${
-            viewMode === 'tracking'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Tracking
-        </button>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Comunicaciones</h1>
       </div>
 
-      <div className="mt-6">
+      <div className="flex gap-2 mb-6 border-b border-outline-variant pb-2">
+        <Button
+          onClick={() => setViewMode('form')}
+          variant={viewMode === 'form' ? 'primary' : 'ghost'}
+        >
+          Redactar
+        </Button>
+        <Button
+          onClick={() => setViewMode('tracking')}
+          variant={viewMode === 'tracking' ? 'primary' : 'ghost'}
+        >
+          Tracking
+        </Button>
+      </div>
+
+      <div>
         {viewMode === 'form' && (
           <ComunicacionForm
             initialMateriaId={initialMateriaId}
@@ -87,7 +80,7 @@ export default function ComunicacionesPage() {
         )}
 
         {viewMode === 'tracking' && !trackingLoteId && (
-          <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-800">
+          <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
             No hay lote seleccionado. Envíe una comunicación para ver su tracking o ingrese un ID de lote en la URL.
           </div>
         )}

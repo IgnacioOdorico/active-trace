@@ -5,6 +5,8 @@ import ConvocatoriaForm from '../components/ConvocatoriaForm'
 import EditarConvocatoriaForm from '../components/EditarConvocatoriaForm'
 import ImportarAlumnosForm from '../components/ImportarAlumnosForm'
 import type { Convocatoria } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
 
 type Vista = 'listado' | 'crear' | 'editar' | 'importar'
 
@@ -30,52 +32,50 @@ export default function ColoquiosPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Coloquios</h1>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Coloquios</h1>
         {vista === 'listado' && (
-          <button
-            type="button"
+          <Button
             onClick={() => setVista('crear')}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            variant="primary"
           >
             + Nueva convocatoria
-          </button>
+          </Button>
         )}
         {vista !== 'listado' && (
-          <button
-            type="button"
+          <Button
             onClick={handleBack}
-            className="text-sm text-gray-600 hover:underline"
+            variant="ghost"
           >
             ← Volver al listado
-          </button>
+          </Button>
         )}
       </div>
 
       {vista === 'listado' && (
         <>
           <div className="mb-6">
-            <h2 className="mb-3 text-lg font-semibold text-gray-800">Métricas generales</h2>
+            <h2 className="mb-4 font-headline-sm text-headline-sm text-on-surface">Métricas generales</h2>
             <MetricasColoquios />
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-800">Convocatorias</h2>
+          <BentoCard>
+            <h2 className="mb-6 font-headline-sm text-headline-sm text-on-surface">Convocatorias</h2>
             <ListadoConvocatorias onEditar={handleEditar} onImportar={handleImportar} />
-          </div>
+          </BentoCard>
         </>
       )}
 
       {vista === 'crear' && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-800">Nueva Convocatoria</h2>
+        <BentoCard>
+          <h2 className="mb-6 font-headline-sm text-headline-sm text-on-surface">Nueva Convocatoria</h2>
           <ConvocatoriaForm onSuccess={handleBack} onCancel={handleBack} />
-        </div>
+        </BentoCard>
       )}
 
       {vista === 'editar' && convocatoriaActual && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-800">
+        <BentoCard>
+          <h2 className="mb-6 font-headline-sm text-headline-sm text-on-surface">
             Editar Convocatoria — {convocatoriaActual.instancia}
           </h2>
           <EditarConvocatoriaForm
@@ -83,18 +83,18 @@ export default function ColoquiosPage() {
             onSuccess={handleBack}
             onCancel={handleBack}
           />
-        </div>
+        </BentoCard>
       )}
 
       {vista === 'importar' && convocatoriaImportarId && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-lg font-semibold text-gray-800">Importar Alumnos</h2>
+        <BentoCard>
+          <h2 className="mb-6 font-headline-sm text-headline-sm text-on-surface">Importar Alumnos</h2>
           <ImportarAlumnosForm
             convocatoriaId={convocatoriaImportarId}
             onSuccess={handleBack}
             onCancel={handleBack}
           />
-        </div>
+        </BentoCard>
       )}
     </div>
   )

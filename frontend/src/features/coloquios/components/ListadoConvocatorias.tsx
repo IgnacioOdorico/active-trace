@@ -3,6 +3,7 @@ import { useConvocatorias, useCerrarConvocatoria } from '../hooks/useColoquiosAp
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import { useCohortes } from '../../estructura-academica/hooks/useEstructuraApi'
 import type { Convocatoria } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
 
 interface ListadoConvocatoriasProps {
   onEditar: (conv: Convocatoria) => void
@@ -19,8 +20,8 @@ export default function ListadoConvocatorias({
   const cerrar = useCerrarConvocatoria()
   const [cerrandoId, setCerrandoId] = useState<string | null>(null)
 
-  if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando convocatorias...</div>
-  if (isError) return <div className="py-8 text-center text-red-600">Error al cargar convocatorias.</div>
+  if (isLoading) return <div className="py-8 text-center font-body-md text-on-surface-variant">Cargando convocatorias...</div>
+  if (isError) return <div className="py-8 text-center font-body-md text-error">Error al cargar convocatorias.</div>
 
   const convocatorias = data?.items ?? []
   const nombreMateria = (id: string) => materias?.find((m) => m.id === id)?.nombre ?? id
@@ -28,16 +29,16 @@ export default function ListadoConvocatorias({
 
   if (convocatorias.length === 0) {
     return (
-      <div className="rounded-lg bg-gray-50 py-12 text-center text-gray-500">
+      <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
         No hay convocatorias registradas.
       </div>
     )
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+      <table className="min-w-full divide-y divide-outline-variant">
+        <thead className="bg-surface">
           <tr>
             {[
               'Materia',
@@ -52,51 +53,52 @@ export default function ListadoConvocatorias({
             ].map((h) => (
               <th
                 key={h}
-                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant"
               >
                 {h}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 bg-white">
+        <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
           {convocatorias.map((conv) => (
-            <tr key={conv.id} className="hover:bg-gray-50">
-              <td className="px-4 py-3 text-sm text-gray-900">{nombreMateria(conv.materia_id)}</td>
-              <td className="px-4 py-3 text-sm text-gray-600">{nombreCohorte(conv.cohorte_id)}</td>
-              <td className="px-4 py-3 text-sm text-gray-600">{conv.tipo}</td>
-              <td className="px-4 py-3 text-sm text-gray-600">{conv.instancia}</td>
-              <td className="px-4 py-3 text-sm text-gray-600">{conv.dias_disponibles}</td>
-              <td className="px-4 py-3 text-sm text-gray-900">{conv.total_convocados}</td>
-              <td className="px-4 py-3 text-sm text-gray-900">{conv.total_reservas_activas}</td>
-              <td className="px-4 py-3 text-sm text-gray-900">{conv.total_cupos_libres}</td>
+            <tr key={conv.id} className="hover:bg-surface-container transition-colors">
+              <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{nombreMateria(conv.materia_id)}</td>
+              <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{nombreCohorte(conv.cohorte_id)}</td>
+              <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{conv.tipo}</td>
+              <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{conv.instancia}</td>
+              <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface-variant">{conv.dias_disponibles}</td>
+              <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface">{conv.total_convocados}</td>
+              <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface">{conv.total_reservas_activas}</td>
+              <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface">{conv.total_cupos_libres}</td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => onEditar(conv)}
-                    className="text-xs text-blue-600 hover:underline"
+                    variant="ghost"
+                    size="sm"
                   >
                     Editar
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
                     onClick={() => onImportar(conv.id)}
-                    className="text-xs text-blue-600 hover:underline"
+                    variant="ghost"
+                    size="sm"
                   >
                     Importar alumnos
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
                     onClick={() => {
                       setCerrandoId(conv.id)
                       cerrar.mutate(conv.id, { onSettled: () => setCerrandoId(null) })
                     }}
                     disabled={cerrandoId === conv.id}
-                    className="text-xs text-red-600 hover:underline disabled:opacity-50"
+                    variant="ghost"
+                    size="sm"
+                    className="!text-error hover:!bg-error/10"
                   >
                     {cerrandoId === conv.id ? 'Cerrando...' : 'Cerrar'}
-                  </button>
+                  </Button>
                 </div>
               </td>
             </tr>

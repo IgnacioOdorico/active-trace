@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Active-Trace | Encuentros y Guardias (C-13)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@450&amp;family=Source+Serif+4:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "surface-container-highest": "#e2e2e2",
+                "primary-container": "#1a365d",
+                "outline-variant": "#c4c6cf",
+                "on-surface-variant": "#43474e",
+                "surface-container-high": "#e8e8e8",
+                "surface": "#f9f9f9",
+                "primary": "#002045",
+                "tertiary-container": "#003765",
+                "outline": "#74777f",
+                "inverse-primary": "#adc7f7",
+                "secondary-container": "#d5e0f7",
+                "on-tertiary-fixed": "#001c38",
+                "on-secondary-fixed": "#111c2c",
+                "on-tertiary-fixed-variant": "#004881",
+                "secondary-fixed": "#d8e3fa",
+                "primary-fixed-dim": "#adc7f7",
+                "on-surface": "#1a1c1c",
+                "on-secondary-container": "#586377",
+                "on-secondary": "#ffffff",
+                "surface-container-lowest": "#ffffff",
+                "error-container": "#ffdad6",
+                "on-primary-fixed": "#001b3c",
+                "on-error": "#ffffff",
+                "primary-fixed": "#d6e3ff",
+                "surface-dim": "#dadada",
+                "on-secondary-fixed-variant": "#3c475a",
+                "surface-tint": "#455f88",
+                "inverse-on-surface": "#f0f1f1",
+                "surface-bright": "#f9f9f9",
+                "inverse-surface": "#2f3131",
+                "tertiary-fixed-dim": "#a2c9ff",
+                "on-primary-fixed-variant": "#2d476f",
+                "background": "#f9f9f9",
+                "secondary": "#545f72",
+                "tertiary": "#002141",
+                "on-primary": "#ffffff",
+                "on-background": "#1a1c1c",
+                "secondary-fixed-dim": "#bcc7dd",
+                "on-primary-container": "#86a0cd",
+                "tertiary-fixed": "#d3e4ff",
+                "error": "#ba1a1a",
+                "surface-container": "#eeeeee",
+                "on-tertiary-container": "#68a2e9",
+                "on-tertiary": "#ffffff",
+                "surface-container-low": "#f3f3f3",
+                "on-error-container": "#93000a",
+                "surface-variant": "#e2e2e2"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "margin-mobile": "16px",
+                "bento-gap": "12px",
+                "gutter": "16px",
+                "base": "4px",
+                "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                "body-md": ["IBM Plex Sans"],
+                "headline-md": ["\"Source Serif 4\""],
+                "body-lg": ["IBM Plex Sans"],
+                "mono-data": ["IBM Plex Mono"],
+                "headline-sm": ["\"Source Serif 4\""],
+                "display-lg": ["\"Source Serif 4\""],
+                "label-caps": ["IBM Plex Sans"]
+            },
+            "fontSize": {
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "mono-data": ["13px", {"lineHeight": "18px", "fontWeight": "450"}],
+                "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                "display-lg": ["42px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .neo-latex-border {
+            border: 1px solid #e2e8f0;
+        }
+        .bento-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        .active-indicator {
+            border-left: 2px solid #002045;
+        }
+        .status-pill {
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface flex min-h-screen overflow-hidden">
+<!-- SideNavBar Component -->
+<aside class="hidden md:flex flex-col h-screen w-64 border-r border-outline-variant bg-surface-container-lowest py-base z-50">
+<!-- Brand -->
+<div class="px-6 py-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Active-Trace</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Academic Management</p>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-3 text-primary bg-surface-container-low border-l-2 border-primary font-bold transition-colors duration-150 scale-100 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-body-md hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span class="font-label-caps text-label-caps">Students</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-body-md hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<span class="font-label-caps text-label-caps">Communication</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-body-md hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance">account_balance</span>
+<span class="font-label-caps text-label-caps">Faculty</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-body-md hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-caps text-label-caps">Financial</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-body-md hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+<span class="font-label-caps text-label-caps">System Logs</span>
+</a>
+</nav>
+<!-- Footer Actions -->
+<div class="px-3 pt-4 border-t border-outline-variant pb-6 space-y-1">
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-body-md hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-caps text-label-caps">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-3 text-on-surface-variant font-body-md hover:bg-surface-container-high transition-colors duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+<!-- TopNavBar Component -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 sticky top-0 z-40 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-8">
+<div class="md:hidden">
+<span class="material-symbols-outlined text-primary" data-icon="menu">menu</span>
+</div>
+<div class="flex items-center gap-4 bg-surface-container-low px-4 py-2 rounded-lg border border-outline-variant w-96">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-full" placeholder="Search academic records..." type="text"/>
+</div>
+</div>
+<div class="hidden lg:flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Overview</a>
+<a class="text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Analytics</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-semibold" href="#">Reports</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="relative p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a faculty administrator in a modern office, soft focus background, academic setting with books and clean minimalist decor, high-key natural lighting, 8k resolution, professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBArLVx9__le_BIGe2s6aAzSnqHRFFK5TyCS4eYH7AGULuKIEvLi8jAOtrn3312XeP7vM0wWte-gU7kS19kaGVZNguWwc2VNcuJ9su4wXD5AWhau95o9zunzbGkyC8LLCJu2_1VQYXirklgvrUo4TxdR0BTnYi0XjUgbdKsEFhcSgJxSZ5xUyXrpBSdxI0bOQA5lqtlBeXGwQHDYfRoeV46C56zeKcWf6voqamcnG2TWmWxP7t4qaaff322dLJ8KFbNFLmDDXL75Y"/>
+</div>
+</div>
+</header>
+<!-- Content Scrollable View -->
+<div class="flex-1 overflow-y-auto p-gutter lg:p-margin-desktop">
+<!-- Page Header & Global Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Encuentros y Guardias</h2>
+<p class="font-body-md text-on-surface-variant max-w-xl">Gestión de la comisión C-13: Seguimiento de encuentros sincrónicos, guardias de tutoría y cronograma académico.</p>
+</div>
+<div class="flex flex-wrap gap-bento-gap">
+<button class="bg-surface text-primary border border-primary px-4 py-2 flex items-center gap-2 hover:bg-primary hover:text-white transition-all font-label-caps text-label-caps uppercase tracking-wider">
+<span class="material-symbols-outlined text-sm" data-icon="file_download">file_download</span>
+                        Exportar Cronograma
+                    </button>
+<button class="bg-primary text-white px-4 py-2 flex items-center gap-2 hover:bg-primary-container transition-all font-label-caps text-label-caps uppercase tracking-wider">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                        Programar Encuentro
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Main Calendar View (Col 8) -->
+<section class="col-span-12 lg:col-span-8 bento-card p-6">
+<div class="flex items-center justify-between mb-6 border-b border-outline-variant pb-4">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">Calendario de Encuentros Sincrónicos</h3>
+<div class="flex gap-2">
+<button class="p-1 hover:bg-surface-container rounded"><span class="material-symbols-outlined" data-icon="chevron_left">chevron_left</span></button>
+<span class="font-bold">Octubre 2023</span>
+<button class="p-1 hover:bg-surface-container rounded"><span class="material-symbols-outlined" data-icon="chevron_right">chevron_right</span></button>
+</div>
+</div>
+<div class="grid grid-cols-7 gap-px bg-outline-variant">
+<!-- Days Header -->
+<div class="bg-surface-container-lowest p-2 text-center text-[10px] font-bold text-on-surface-variant uppercase">Lun</div>
+<div class="bg-surface-container-lowest p-2 text-center text-[10px] font-bold text-on-surface-variant uppercase">Mar</div>
+<div class="bg-surface-container-lowest p-2 text-center text-[10px] font-bold text-on-surface-variant uppercase">Mié</div>
+<div class="bg-surface-container-lowest p-2 text-center text-[10px] font-bold text-on-surface-variant uppercase">Jue</div>
+<div class="bg-surface-container-lowest p-2 text-center text-[10px] font-bold text-on-surface-variant uppercase">Vie</div>
+<div class="bg-surface-container-lowest p-2 text-center text-[10px] font-bold text-on-surface-variant uppercase">Sáb</div>
+<div class="bg-surface-container-lowest p-2 text-center text-[10px] font-bold text-on-surface-variant uppercase">Dom</div>
+<!-- Calendar Days -->
+<div class="bg-surface-container-lowest h-24 p-2 opacity-30">25</div>
+<div class="bg-surface-container-lowest h-24 p-2 opacity-30">26</div>
+<div class="bg-surface-container-lowest h-24 p-2 opacity-30">27</div>
+<div class="bg-surface-container-lowest h-24 p-2 opacity-30">28</div>
+<div class="bg-surface-container-lowest h-24 p-2 opacity-30">29</div>
+<div class="bg-surface-container-lowest h-24 p-2 opacity-30">30</div>
+<div class="bg-surface-container-lowest h-24 p-2 font-bold text-primary">1</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">2</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">3</div>
+<div class="bg-surface-container-low h-24 p-2 border-l-2 border-primary">
+<span class="text-on-surface-variant">4</span>
+<div class="mt-1 bg-primary text-white text-[9px] p-1 rounded-sm leading-tight truncate">Encuentro: Algoritmos 1</div>
+</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">5</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">6</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">7</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">8</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">9</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">10</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">11</div>
+<div class="bg-surface-container-low h-24 p-2 border-l-2 border-primary">
+<span class="text-on-surface-variant">12</span>
+<div class="mt-1 bg-tertiary-container text-on-tertiary-container text-[9px] p-1 rounded-sm leading-tight truncate">Guardia: Sistemas Op.</div>
+</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">13</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">14</div>
+<div class="bg-surface-container-lowest h-24 p-2 text-on-surface-variant">15</div>
+</div>
+</section>
+<!-- Recurring Slots (Col 4) -->
+<section class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<div class="bento-card p-6 flex-1">
+<div class="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">Slots de Encuentro</h3>
+<span class="material-symbols-outlined text-primary cursor-pointer hover:rotate-180 transition-transform duration-500" data-icon="sync">sync</span>
+</div>
+<div class="space-y-4">
+<!-- Slot Item -->
+<div class="p-3 border-l-2 border-primary bg-surface-container-low hover:shadow-sm transition-all">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-primary font-mono-data text-xs">MA-102</span>
+<span class="text-[10px] bg-secondary-container text-primary-container px-2 py-0.5 font-bold uppercase">Recurrente</span>
+</div>
+<h4 class="font-headline-sm text-[15px] mb-1">Estructuras de Datos</h4>
+<div class="flex items-center gap-2 text-on-surface-variant text-[12px] mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+<span>Lunes 18:00 HS</span>
+</div>
+<div class="flex gap-2">
+<a class="flex-1 py-1 px-2 bg-primary text-white text-[10px] text-center hover:bg-primary-container" href="#">ENTRAR MEET</a>
+<a class="flex items-center justify-center p-1 border border-outline-variant hover:bg-surface-container" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="video_library">video_library</span>
+</a>
+</div>
+</div>
+<!-- Slot Item -->
+<div class="p-3 border-l-2 border-outline hover:shadow-sm transition-all opacity-80">
+<div class="flex justify-between items-start mb-1">
+<span class="font-bold text-on-surface-variant font-mono-data text-xs">CS-204</span>
+<span class="text-[10px] bg-surface-container text-on-surface-variant px-2 py-0.5 font-bold uppercase">Asincrónico</span>
+</div>
+<h4 class="font-headline-sm text-[15px] mb-1">Arquitectura I</h4>
+<div class="flex items-center gap-2 text-on-surface-variant text-[12px] mb-2">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+<span>Miércoles 10:00 HS</span>
+</div>
+<div class="flex gap-2">
+<a class="flex-1 py-1 px-2 border border-primary text-primary text-[10px] text-center hover:bg-surface-container" href="#">GESTIONAR</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Guardias Table (Col 12) -->
+<section class="col-span-12 bento-card p-0 overflow-hidden">
+<div class="px-6 py-4 flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest">
+<div>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant">Gestión de Guardias de Tutores</h3>
+<p class="text-[11px] text-on-surface-variant uppercase tracking-widest mt-1">C-13 | Academic Management</p>
+</div>
+<button class="text-primary text-xs font-bold border-b border-primary hover:border-b-2 transition-all">
+                            REGISTRAR NUEVA GUARDIA
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-6 py-3 font-label-caps text-[10px] uppercase text-on-surface-variant">Tutor</th>
+<th class="px-6 py-3 font-label-caps text-[10px] uppercase text-on-surface-variant">Materia</th>
+<th class="px-6 py-3 font-label-caps text-[10px] uppercase text-on-surface-variant">Turno / Shift</th>
+<th class="px-6 py-3 font-label-caps text-[10px] uppercase text-on-surface-variant">Plataforma</th>
+<th class="px-6 py-3 font-label-caps text-[10px] uppercase text-on-surface-variant text-center">Estado</th>
+<th class="px-6 py-3 font-label-caps text-[10px] uppercase text-on-surface-variant text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-mono-data text-[13px]">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-secondary text-[10px] text-white flex items-center justify-center">RM</div>
+<span class="font-semibold text-primary">Rodriguez, Marcos</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Fund. de Programación</td>
+<td class="px-6 py-4">Lun-Vie / 14:00 - 18:00</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="forum">forum</span> Slack</span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="status-pill bg-success-container bg-green-100 text-green-800 border border-green-200">Realizada</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-on-surface-variant group-hover:text-primary" data-icon="more_vert">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-tertiary text-[10px] text-white flex items-center justify-center">AL</div>
+<span class="font-semibold text-primary">Arce, Lucía</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Lógica Computacional</td>
+<td class="px-6 py-4">Mar-Jue / 08:00 - 12:00</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="video_call">video_call</span> Zoom</span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="status-pill bg-warning-container bg-yellow-100 text-yellow-800 border border-yellow-200">Pendiente</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-on-surface-variant group-hover:text-primary" data-icon="more_vert">more_vert</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-6 h-6 rounded-full bg-error text-[10px] text-white flex items-center justify-center">GP</div>
+<span class="font-semibold text-primary">Gomez, Pablo</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Matemática Discreta</td>
+<td class="px-6 py-4">Sáb / 09:00 - 13:00</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="headset_mic">headset_mic</span> Discord</span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="status-pill bg-error-container text-error border border-error-container">Cancelada</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-on-surface-variant group-hover:text-primary" data-icon="more_vert">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Quick Stats -->
+<div class="col-span-12 grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="bento-card p-4 flex flex-col items-center justify-center text-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-1">Asistencia Promedio</span>
+<span class="text-2xl font-display-lg text-primary">87.4%</span>
+<div class="w-full bg-surface-container-highest h-1 mt-2">
+<div class="bg-primary h-full" style="width: 87%"></div>
+</div>
+</div>
+<div class="bento-card p-4 flex flex-col items-center justify-center text-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-1">Encuentros Semanales</span>
+<span class="text-2xl font-display-lg text-primary">12</span>
+<p class="text-[10px] text-on-surface-variant mt-1">+2 respecto al mes anterior</p>
+</div>
+<div class="bento-card p-4 flex flex-col items-center justify-center text-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-1">Tutores Activos</span>
+<span class="text-2xl font-display-lg text-primary">08</span>
+<p class="text-[10px] text-green-600 font-bold mt-1">100% CUBIERTO</p>
+</div>
+<div class="bento-card p-4 flex flex-col items-center justify-center text-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase mb-1">Próximo Encuentro</span>
+<span class="text-body-md font-bold text-primary">04 OCT 18:30</span>
+<p class="text-[10px] text-on-surface-variant mt-1">Sistemas Operativos 1</p>
+</div>
+</div>
+</div>
+<!-- Footer Meta -->
+<footer class="mt-12 border-t border-outline-variant pt-8 flex flex-col md:flex-row justify-between text-on-surface-variant text-[11px] font-mono-data">
+<p>© 2023 Active-Trace Academic Management Systems. All rights reserved.</p>
+<p>System Version: 1.4.2-C13 | Build: LATEX-2291</p>
+</footer>
+</div>
+</main>
+<!-- Contextual FAB for quick scheduling -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-95 transition-all group z-50">
+<span class="material-symbols-outlined text-3xl" data-icon="add">add</span>
+<span class="absolute right-full mr-4 px-3 py-1 bg-primary text-white text-xs font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Programar Encuentro</span>
+</button>
+<script>
+        // Micro-interaction for calendar items
+        document.querySelectorAll('.bg-surface-container-low').forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#e8efff';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = '';
+            });
+        });
+
+        // Simple mock search filter effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Avisos y Notificaciones | Active-Trace CMS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@450&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#adc7f7",
+                        "tertiary-fixed-dim": "#a2c9ff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#adc7f7",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004881",
+                        "tertiary": "#002141",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "on-primary-container": "#86a0cd",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#111c2c",
+                        "surface-container-highest": "#e2e2e2",
+                        "primary-fixed": "#d6e3ff",
+                        "surface": "#f9f9f9",
+                        "on-surface-variant": "#43474e",
+                        "error-container": "#ffdad6",
+                        "primary": "#002045",
+                        "on-primary-fixed": "#001b3c",
+                        "surface-container-low": "#f3f3f3",
+                        "tertiary-fixed": "#d3e4ff",
+                        "on-tertiary-fixed": "#001c38",
+                        "surface-variant": "#e2e2e2",
+                        "inverse-surface": "#2f3131",
+                        "tertiary-container": "#003765",
+                        "surface-container-high": "#e8e8e8",
+                        "primary-container": "#1a365d",
+                        "surface-container": "#eeeeee",
+                        "secondary": "#545f72",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#586377",
+                        "on-tertiary-container": "#68a2e9",
+                        "surface-tint": "#455f88",
+                        "on-surface": "#1a1c1c",
+                        "on-background": "#1a1c1c",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#c4c6cf",
+                        "secondary-container": "#d5e0f7",
+                        "background": "#f9f9f9",
+                        "secondary-fixed-dim": "#bcc7dd",
+                        "outline": "#74777f",
+                        "surface-bright": "#f9f9f9",
+                        "secondary-fixed": "#d8e3fa",
+                        "on-primary-fixed-variant": "#2d476f",
+                        "surface-dim": "#dadada",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#f0f1f1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "bento-gap": "12px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["\"Source Serif 4\""],
+                        "mono-data": ["IBM Plex Mono"],
+                        "label-caps": ["IBM Plex Sans"],
+                        "display-lg": ["\"Source Serif 4\""],
+                        "body-md": ["IBM Plex Sans"],
+                        "headline-md": ["\"Source Serif 4\""],
+                        "body-lg": ["IBM Plex Sans"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "500"}],
+                        "mono-data": ["13px", {"lineHeight": "18px", "fontWeight": "450"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "display-lg": ["42px", {"lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["28px", {"lineHeight": "36px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #fcfcfc;
+            color: #1a1c1c;
+            font-family: 'IBM Plex Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .neo-latex-border {
+            border: 1px solid #e2e8f0;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab-indicator {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #002045;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="fixed left-0 top-0 h-full flex flex-col z-40 py-4 bg-surface-container-low border-r border-outline-variant w-64">
+<div class="px-6 mb-8">
+<h1 class="font-headline-sm text-headline-sm font-semibold text-primary">Project Active-Trace</h1>
+<p class="font-label-caps text-[10px] text-on-surface-variant tracking-wider mt-1">BATCH ADMIN ROLE</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="group flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="group flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">person_alert</span>
+<span class="font-body-md">At-Risk Queue</span>
+</a>
+<a class="group flex items-center px-6 py-3 text-primary font-bold border-l-4 border-primary bg-secondary-container transition-all duration-200 relative" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">send_and_archive</span>
+<span class="font-body-md">Communication</span>
+</a>
+<a class="group flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">fact_check</span>
+<span class="font-body-md">Approval Inbox</span>
+</a>
+<a class="group flex items-center px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-body-md">System Settings</span>
+</a>
+</nav>
+<div class="px-4 mt-auto space-y-2">
+<button class="w-full text-left px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps rounded-lg hover:opacity-90 transition-opacity">
+                VIEW AUDIT TRAIL
+            </button>
+<div class="pt-4 border-t border-outline-variant">
+<a class="flex items-center px-2 py-2 text-on-surface-variant font-label-caps text-[11px] hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm mr-2">description</span> DOCUMENTATION
+                </a>
+<a class="flex items-center px-2 py-2 text-on-surface-variant font-label-caps text-[11px] hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-sm mr-2">help</span> SUPPORT
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="ml-64 flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar (Authority: JSON) -->
+<header class="flex justify-between items-center w-full px-margin-desktop h-16 bg-surface border-b border-outline-variant sticky top-0 z-30">
+<div class="flex items-center space-x-8">
+<span class="font-headline-md text-headline-md font-bold text-primary">Active-Trace CMS</span>
+<nav class="hidden md:flex space-x-6">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">CAMPAIGNS</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">APPROVALS</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">TEMPLATES</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-colors" href="#">LOGS</a>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<button class="px-4 py-2 text-error font-label-caps text-label-caps border border-error hover:bg-error-container transition-colors">
+                    EMERGENCY STOP
+                </button>
+<button class="px-4 py-2 bg-primary-container text-on-primary-container font-label-caps text-label-caps hover:bg-primary transition-colors" onclick="document.getElementById('new-notice-modal').classList.remove('hidden')">
+                    CREATE BATCH
+                </button>
+<div class="w-8 h-8 rounded-full bg-outline-variant flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a senior data administrator in a minimalist office setting, soft natural lighting, high resolution, academic atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyYhOpFAnjOQ19AEpx86H7JsMuoQqpHrRZuCaKonhLKwDshLu27fGCvD-6VA8RCG5ttcmjvgHlnx9d3E83teQNBnDptgNvXveF9DvetdHBv6R0QpkXkMW8KtEEx25Cvz6nQVc3YhSMfhQarp78uFPzV8IZdlqnDHPNfI4rXGT3ztMmRtzbHXqwDZEh-zEjr82B7yb01k-0zwTaUeOZUZ8uPZamx77eBRetTJ3zvixjACSaymkIDHHVluXVAtY4vD_bCT-7BjiVxkY"/>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 overflow-y-auto p-margin-desktop bg-[#fcfcfc]">
+<!-- Page Header -->
+<div class="mb-8 flex justify-between items-end">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Avisos y Notificaciones</h2>
+<p class="font-body-md text-on-surface-variant mt-1">Gestión administrativa de comunicaciones críticas y trazabilidad de lecturas.</p>
+</div>
+<div class="flex space-x-3">
+<div class="neo-latex-border bg-white px-3 py-1 flex items-center space-x-2">
+<span class="material-symbols-outlined text-sm text-secondary">filter_list</span>
+<span class="font-label-caps text-label-caps text-secondary">FILTRAR POR SEVERIDAD</span>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-bento-gap h-fit">
+<!-- Quick Stats Bento -->
+<div class="col-span-12 md:col-span-3 neo-latex-border bg-white p-4">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant pb-2 mb-4">MÉTRICAS DE IMPACTO</h3>
+<div class="space-y-4">
+<div>
+<p class="font-label-caps text-[10px] text-secondary">TOTAL ACTIVOS</p>
+<p class="font-mono-data text-2xl font-bold text-primary">12</p>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-secondary">ACUSE REQUERIDO (AVG)</p>
+<div class="flex items-end justify-between">
+<p class="font-mono-data text-2xl font-bold text-primary">84%</p>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full overflow-hidden mb-2">
+<div class="h-full bg-primary" style="width: 84%"></div>
+</div>
+</div>
+</div>
+<div>
+<p class="font-label-caps text-[10px] text-secondary">ALERTAS CRÍTICAS</p>
+<p class="font-mono-data text-2xl font-bold text-error">03</p>
+</div>
+</div>
+</div>
+<!-- Main Notifications Feed Bento -->
+<div class="col-span-12 md:col-span-9 neo-latex-border bg-white flex flex-col">
+<div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-label-caps text-label-caps text-primary">FEED DE COMUNICACIONES ACTIVAS</h3>
+<div class="flex space-x-2">
+<span class="font-mono-data text-[11px] text-on-surface-variant bg-white px-2 py-1 neo-latex-border">PÁGINA 1 DE 3</span>
+</div>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Notice Item 1 -->
+<div class="p-4 hover:bg-surface-bright transition-colors flex items-start space-x-4">
+<div class="mt-1">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-headline-sm text-headline-sm text-primary">Actualización Protocolo de Seguridad C-19</h4>
+<span class="font-label-caps text-[10px] bg-error-container text-on-error-container px-2 py-0.5">CRÍTICO / ACUSE REQ.</span>
+</div>
+<p class="font-body-md text-on-surface-variant mt-1 leading-relaxed max-w-2xl">
+                                    Se requiere la revisión inmediata de los nuevos protocolos de encriptación para lotes de datos tipo "At-Risk". Los cambios entran en vigor a las 00:00 UTC.
+                                </p>
+<div class="mt-4 flex items-center space-x-6">
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">ALCANCE</span>
+<span class="font-body-md text-primary">Global / Todos los Roles</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">PUBLICADO POR</span>
+<span class="font-body-md text-primary">Admin_01 - Dr. Aris</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">ACUSES DE RECIBO</span>
+<span class="font-mono-data text-primary font-bold">142 / 168 (84.5%)</span>
+</div>
+</div>
+</div>
+<button class="neo-latex-border p-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-secondary">analytics</span>
+</button>
+</div>
+<!-- Notice Item 2 -->
+<div class="p-4 hover:bg-surface-bright transition-colors flex items-start space-x-4">
+<div class="mt-1">
+<span class="material-symbols-outlined text-tertiary">info</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-headline-sm text-headline-sm text-primary">Mantenimiento Programado Servidor S2</h4>
+<span class="font-label-caps text-[10px] bg-secondary-container text-on-secondary-container px-2 py-0.5">INFORMATIVO</span>
+</div>
+<p class="font-body-md text-on-surface-variant mt-1 leading-relaxed">
+                                    La instancia S2 de anotación distribuida estará fuera de línea por mantenimiento rutinario el próximo domingo entre las 02:00 y las 04:00 AM.
+                                </p>
+<div class="mt-4 flex items-center space-x-6">
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">ALCANCE</span>
+<span class="font-body-md text-primary">Por Rol: Developer</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">PUBLICADO POR</span>
+<span class="font-body-md text-primary">System_Bot</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">VISUALIZACIONES</span>
+<span class="font-mono-data text-primary font-bold">452</span>
+</div>
+</div>
+</div>
+<button class="neo-latex-border p-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-secondary">edit_note</span>
+</button>
+</div>
+<!-- Notice Item 3 -->
+<div class="p-4 hover:bg-surface-bright transition-colors flex items-start space-x-4">
+<div class="mt-1">
+<span class="material-symbols-outlined text-secondary">subject</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="font-headline-sm text-headline-sm text-primary">Nueva Guía de Etiquetado: Batch 044</h4>
+<span class="font-label-caps text-[10px] bg-tertiary-container text-on-tertiary-container px-2 py-0.5">GUÍA / ACUSE REQ.</span>
+</div>
+<p class="font-body-md text-on-surface-variant mt-1 leading-relaxed">
+                                    Se ha publicado la documentación expandida para el etiquetado semántico del Batch 044. Todos los anotadores asignados deben confirmar lectura.
+                                </p>
+<div class="mt-4 flex items-center space-x-6">
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">ALCANCE</span>
+<span class="font-body-md text-primary">Por Sujeto: Batch 044</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">PUBLICADO POR</span>
+<span class="font-body-md text-primary">QC_Lead_Sarah</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-[10px] text-secondary">ACUSES DE RECIBO</span>
+<span class="font-mono-data text-primary font-bold">12 / 12 (100%)</span>
+</div>
+</div>
+</div>
+<button class="neo-latex-border p-2 bg-secondary-container bg-opacity-50 transition-colors">
+<span class="material-symbols-outlined text-primary">verified</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Secondary Control Bento -->
+<div class="col-span-12 md:col-span-8 neo-latex-border bg-white p-6 relative overflow-hidden">
+<div class="absolute top-0 left-0 w-1 h-full bg-primary"></div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2">Resumen de Seguimiento RN-18/19</h3>
+<p class="font-body-md text-on-surface-variant mb-6">Auditoría en tiempo real de notificaciones con acuse de recibo obligatorio.</p>
+<div class="grid grid-cols-3 gap-6">
+<div class="flex flex-col items-center p-4 bg-surface-container-low neo-latex-border">
+<span class="font-label-caps text-[10px] text-secondary">LATENCIA MEDIA ACUSE</span>
+<span class="font-mono-data text-xl text-primary mt-2">14.2 min</span>
+</div>
+<div class="flex flex-col items-center p-4 bg-surface-container-low neo-latex-border">
+<span class="font-label-caps text-[10px] text-secondary">FALLO DE NOTIFICACIÓN</span>
+<span class="font-mono-data text-xl text-error mt-2">0.02%</span>
+</div>
+<div class="flex flex-col items-center p-4 bg-surface-container-low neo-latex-border">
+<span class="font-label-caps text-[10px] text-secondary">DISPOSITIVOS ACTORES</span>
+<span class="font-mono-data text-xl text-primary mt-2">86% Web</span>
+</div>
+</div>
+</div>
+<!-- Action Bento -->
+<div class="col-span-12 md:col-span-4 neo-latex-border bg-primary-container p-6 text-on-primary-container flex flex-col justify-center">
+<span class="material-symbols-outlined text-4xl mb-4">campaign</span>
+<h3 class="font-headline-sm text-headline-sm text-white mb-2">Difusión de Emergencia</h3>
+<p class="font-body-md text-on-primary-container opacity-80 mb-6">Accione este comando para enviar un aviso global con bloqueo de interfaz hasta confirmación de lectura.</p>
+<button class="bg-white text-primary px-4 py-3 font-label-caps text-label-caps hover:bg-opacity-90 transition-all uppercase tracking-widest text-center">
+                        INICIAR PROTOCOLO RN-20
+                    </button>
+</div>
+</div>
+</main>
+</div>
+<!-- Creation Modal (Authority: User Task 2) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-primary bg-opacity-40 backdrop-blur-sm" id="new-notice-modal">
+<div class="bg-white w-full max-w-2xl neo-latex-border shadow-xl">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-primary">Publicar Nuevo Aviso</h2>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary" onclick="document.getElementById('new-notice-modal').classList.add('hidden')">close</button>
+</div>
+<div class="p-6 space-y-6">
+<!-- Title Field -->
+<div>
+<label class="font-label-caps text-label-caps text-secondary block mb-1">TÍTULO DEL COMUNICADO</label>
+<input class="w-full border-0 border-b border-outline p-2 font-body-lg focus:border-primary focus:ring-0 transition-colors" placeholder="Ej: Actualización de Parámetros de Inferencia" type="text"/>
+</div>
+<!-- Content Field -->
+<div>
+<label class="font-label-caps text-label-caps text-secondary block mb-1">CUERPO DEL MENSAJE</label>
+<textarea class="w-full neo-latex-border p-3 font-body-md focus:border-primary focus:ring-0 transition-colors" placeholder="Describa el aviso de forma clara y concisa..." rows="4"></textarea>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<!-- Scope Select -->
+<div>
+<label class="font-label-caps text-label-caps text-secondary block mb-1">ALCANCE (SCOPE)</label>
+<select class="w-full neo-latex-border p-2 font-body-md bg-white">
+<option>Global (Todos los usuarios)</option>
+<option>Por Sujeto (Batch/Proyecto)</option>
+<option>Por Rol (Admin/Annotator/QC)</option>
+</select>
+</div>
+<!-- Severity Select -->
+<div>
+<label class="font-label-caps text-label-caps text-secondary block mb-1">SEVERIDAD</label>
+<select class="w-full neo-latex-border p-2 font-body-md bg-white">
+<option>Informativo (Low)</option>
+<option>Advertencia (Medium)</option>
+<option>Crítico (High)</option>
+</select>
+</div>
+</div>
+<!-- Switches -->
+<div class="flex items-center space-x-6 p-4 bg-surface-container-low">
+<label class="flex items-center cursor-pointer">
+<div class="relative">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</div>
+<span class="ml-3 font-label-caps text-label-caps text-primary">REQUIERE ACUSE DE RECIBO (RN-18)</span>
+</label>
+<label class="flex items-center cursor-pointer">
+<div class="relative">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-10 h-5 bg-outline-variant rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-error"></div>
+</div>
+<span class="ml-3 font-label-caps text-label-caps text-primary">BLOQUEAR INTERFAZ (RN-20)</span>
+</label>
+</div>
+</div>
+<div class="p-6 bg-surface-container border-t border-outline-variant flex justify-end space-x-4">
+<button class="px-6 py-2 font-label-caps text-label-caps text-secondary hover:text-primary transition-colors" onclick="document.getElementById('new-notice-modal').classList.add('hidden')">CANCELAR</button>
+<button class="px-8 py-2 bg-primary text-on-primary font-label-caps text-label-caps hover:bg-opacity-90 transition-all">PUBLICAR COMUNICADO</button>
+</div>
+</div>
+</div>
+<!-- Floating Action Button (Supressed on details/modals as per instructions, but kept here for general flow if needed) -->
+<!-- Hidden because it's a "Task-Focused" state when modal is open, but usually on main lists it helps -->
+<script>
+        // Micro-interactions
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.opacity = '0.7';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.opacity = '1';
+            });
+        });
+
+        // Search Bar Toggle Logic (if needed)
+        // This is a static mockup, but we add basic modal behavior
+    </script>
+</body></html>

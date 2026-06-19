@@ -5,6 +5,8 @@ import { VigenciaMasivaForm } from '../../equipos/components/VigenciaForm'
 import AvisoForm from '../../avisos/components/AvisoForm'
 import ProgramasStep from '../components/ProgramasStep'
 import FechasAcademicasStep from '../components/FechasAcademicasStep'
+import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 
 interface Step {
   id: string
@@ -47,15 +49,17 @@ export default function SetupCuatrimestrePage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl py-8">
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">Setup de Cuatrimestre</h1>
-      <p className="mb-6 text-sm text-gray-500">
-        Flujo guiado FL-03. Cada paso es independiente — podés omitir los opcionales y retomar
-        más adelante. No hay transacción atómica: cada paso confirma su propio endpoint.
-      </p>
+    <div className="mx-auto max-w-4xl space-y-8">
+      <div>
+        <h1 className="font-headline-md text-headline-md text-on-surface">Setup de Cuatrimestre</h1>
+        <p className="mt-1 font-body-md text-on-surface-variant">
+          Flujo guiado FL-03. Cada paso es independiente — podés omitir los opcionales y retomar
+          más adelante. No hay transacción atómica: cada paso confirma su propio endpoint.
+        </p>
+      </div>
 
       {/* Barra de progreso */}
-      <div className="mb-8 flex items-center gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center gap-2 overflow-x-auto pb-4">
         {STEPS.map((s, idx) => {
           const estado = getEstadoPaso(s)
           return (
@@ -65,19 +69,19 @@ export default function SetupCuatrimestrePage() {
                 onClick={() => setPasoActual(idx)}
                 className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                   idx === pasoActual
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-primary text-on-primary'
                     : estado === 'done'
-                    ? 'bg-green-500 text-white'
+                    ? 'bg-success text-on-success'
                     : estado === 'skipped'
-                    ? 'bg-gray-300 text-gray-600'
-                    : 'bg-gray-100 text-gray-500'
+                    ? 'bg-surface-container-high text-on-surface-variant'
+                    : 'bg-surface-container text-on-surface-variant'
                 }`}
                 title={s.label}
               >
                 {estado === 'done' ? '✓' : estado === 'skipped' ? '–' : idx + 1}
               </button>
               {idx < STEPS.length - 1 && (
-                <div className="h-0.5 w-6 flex-shrink-0 bg-gray-200" />
+                <div className="h-[1px] w-8 flex-shrink-0 bg-outline-variant" />
               )}
             </div>
           )
@@ -85,25 +89,25 @@ export default function SetupCuatrimestrePage() {
       </div>
 
       {/* Paso actual */}
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <div className="mb-4 flex items-start justify-between">
+      <div className="rounded neo-latex-border bg-surface-container-lowest p-6">
+        <div className="mb-6 flex items-start justify-between border-b border-outline-variant pb-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">{step.label}</h2>
-            <p className="mt-1 text-sm text-gray-500">{step.description}</p>
+            <h2 className="font-headline-sm text-headline-sm text-on-surface">{step.label}</h2>
+            <p className="mt-1 font-body-md text-on-surface-variant">{step.description}</p>
             {step.optional && (
-              <span className="mt-1 inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
-                Opcional
-              </span>
+              <div className="mt-2">
+                <Badge variant="neutral">Opcional</Badge>
+              </div>
             )}
           </div>
           {step.optional && (
-            <button
-              type="button"
+            <Button
               onClick={omitirPaso}
-              className="text-sm text-gray-400 hover:text-gray-600 hover:underline"
+              variant="ghost"
+              className="text-on-surface-variant"
             >
               Omitir este paso →
-            </button>
+            </Button>
           )}
         </div>
 
@@ -120,30 +124,28 @@ export default function SetupCuatrimestrePage() {
           <VigenciaMasivaForm onSuccess={() => marcarCompletado()} />
         )}
         {step.id === 'programas' && (
-          <div>
+          <div className="space-y-6">
             <ProgramasStep />
-            <div className="mt-4">
-              <button
-                type="button"
+            <div className="flex justify-end pt-4 border-t border-outline-variant">
+              <Button
                 onClick={marcarCompletado}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                variant="primary"
               >
                 Confirmar y continuar →
-              </button>
+              </Button>
             </div>
           </div>
         )}
         {step.id === 'fechas' && (
-          <div>
+          <div className="space-y-6">
             <FechasAcademicasStep />
-            <div className="mt-4">
-              <button
-                type="button"
+            <div className="flex justify-end pt-4 border-t border-outline-variant">
+              <Button
                 onClick={marcarCompletado}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                variant="primary"
               >
                 Confirmar y continuar →
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -157,12 +159,12 @@ export default function SetupCuatrimestrePage() {
 
       {/* Resumen final */}
       {(completados.size + omitidos.size === STEPS.length) && (
-        <div className="mt-6 rounded-lg border border-green-200 bg-green-50 p-6">
-          <h3 className="font-semibold text-green-900">Setup completado</h3>
-          <p className="mt-1 text-sm text-green-700">
-            Completados: {completados.size} / {STEPS.length}. Omitidos: {omitidos.size}.
+        <div className="rounded neo-latex-border bg-success-container p-6">
+          <h3 className="font-headline-sm text-headline-sm text-on-success-container">Setup completado</h3>
+          <p className="mt-2 font-body-md text-on-success-container">
+            Completados: <span className="font-mono-data">{completados.size}</span> / <span className="font-mono-data">{STEPS.length}</span>. Omitidos: <span className="font-mono-data">{omitidos.size}</span>.
           </p>
-          <p className="mt-1 text-xs text-green-600">
+          <p className="mt-1 font-body-md text-[12px] text-on-success-container/80">
             Podés volver a cualquier paso haciendo clic en los indicadores de progreso.
           </p>
         </div>

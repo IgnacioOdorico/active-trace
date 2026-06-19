@@ -1,10 +1,10 @@
-import { useState } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 
 interface MenuItem {
   label: string
   path: string
+  icon: string
   requiredPermission?: string
 }
 
@@ -16,7 +16,7 @@ interface MenuSection {
 const menuSections: MenuSection[] = [
   {
     label: 'General',
-    items: [{ label: 'Inicio', path: '/' }],
+    items: [{ label: 'Inicio', path: '/', icon: 'home' }],
   },
   {
     label: 'Académico',
@@ -24,31 +24,37 @@ const menuSections: MenuSection[] = [
       {
         label: 'Importar Calificaciones',
         path: '/calificaciones/importar',
+        icon: 'upload_file',
         requiredPermission: 'calificaciones:importar',
       },
       {
         label: 'Umbral de Aprobación',
         path: '/calificaciones/umbral',
+        icon: 'tune',
         requiredPermission: 'calificaciones:umbral',
       },
       {
         label: 'Alumnos Atrasados',
         path: '/alumnos/atrasados',
+        icon: 'warning',
         requiredPermission: 'alumnos:atrasados',
       },
       {
         label: 'Reportes y Notas',
         path: '/reportes',
+        icon: 'analytics',
         requiredPermission: 'reportes:ver',
       },
       {
         label: 'Comunicaciones',
         path: '/comunicaciones',
+        icon: 'mail',
         requiredPermission: 'comunicaciones:enviar',
       },
       {
         label: 'Monitores',
         path: '/monitores',
+        icon: 'supervised_user_circle',
         requiredPermission: 'monitores:ver',
       },
     ],
@@ -59,36 +65,43 @@ const menuSections: MenuSection[] = [
       {
         label: 'Equipos Docentes',
         path: '/coordinacion/equipos',
+        icon: 'groups',
         requiredPermission: 'equipos:asignar',
       },
       {
         label: 'Avisos',
         path: '/coordinacion/avisos',
+        icon: 'campaign',
         requiredPermission: 'avisos:publicar',
       },
       {
         label: 'Tareas',
         path: '/coordinacion/tareas',
+        icon: 'task',
         requiredPermission: 'tareas:gestionar',
       },
       {
         label: 'Encuentros (Admin)',
         path: '/coordinacion/encuentros',
+        icon: 'event',
         requiredPermission: 'encuentros:gestionar',
       },
       {
         label: 'Coloquios',
         path: '/coordinacion/coloquios',
+        icon: 'forum',
         requiredPermission: 'equipos:asignar',
       },
       {
         label: 'Setup Cuatrimestre',
         path: '/coordinacion/setup',
+        icon: 'settings_applications',
         requiredPermission: 'equipos:asignar',
       },
       {
         label: 'Monitores Coord.',
         path: '/coordinacion/monitores',
+        icon: 'admin_panel_settings',
         requiredPermission: 'monitores:ver',
       },
     ],
@@ -99,16 +112,19 @@ const menuSections: MenuSection[] = [
       {
         label: 'Liquidaciones',
         path: '/finanzas/liquidaciones',
+        icon: 'payments',
         requiredPermission: 'liquidaciones:ver',
       },
       {
         label: 'Grilla Salarial',
         path: '/finanzas/grilla-salarial',
+        icon: 'request_quote',
         requiredPermission: 'liquidaciones:configurar-salarios',
       },
       {
         label: 'Facturas',
         path: '/finanzas/facturas',
+        icon: 'receipt',
         requiredPermission: 'facturas:ver',
       },
     ],
@@ -119,16 +135,19 @@ const menuSections: MenuSection[] = [
       {
         label: 'Estructura Académica',
         path: '/admin/estructura',
+        icon: 'account_balance',
         requiredPermission: 'estructura:gestionar',
       },
       {
         label: 'Usuarios',
         path: '/admin/usuarios',
+        icon: 'manage_accounts',
         requiredPermission: 'usuarios:gestionar',
       },
       {
         label: 'Panel de Auditoría',
         path: '/admin/auditoria',
+        icon: 'history',
         requiredPermission: 'auditoria:ver',
       },
     ],
@@ -137,29 +156,17 @@ const menuSections: MenuSection[] = [
 
 export default function Layout() {
   const { user, logout } = useAuth()
-  const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <aside
-        className={`flex flex-col border-r border-gray-200 bg-white transition-all duration-200 ${
-          collapsed ? 'w-16' : 'w-64'
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-gray-200 p-4">
-          {!collapsed && (
-            <h1 className="text-lg font-bold text-gray-900">Active Trace</h1>
-          )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}
-          >
-            {collapsed ? '→' : '←'}
-          </button>
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* SideNavBar */}
+      <aside className="w-64 bg-surface-container-low border-r border-outline-variant flex flex-col flex-shrink-0">
+        <div className="h-16 flex items-center px-6 border-b border-outline-variant">
+          <span className="material-symbols-outlined text-primary mr-2">account_balance</span>
+          <h1 className="font-headline-sm text-headline-sm text-primary">Active Trace</h1>
         </div>
 
-        <nav className="flex-1 space-y-4 overflow-y-auto p-2">
+        <nav className="flex-1 overflow-y-auto py-4">
           {menuSections.map((section) => {
             const visibleItems = section.items.filter((item) => {
               if (!item.requiredPermission) return true
@@ -170,12 +177,10 @@ export default function Layout() {
             if (visibleItems.length === 0) return null
 
             return (
-              <div key={section.label}>
-                {!collapsed && (
-                  <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                    {section.label}
-                  </p>
-                )}
+              <div key={section.label} className="mb-6">
+                <p className="px-6 mb-2 font-label-caps text-label-caps text-outline uppercase">
+                  {section.label}
+                </p>
                 <ul className="space-y-1">
                   {visibleItems.map((item) => (
                     <li key={item.path}>
@@ -183,19 +188,21 @@ export default function Layout() {
                         to={item.path}
                         end
                         className={({ isActive }) =>
-                          `flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                          `relative flex items-center px-6 py-2 font-body-md text-body-md transition-colors ${
                             isActive
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                              ? 'text-primary bg-surface-container-high font-medium'
+                              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                           }`
                         }
                       >
-                        {collapsed ? (
-                          <span className="mx-auto">
-                            {item.label.charAt(0)}
-                          </span>
-                        ) : (
-                          item.label
+                        {({ isActive }) => (
+                          <>
+                            {isActive && <div className="active-tab-indicator" />}
+                            <span className="material-symbols-outlined mr-3 text-[20px]">
+                              {item.icon}
+                            </span>
+                            {item.label}
+                          </>
                         )}
                       </NavLink>
                     </li>
@@ -205,25 +212,51 @@ export default function Layout() {
             )
           })}
         </nav>
-
-        <div className="border-t border-gray-200 p-4">
-          {!collapsed && user && (
-            <p className="mb-2 truncate text-sm font-medium text-gray-900">
-              {user.nombre}
-            </p>
-          )}
-          <button
-            onClick={logout}
-            className="w-full rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
-          >
-            {collapsed ? '×' : 'Cerrar Sesión'}
-          </button>
-        </div>
       </aside>
 
-      <main className="flex-1 p-6">
-        <Outlet />
-      </main>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* TopNavBar */}
+        <header className="h-16 bg-surface border-b border-outline-variant flex items-center justify-between px-8 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <h2 className="font-headline-sm text-headline-sm text-on-surface">
+              Área de Trabajo
+            </h2>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="font-body-md text-body-md text-on-surface font-medium leading-tight">
+                  {user?.nombre || 'Usuario'}
+                </p>
+                <p className="font-label-caps text-[10px] text-outline uppercase tracking-wider">
+                  {user?.roles?.[0] || 'Rol'}
+                </p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-caps font-bold">
+                {user?.nombre?.charAt(0).toUpperCase() || 'U'}
+              </div>
+            </div>
+            <div className="h-6 w-px bg-outline-variant"></div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 text-error hover:text-opacity-80 transition-colors font-label-caps text-label-caps uppercase"
+              title="Cerrar sesión"
+            >
+              <span className="material-symbols-outlined text-[20px]">logout</span>
+              Salir
+            </button>
+          </div>
+        </header>
+
+        {/* Workspace */}
+        <main className="flex-1 overflow-auto p-8 bg-background">
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

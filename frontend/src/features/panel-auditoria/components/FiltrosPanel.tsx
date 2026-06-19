@@ -1,5 +1,6 @@
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import type { PanelFilters } from '../types'
+import { Input } from '../../../shared/components/ui/Input'
 
 interface Props {
   filters: PanelFilters
@@ -10,29 +11,27 @@ export default function FiltrosPanel({ filters, onChange }: Props) {
   const { data: materias } = useMaterias()
 
   return (
-    <div className="flex flex-wrap gap-3 rounded-lg bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Desde</label>
-        <input
+    <div className="flex flex-wrap gap-4 rounded neo-latex-border bg-surface-container-lowest p-4">
+      <div className="flex flex-col gap-1 w-[200px]">
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Desde</label>
+        <Input
           type="datetime-local"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           value={filters.desde ?? ''}
           onChange={(e) => onChange({ ...filters, desde: e.target.value || undefined })}
         />
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Hasta</label>
-        <input
+      <div className="flex flex-col gap-1 w-[200px]">
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Hasta</label>
+        <Input
           type="datetime-local"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           value={filters.hasta ?? ''}
           onChange={(e) => onChange({ ...filters, hasta: e.target.value || undefined })}
         />
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Materia</label>
+      <div className="flex flex-col gap-1 w-[200px]">
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Materia</label>
         <select
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+          className="rounded neo-latex-border bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary w-full"
           value={filters.materia_id ?? ''}
           onChange={(e) => onChange({ ...filters, materia_id: e.target.value || undefined })}
         >
@@ -44,11 +43,10 @@ export default function FiltrosPanel({ filters, onChange }: Props) {
           ))}
         </select>
       </div>
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-gray-600">Tipo de acción</label>
-        <input
+      <div className="flex flex-col gap-1 w-[240px]">
+        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Tipo de acción</label>
+        <Input
           type="text"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
           placeholder="Ej: LIQUIDACION_CERRAR"
           value={filters.accion ?? ''}
           onChange={(e) => onChange({ ...filters, accion: e.target.value || undefined })}

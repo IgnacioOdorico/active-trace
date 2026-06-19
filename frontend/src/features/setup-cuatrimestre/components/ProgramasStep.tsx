@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { useProgramas, useSubirPrograma } from '../hooks/useProgramasApi'
+import { Button } from '../../../shared/components/ui/Button'
 
 export default function ProgramasStep() {
   const { data, isLoading } = useProgramas()
@@ -22,8 +23,14 @@ export default function ProgramasStep() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <label className="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
-          {subirMutation.isPending ? 'Subiendo...' : 'Subir programa'}
+        <label className="cursor-pointer">
+          <Button
+            as="span"
+            variant="primary"
+            disabled={subirMutation.isPending}
+          >
+            {subirMutation.isPending ? 'Subiendo...' : 'Subir programa'}
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -34,50 +41,50 @@ export default function ProgramasStep() {
           />
         </label>
         {subirMutation.isSuccess && (
-          <span className="text-sm text-green-700">Programa subido correctamente.</span>
+          <span className="font-body-md text-on-success-container">Programa subido correctamente.</span>
         )}
         {subirMutation.isError && (
-          <span className="text-sm text-red-700">Error al subir el programa.</span>
+          <span className="font-body-md text-on-error-container">Error al subir el programa.</span>
         )}
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Cargando programas...</p>
+        <p className="font-body-md text-on-surface-variant">Cargando programas...</p>
       ) : programas.length === 0 ? (
-        <p className="text-sm text-gray-400">Sin programas cargados aún.</p>
+        <p className="font-body-md text-on-surface-variant">Sin programas cargados aún.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
               <tr>
                 {['Materia', 'Carrera', 'Cohorte', 'Archivo'].map((h) => (
                   <th
                     key={h}
-                    className="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-500"
+                    className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant"
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
               {programas.map((p) => (
-                <tr key={p.id}>
-                  <td className="px-4 py-2 text-sm text-gray-900">{p.materia_nombre}</td>
-                  <td className="px-4 py-2 text-sm text-gray-600">{p.carrera}</td>
-                  <td className="px-4 py-2 text-sm text-gray-600">{p.cohorte}</td>
-                  <td className="px-4 py-2 text-sm">
+                <tr key={p.id} className="hover:bg-surface-container transition-colors">
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface">{p.materia_nombre}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{p.carrera}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{p.cohorte}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px]">
                     {p.url ? (
                       <a
                         href={p.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className="text-primary hover:underline font-medium"
                       >
                         {p.nombre_archivo ?? 'Ver'}
                       </a>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-on-surface-variant">—</span>
                     )}
                   </td>
                 </tr>

@@ -2,12 +2,8 @@ import { useMemo, useState } from 'react'
 import { useEncuentrosInstancias } from '../hooks/useEncuentrosAdminApi'
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import type { EncuentrosFilters, EncuentroEstado } from '../types'
-
-const ESTADO_COLORS: Record<EncuentroEstado, string> = {
-  Programado: 'bg-yellow-100 text-yellow-700',
-  Realizado: 'bg-green-100 text-green-700',
-  Cancelado: 'bg-red-100 text-red-700',
-}
+import { Input } from '../../../shared/components/ui/Input'
+import { Badge } from '../../../shared/components/ui/Badge'
 
 export default function EncuentrosTransversal() {
   const [filters, setFilters] = useState<EncuentrosFilters>({})
@@ -23,22 +19,21 @@ export default function EncuentrosTransversal() {
     setFilters((prev) => ({ ...prev, [key]: value || undefined }))
   }
 
-  if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando encuentros...</div>
-  if (isError) return <div className="py-8 text-center text-red-600">Error al cargar encuentros.</div>
+  if (isLoading) return <div className="py-8 text-center font-body-md text-on-surface-variant">Cargando encuentros...</div>
+  if (isError) return <div className="py-8 text-center font-body-md text-error">Error al cargar encuentros.</div>
 
   const encuentros = data?.items ?? []
 
   return (
     <div>
       <div className="mb-4 flex gap-3">
-        <input
+        <Input
           type="text"
           placeholder="Materia ID"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
           onChange={(e) => handleFilter('materia_id', e.target.value)}
         />
         <select
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           onChange={(e) => handleFilter('estado', e.target.value)}
         >
           <option value="">Todos los estados</option>
@@ -49,45 +44,51 @@ export default function EncuentrosTransversal() {
       </div>
 
       {encuentros.length === 0 ? (
-        <div className="rounded-lg bg-gray-50 py-12 text-center text-gray-500">
+        <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
           No hay encuentros para los filtros seleccionados.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
               <tr>
                 {['Materia', 'Título', 'Fecha', 'Hora', 'Estado', 'Links'].map((h) => (
                   <th
                     key={h}
-                    className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                    className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant"
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
               {encuentros.map((enc) => (
-                <tr key={enc.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900">{nombreMateria(enc.materia_id)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{enc.titulo}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{enc.fecha}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{enc.hora}</td>
+                <tr key={enc.id} className="hover:bg-surface-container transition-colors">
+                  <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{nombreMateria(enc.materia_id)}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{enc.titulo}</td>
+                  <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface-variant">{enc.fecha}</td>
+                  <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface-variant">{enc.hora}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${ESTADO_COLORS[enc.estado]}`}
+                    <Badge
+                      variant={
+                        enc.estado === 'Realizado'
+                          ? 'success'
+                          : enc.estado === 'Cancelado'
+                          ? 'error'
+                          : 'warning'
+                      }
                     >
                       {enc.estado}
-                    </span>
+                    </Badge>
                   </td>
-                  <td className="px-4 py-3 text-sm">
+                  <td className="px-4 py-3 font-body-md text-body-md">
                     {enc.meet_url && (
                       <a
                         href={enc.meet_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="mr-2 text-blue-600 hover:underline"
+                        className="mr-2 text-primary hover:underline"
                       >
                         Meet
                       </a>
@@ -97,7 +98,7 @@ export default function EncuentrosTransversal() {
                         href={enc.video_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-600 hover:underline"
+                        className="text-primary hover:underline"
                       >
                         Grabación
                       </a>

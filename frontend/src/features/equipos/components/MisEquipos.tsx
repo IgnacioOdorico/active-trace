@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useMisEquipos, useExportarEquipo } from '../hooks/useEquiposApi'
 import type { EquiposFilters, MiEquipo } from '../types'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
 
 interface MisEquiposProps {
   onVigencia: (equipo: MiEquipo) => void
@@ -16,32 +18,37 @@ export default function MisEquipos({ onVigencia }: MisEquiposProps) {
   }
 
   if (isLoading) {
-    return <div className="py-8 text-center text-gray-500">Cargando equipos...</div>
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <span className="material-symbols-outlined text-primary text-4xl animate-spin">refresh</span>
+        <p className="mt-4 font-body-md text-on-surface-variant">Cargando equipos...</p>
+      </div>
+    )
   }
 
   if (isError) {
-    return <div className="py-8 text-center text-red-600">Error al cargar equipos.</div>
+    return <div className="py-8 text-center font-body-md text-error">Error al cargar equipos.</div>
   }
 
   const equipos = data?.data ?? []
 
   return (
     <div>
-      <div className="mb-4 flex gap-3">
+      <div className="mb-6 flex flex-wrap gap-4">
         <input
           type="text"
           placeholder="Materia ID"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-48 neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           onChange={(e) => handleFilter('materia_id', e.target.value)}
         />
         <input
           type="text"
           placeholder="Rol"
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-48 neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           onChange={(e) => handleFilter('rol', e.target.value)}
         />
         <select
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-48 neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           onChange={(e) => {
             const v = e.target.value
             setFilters((prev) => ({
@@ -57,19 +64,19 @@ export default function MisEquipos({ onVigencia }: MisEquiposProps) {
       </div>
 
       {equipos.length === 0 ? (
-        <div className="rounded-lg bg-gray-50 py-12 text-center text-gray-500">
+        <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
           Sin equipos asignados para los filtros seleccionados.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
               <tr>
                 {['Materia', 'Carrera', 'Cohorte', 'Rol', 'Vigencia', 'Estado', 'Acciones'].map(
                   (h) => (
                     <th
                       key={h}
-                      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+                      className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant"
                     >
                       {h}
                     </th>
@@ -77,42 +84,38 @@ export default function MisEquipos({ onVigencia }: MisEquiposProps) {
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
               {equipos.map((eq) => (
-                <tr key={eq.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900">{eq.materia_nombre}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{eq.carrera}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{eq.cohorte}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{eq.rol}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                <tr key={eq.id} className="hover:bg-surface-container transition-colors">
+                  <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{eq.materia_nombre}</td>
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{eq.carrera}</td>
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{eq.cohorte}</td>
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{eq.rol}</td>
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">
                     {eq.vigencia_desde} → {eq.vigencia_hasta}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
-                        eq.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
+                    <Badge variant={eq.activo ? 'success' : 'neutral'}>
                       {eq.activo ? 'Activo' : 'Inactivo'}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
-                      <button
-                        type="button"
+                      <Button
                         onClick={() => onVigencia(eq)}
-                        className="text-xs text-blue-600 hover:underline"
+                        variant="ghost"
+                        size="sm"
                       >
                         Vigencia
-                      </button>
-                      <button
-                        type="button"
+                      </Button>
+                      <Button
                         onClick={() => exportar.mutate(eq.id)}
                         disabled={exportar.isPending}
-                        className="text-xs text-gray-600 hover:underline disabled:opacity-50"
+                        variant="ghost"
+                        size="sm"
                       >
                         Exportar
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>

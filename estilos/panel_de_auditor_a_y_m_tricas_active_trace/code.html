@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>active-trace - Auditoría y Métricas</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&amp;family=IBM+Plex+Mono:wght@450&amp;family=Source+Serif+4:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error-container": "#93000a",
+                    "surface-dim": "#dadada",
+                    "primary-container": "#1a365d",
+                    "on-tertiary-fixed": "#001c38",
+                    "on-secondary-container": "#586377",
+                    "secondary-container": "#d5e0f7",
+                    "tertiary-container": "#003765",
+                    "on-primary-fixed-variant": "#2d476f",
+                    "on-primary-container": "#86a0cd",
+                    "surface-container-high": "#e8e8e8",
+                    "primary-fixed-dim": "#adc7f7",
+                    "background": "#f9f9f9",
+                    "inverse-surface": "#2f3131",
+                    "on-tertiary-fixed-variant": "#004881",
+                    "on-error": "#ffffff",
+                    "secondary": "#545f72",
+                    "tertiary-fixed-dim": "#a2c9ff",
+                    "surface-container": "#eeeeee",
+                    "primary": "#002045",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#111c2c",
+                    "on-primary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#74777f",
+                    "error": "#ba1a1a",
+                    "on-primary-fixed": "#001b3c",
+                    "on-tertiary-container": "#68a2e9",
+                    "on-surface": "#1a1c1c",
+                    "surface-tint": "#455f88",
+                    "on-surface-variant": "#43474e",
+                    "tertiary-fixed": "#d3e4ff",
+                    "outline-variant": "#c4c6cf",
+                    "secondary-fixed-dim": "#bcc7dd",
+                    "on-secondary": "#ffffff",
+                    "tertiary": "#002141",
+                    "inverse-primary": "#adc7f7",
+                    "primary-fixed": "#d6e3ff",
+                    "on-background": "#1a1c1c",
+                    "surface-bright": "#f9f9f9",
+                    "secondary-fixed": "#d8e3fa",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e2e2e2",
+                    "surface-variant": "#e2e2e2",
+                    "surface": "#f9f9f9",
+                    "inverse-on-surface": "#f0f1f1",
+                    "surface-container-low": "#f3f3f3",
+                    "on-secondary-fixed-variant": "#3c475a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "bento-gap": "12px",
+                    "base": "4px",
+                    "gutter": "16px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["\"Source Serif 4\""],
+                    "body-lg": ["IBM Plex Sans"],
+                    "label-caps": ["IBM Plex Sans"],
+                    "headline-md": ["\"Source Serif 4\""],
+                    "display-lg": ["\"Source Serif 4\""],
+                    "mono-data": ["IBM Plex Mono"],
+                    "body-md": ["IBM Plex Sans"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "500" }],
+                    "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                    "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                    "headline-md": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+                    "display-lg": ["42px", { "lineHeight": "52px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                    "mono-data": ["13px", { "lineHeight": "18px", "fontWeight": "450" }],
+                    "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Neo-Latex styling specifics */
+        body {
+            background-color: #fcfcfc;
+            color: #1a1c1c;
+        }
+        .bento-module {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.125rem;
+        }
+        .bento-header {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        /* Table styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: left;
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #586377;
+        }
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f3f3f3;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Custom scrollbar for tables */
+        .table-container::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f9f9f9; 
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #c4c6cf; 
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #74777f; 
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex text-on-surface">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-lowest border-r border-outline-variant fixed left-0 top-0 h-full w-64 flex flex-col py-6 hidden md:flex z-20">
+<div class="px-6 mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">active-trace</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Academic Management</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1 px-3">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors font-body-md text-body-md rounded" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors font-body-md text-body-md rounded" href="#">
+<span class="material-symbols-outlined">group</span>
+                        Students
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors font-body-md text-body-md rounded" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+                        Communication
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors font-body-md text-body-md rounded" href="#">
+<span class="material-symbols-outlined">school</span>
+                        Faculty
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors font-body-md text-body-md rounded" href="#">
+<span class="material-symbols-outlined">payments</span>
+                        Financial Management
+                    </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto px-3 border-t border-outline-variant pt-4">
+<ul class="space-y-1">
+<li>
+<a class="text-primary font-bold border-l-2 border-primary bg-secondary-container/30 flex items-center gap-3 px-4 py-3 translate-x-1 transition-transform duration-200 font-body-md text-body-md rounded" href="#">
+<span class="material-symbols-outlined fill">history_edu</span>
+                        System Logs
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors font-body-md text-body-md rounded" href="#">
+<span class="material-symbols-outlined">settings</span>
+                        Settings
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface border-b border-outline-variant w-full px-margin-desktop h-16 flex justify-between items-center sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<span class="md:hidden font-headline-md text-headline-md font-bold text-primary">active-trace</span>
+<h2 class="hidden md:block font-headline-sm text-headline-sm text-primary-container">Auditoría y Métricas</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex flex-col items-end">
+<span class="font-body-md text-body-md font-semibold text-primary-container">Dr. A. Vance</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Admin / Coordinador</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<button aria-label="Settings" class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button aria-label="Help" class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-margin-desktop max-w-[1600px] mx-auto w-full flex flex-col gap-bento-gap">
+<!-- Filters & Controls Bar -->
+<div class="bento-module p-4 flex flex-wrap items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline">filter_list</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Filtros Activos:</span>
+</div>
+<div class="flex flex-wrap gap-3 flex-1">
+<div class="flex items-center border border-outline-variant rounded px-3 py-1 bg-surface-container-lowest">
+<span class="font-body-md text-body-md text-secondary">Fecha:</span>
+<select class="bg-transparent border-none text-body-md font-body-md text-primary-container focus:ring-0 py-0 pl-2 pr-8">
+<option>Últimos 7 días</option>
+<option>Hoy</option>
+<option>Este mes</option>
+</select>
+</div>
+<div class="flex items-center border border-outline-variant rounded px-3 py-1 bg-surface-container-lowest">
+<span class="font-body-md text-body-md text-secondary">Acción:</span>
+<select class="bg-transparent border-none text-body-md font-body-md text-primary-container focus:ring-0 py-0 pl-2 pr-8">
+<option>Todas</option>
+<option>SISTEMA_LOGIN</option>
+<option>CALIFICACIONES_IMPORTAR</option>
+</select>
+</div>
+<div class="flex items-center border border-outline-variant rounded px-3 py-1 bg-surface-container-lowest">
+<span class="font-body-md text-body-md text-secondary">Usuario:</span>
+<input class="bg-transparent border-none text-body-md font-body-md text-primary-container focus:ring-0 py-0 pl-2 w-32 placeholder:text-outline-variant" placeholder="ID Legajo..." type="text"/>
+</div>
+</div>
+<button class="bg-primary-container text-on-primary px-4 py-2 rounded font-label-caps text-label-caps hover:opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                    Exportar
+                </button>
+</div>
+<!-- KPIs Section (Bento Grid) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-bento-gap">
+<!-- KPI 1 -->
+<div class="bento-module p-6 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-secondary">Total Acciones Hoy</span>
+<span class="material-symbols-outlined text-outline-variant">analytics</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary-container">4,281</div>
+<div class="flex items-center gap-1 text-on-tertiary-container mt-1">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span>
+<span class="font-mono-data text-mono-data">12.5% vs ayer</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bento-module p-6 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-error">Alertas de Seguridad</span>
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div class="font-headline-md text-headline-md text-error">3</div>
+<div class="flex items-center gap-1 text-secondary mt-1">
+<span class="font-mono-data text-mono-data text-outline">Intentos fallidos de login</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bento-module p-6 flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-secondary">Tasa de Éxito en Envíos</span>
+<span class="material-symbols-outlined text-outline-variant">send</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary-container">99.4%</div>
+<div class="w-full bg-surface-container h-1 mt-2">
+<div class="bg-primary-container h-full" style="width: 99.4%"></div>
+</div>
+</div>
+</div>
+<!-- Data & Metrics Split -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-bento-gap flex-1">
+<!-- Log Table (8 columns) -->
+<div class="bento-module lg:col-span-8 flex flex-col">
+<div class="bento-header px-6 py-4 flex justify-between items-center">
+<h3 class="font-label-caps text-label-caps text-primary-container uppercase tracking-wider">Log de Actividad Reciente</h3>
+<span class="font-mono-data text-mono-data text-outline-variant">Mostrando últimos 50 registros</span>
+</div>
+<div class="flex-1 overflow-auto table-container p-4">
+<table>
+<thead>
+<tr>
+<th class="font-label-caps text-label-caps">Timestamp</th>
+<th class="font-label-caps text-label-caps">User (Legajo - Role)</th>
+<th class="font-label-caps text-label-caps">Action Code</th>
+<th class="font-label-caps text-label-caps">Context</th>
+<th class="font-label-caps text-label-caps text-right">IP</th>
+</tr>
+</thead>
+<tbody class="font-mono-data text-mono-data">
+<tr>
+<td class="text-secondary">10:42:01.452</td>
+<td>
+<div class="flex items-center gap-2">
+<span class="text-primary-container">L-4921</span>
+<span class="bg-surface-container px-1 text-[10px] rounded text-secondary">DOCENTE</span>
+</div>
+</td>
+<td class="text-on-tertiary-container">CALIFICACIONES_IMPORTAR</td>
+<td class="text-secondary">MAT-101 / C-2023</td>
+<td class="text-right text-outline">192.168.1.45</td>
+</tr>
+<tr>
+<td class="text-secondary">10:41:15.992</td>
+<td>
+<div class="flex items-center gap-2">
+<span class="text-primary-container">L-1002</span>
+<span class="bg-surface-container px-1 text-[10px] rounded text-secondary">ADMIN</span>
+</div>
+</td>
+<td class="text-primary-container">SISTEMA_LOGIN</td>
+<td class="text-secondary">-</td>
+<td class="text-right text-outline">10.0.0.12</td>
+</tr>
+<tr>
+<td class="text-secondary">10:39:44.120</td>
+<td>
+<div class="flex items-center gap-2">
+<span class="text-primary-container">L-8834</span>
+<span class="bg-surface-container px-1 text-[10px] rounded text-secondary">COORD</span>
+</div>
+</td>
+<td class="text-on-tertiary-container">COMUNICACION_ENVIAR</td>
+<td class="text-secondary">COHORTE_2024</td>
+<td class="text-right text-outline">172.16.0.4</td>
+</tr>
+<tr>
+<td class="text-secondary">10:35:02.001</td>
+<td>
+<div class="flex items-center gap-2">
+<span class="text-primary-container">L-4921</span>
+<span class="bg-surface-container px-1 text-[10px] rounded text-secondary">DOCENTE</span>
+</div>
+</td>
+<td class="text-primary-container">SESION_INICIAR</td>
+<td class="text-secondary">-</td>
+<td class="text-right text-outline">192.168.1.45</td>
+</tr>
+<tr>
+<td class="text-secondary">10:30:11.884</td>
+<td>
+<div class="flex items-center gap-2">
+<span class="text-primary-container">L-2291</span>
+<span class="bg-surface-container px-1 text-[10px] rounded text-secondary">DOCENTE</span>
+</div>
+</td>
+<td class="text-on-error-container bg-error-container/30 px-1 inline-block">ACCESO_DENEGADO</td>
+<td class="text-secondary">FINANZAS_VER</td>
+<td class="text-right text-outline">203.0.113.42</td>
+</tr>
+<tr>
+<td class="text-secondary">10:28:55.331</td>
+<td>
+<div class="flex items-center gap-2">
+<span class="text-primary-container">L-1002</span>
+<span class="bg-surface-container px-1 text-[10px] rounded text-secondary">ADMIN</span>
+</div>
+</td>
+<td class="text-on-tertiary-container">REPORTE_GENERAR</td>
+<td class="text-secondary">AUDITORIA_SEMANAL</td>
+<td class="text-right text-outline">10.0.0.12</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Metrics Sidebar (4 columns) -->
+<div class="lg:col-span-4 flex flex-col gap-bento-gap">
+<!-- Interacciones por Docente -->
+<div class="bento-module flex-1 flex flex-col">
+<div class="bento-header px-6 py-4">
+<h3 class="font-label-caps text-label-caps text-primary-container uppercase tracking-wider">Interacciones x Docente (Top 5)</h3>
+</div>
+<div class="p-6 flex flex-col gap-4">
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-mono-data text-mono-data">
+<span class="text-primary-container">L-4921</span>
+<span class="text-secondary">342 acc.</span>
+</div>
+<div class="w-full bg-surface-container h-[4px]">
+<div class="bg-tertiary-container h-full" style="width: 85%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-mono-data text-mono-data">
+<span class="text-primary-container">L-2291</span>
+<span class="text-secondary">281 acc.</span>
+</div>
+<div class="w-full bg-surface-container h-[4px]">
+<div class="bg-tertiary-container h-full opacity-80" style="width: 65%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-mono-data text-mono-data">
+<span class="text-primary-container">L-8834</span>
+<span class="text-secondary">195 acc.</span>
+</div>
+<div class="w-full bg-surface-container h-[4px]">
+<div class="bg-tertiary-container h-full opacity-60" style="width: 45%"></div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-center font-mono-data text-mono-data">
+<span class="text-primary-container">L-1102</span>
+<span class="text-secondary">150 acc.</span>
+</div>
+<div class="w-full bg-surface-container h-[4px]">
+<div class="bg-tertiary-container h-full opacity-40" style="width: 30%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- System Status Mini -->
+<div class="bento-module p-6">
+<h3 class="font-label-caps text-label-caps text-secondary mb-4">Estado del Sistema</h3>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-[#10b981]"></div>
+<span class="font-body-md text-body-md text-primary-container">Operaciones Normales</span>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant grid grid-cols-2 gap-4">
+<div>
+<div class="font-label-caps text-label-caps text-outline mb-1">Carga de DB</div>
+<div class="font-mono-data text-mono-data text-primary-container">24%</div>
+</div>
+<div>
+<div class="font-label-caps text-label-caps text-outline mb-1">Latencia Media</div>
+<div class="font-mono-data text-mono-data text-primary-container">42ms</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

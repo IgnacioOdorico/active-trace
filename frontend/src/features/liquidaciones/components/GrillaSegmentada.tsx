@@ -1,4 +1,6 @@
 import type { Liquidacion } from '../types'
+import { Badge } from '../../../shared/components/ui/Badge'
+import { Button } from '../../../shared/components/ui/Button'
 
 interface Props {
   items: Liquidacion[]
@@ -24,35 +26,30 @@ function FilaLiquidacion({
   onVerDetalle: (liq: Liquidacion) => void
 }) {
   return (
-    <tr className="border-b border-gray-100 hover:bg-gray-50">
-      <td className="px-4 py-2 text-sm text-gray-900">{liq.docente_nombre}</td>
-      <td className="px-4 py-2 text-sm text-gray-600">{liq.rol}</td>
-      <td className="px-4 py-2 text-center text-sm text-gray-600">{liq.comisiones.length}</td>
-      <td className="px-4 py-2 text-right text-sm text-gray-700">{formatARS(liq.monto_base)}</td>
-      <td className="px-4 py-2 text-right text-sm text-gray-700">
+    <tr className="hover:bg-surface-container transition-colors">
+      <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{liq.docente_nombre}</td>
+      <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{liq.rol}</td>
+      <td className="px-4 py-3 text-center font-body-md text-body-md text-on-surface-variant">{liq.comisiones.length}</td>
+      <td className="px-4 py-3 text-right font-mono-data text-mono-data text-on-surface-variant">{formatARS(liq.monto_base)}</td>
+      <td className="px-4 py-3 text-right font-mono-data text-mono-data text-on-surface-variant">
         {formatARS(liq.monto_plus)}
       </td>
-      <td className="px-4 py-2 text-right text-sm font-medium text-gray-900">
+      <td className="px-4 py-3 text-right font-mono-data text-mono-data font-medium text-on-surface">
         {formatARS(liq.total)}
       </td>
-      <td className="px-4 py-2 text-center text-sm">
-        <span
-          className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-            liq.estado === 'Cerrada'
-              ? 'bg-gray-100 text-gray-600'
-              : 'bg-green-100 text-green-700'
-          }`}
-        >
+      <td className="px-4 py-3 text-center">
+        <Badge variant={liq.estado === 'Cerrada' ? 'neutral' : 'success'}>
           {liq.estado}
-        </span>
+        </Badge>
       </td>
-      <td className="px-4 py-2 text-center">
-        <button
+      <td className="px-4 py-3 text-center">
+        <Button
           onClick={() => onVerDetalle(liq)}
-          className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50"
+          variant="ghost"
+          size="sm"
         >
           Ver detalle
-        </button>
+        </Button>
       </td>
     </tr>
   )
@@ -61,35 +58,37 @@ function FilaLiquidacion({
 function Segmento({ titulo, items, informativo, onVerDetalle }: SegmentoProps) {
   if (items.length === 0) return null
   return (
-    <div className="mb-6">
-      <div className="mb-2 flex items-center gap-2">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">{titulo}</h3>
+    <div className="mb-8 last:mb-0">
+      <div className="mb-3 flex items-center gap-3">
+        <h3 className="font-label-caps text-label-caps uppercase text-on-surface">{titulo}</h3>
         {informativo && (
-          <span className="rounded bg-yellow-50 px-2 py-0.5 text-xs text-yellow-700">
+          <Badge variant="warning">
             Informativo — excluido del total
-          </span>
+          </Badge>
         )}
-        <span className="text-xs text-gray-400">({items.length} docentes)</span>
+        <span className="font-body-md text-on-surface-variant">({items.length} docentes)</span>
       </div>
-      <table className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Docente</th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Rol</th>
-            <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Comisiones</th>
-            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Base</th>
-            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Plus</th>
-            <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Total</th>
-            <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Estado</th>
-            <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Detalle</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((liq) => (
-            <FilaLiquidacion key={liq.id} liq={liq} onVerDetalle={onVerDetalle} />
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+        <table className="min-w-full divide-y divide-outline-variant">
+          <thead className="bg-surface">
+            <tr>
+              <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Docente</th>
+              <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Rol</th>
+              <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Comisiones</th>
+              <th className="px-4 py-3 text-right font-label-caps text-label-caps uppercase text-on-surface-variant">Base</th>
+              <th className="px-4 py-3 text-right font-label-caps text-label-caps uppercase text-on-surface-variant">Plus</th>
+              <th className="px-4 py-3 text-right font-label-caps text-label-caps uppercase text-on-surface-variant">Total</th>
+              <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Estado</th>
+              <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Detalle</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+            {items.map((liq) => (
+              <FilaLiquidacion key={liq.id} liq={liq} onVerDetalle={onVerDetalle} />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -101,9 +100,9 @@ export default function GrillaSegmentada({ items, onVerDetalle }: Props) {
 
   if (items.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-gray-500">
+      <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
         Sin liquidaciones para el período seleccionado.
-      </p>
+      </div>
     )
   }
 

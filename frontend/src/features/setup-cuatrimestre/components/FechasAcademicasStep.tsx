@@ -4,6 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useFechasAcademicas, useCrearFechaAcademica } from '../hooks/useFechasAcademicasApi'
 import type { TipoEvaluacion } from '../types'
+import { Input } from '../../../shared/components/ui/Input'
+import { Button } from '../../../shared/components/ui/Button'
 
 const fechaSchema = z.object({
   materia_id: z.string().min(1, 'Requerido'),
@@ -50,84 +52,85 @@ export default function FechasAcademicasStep() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <button
-          type="button"
+        <Button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          variant={showForm ? 'secondary' : 'primary'}
         >
           {showForm ? 'Cancelar' : '+ Agregar fecha'}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit(onSubmit)} className="rounded-lg border border-gray-200 p-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Materia ID</label>
-              <input {...register('materia_id')} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              {errors.materia_id && <p className="mt-1 text-xs text-red-600">{errors.materia_id.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)} className="rounded neo-latex-border bg-surface-container-lowest p-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Materia ID</label>
+              <Input {...register('materia_id')} className="w-full" />
+              {errors.materia_id && <p className="font-body-md text-[12px] text-error">{errors.materia_id.message}</p>}
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Cohorte</label>
-              <input {...register('cohorte')} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              {errors.cohorte && <p className="mt-1 text-xs text-red-600">{errors.cohorte.message}</p>}
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Cohorte</label>
+              <Input {...register('cohorte')} className="w-full" />
+              {errors.cohorte && <p className="font-body-md text-[12px] text-error">{errors.cohorte.message}</p>}
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Tipo</label>
-              <select {...register('tipo')} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Tipo</label>
+              <select {...register('tipo')} className="w-full neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
                 <option value="parcial">Parcial</option>
                 <option value="tp">TP</option>
                 <option value="coloquio">Coloquio</option>
               </select>
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Número</label>
-              <input type="number" min={1} {...register('numero', { valueAsNumber: true })} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Número</label>
+              <Input type="number" min={1} {...register('numero', { valueAsNumber: true })} className="w-full" />
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Fecha</label>
-              <input type="date" {...register('fecha')} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              {errors.fecha && <p className="mt-1 text-xs text-red-600">{errors.fecha.message}</p>}
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Fecha</label>
+              <Input type="date" {...register('fecha')} className="w-full" />
+              {errors.fecha && <p className="font-body-md text-[12px] text-error">{errors.fecha.message}</p>}
             </div>
-            <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Descripción (opcional)</label>
-              <input {...register('descripcion')} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm" />
+            <div className="flex flex-col gap-1">
+              <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Descripción (opcional)</label>
+              <Input {...register('descripcion')} className="w-full" />
             </div>
           </div>
-          <div className="mt-3 flex gap-2">
-            <button type="submit" disabled={crearMutation.isPending} className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+          <div className="mt-4 flex gap-2">
+            <Button type="submit" disabled={crearMutation.isPending} variant="primary">
               {crearMutation.isPending ? 'Guardando...' : 'Guardar fecha'}
-            </button>
+            </Button>
           </div>
         </form>
       )}
 
       {isLoading ? (
-        <p className="text-sm text-gray-500">Cargando fechas...</p>
+        <p className="font-body-md text-on-surface-variant">Cargando fechas...</p>
       ) : fechas.length === 0 ? (
-        <p className="text-sm text-gray-400">Sin fechas cargadas aún.</p>
+        <p className="font-body-md text-on-surface-variant">Sin fechas cargadas aún.</p>
       ) : (
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {['Materia', 'Cohorte', 'Tipo', 'N°', 'Fecha', 'Descripción'].map((h) => (
-                <th key={h} className="px-4 py-2 text-left text-xs font-semibold uppercase text-gray-500">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {fechas.map((f) => (
-              <tr key={f.id}>
-                <td className="px-4 py-2 text-sm text-gray-900">{f.materia_nombre}</td>
-                <td className="px-4 py-2 text-sm text-gray-600">{f.cohorte}</td>
-                <td className="px-4 py-2 text-sm text-gray-600">{TIPO_LABELS[f.tipo]}</td>
-                <td className="px-4 py-2 text-sm text-gray-600">{f.numero}</td>
-                <td className="px-4 py-2 text-sm text-gray-600">{f.fecha}</td>
-                <td className="px-4 py-2 text-sm text-gray-500">{f.descripcion ?? '—'}</td>
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
+              <tr>
+                {['Materia', 'Cohorte', 'Tipo', 'N°', 'Fecha', 'Descripción'].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+              {fechas.map((f) => (
+                <tr key={f.id} className="hover:bg-surface-container transition-colors">
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface">{f.materia_nombre}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{f.cohorte}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{TIPO_LABELS[f.tipo]}</td>
+                  <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface">{f.numero}</td>
+                  <td className="px-4 py-3 font-mono-data text-mono-data text-on-surface">{f.fecha}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{f.descripcion ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

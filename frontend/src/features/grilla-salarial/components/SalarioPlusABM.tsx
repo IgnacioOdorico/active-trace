@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useSalariosPlus } from '../hooks/useGrillaSalarialApi'
 import SalarioPlusForm from './SalarioPlusForm'
 import type { SalarioPlus } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
 
 function formatARS(amount: number) {
   return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount)
@@ -13,20 +14,20 @@ export default function SalarioPlusABM() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-headline-sm text-headline-sm text-on-surface">
           Salario Plus
         </h3>
-        <button
+        <Button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          variant={showForm ? 'secondary' : 'primary'}
         >
           {showForm ? 'Cancelar' : '+ Nuevo plus'}
-        </button>
+        </Button>
       </div>
 
       {showForm && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div className="rounded neo-latex-border bg-surface-container-high p-4">
           <SalarioPlusForm onSuccess={() => setShowForm(false)} />
         </div>
       )}
@@ -34,44 +35,46 @@ export default function SalarioPlusABM() {
       {isLoading && (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-10 animate-pulse rounded bg-gray-200" />
+            <div key={i} className="h-10 animate-pulse rounded bg-surface-container" />
           ))}
         </div>
       )}
 
       {!isLoading && data?.length === 0 && (
-        <p className="py-4 text-center text-sm text-gray-500">No hay plus salariales configurados.</p>
+        <p className="py-4 text-center font-body-md text-on-surface-variant">No hay plus salariales configurados.</p>
       )}
 
       {!isLoading && data && data.length > 0 && (
-        <table className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Grupo</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Rol</th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Descripción</th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Monto</th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Desde</th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">Hasta</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(data as SalarioPlus[]).map((item) => (
-              <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="px-4 py-2 text-sm font-medium text-gray-900">{item.grupo}</td>
-                <td className="px-4 py-2 text-sm text-gray-700">{item.rol}</td>
-                <td className="px-4 py-2 text-sm text-gray-600">{item.descripcion}</td>
-                <td className="px-4 py-2 text-right text-sm text-gray-700">
-                  {formatARS(item.monto)}
-                </td>
-                <td className="px-4 py-2 text-center text-sm text-gray-600">{item.desde}</td>
-                <td className="px-4 py-2 text-center text-sm text-gray-600">
-                  {item.hasta ?? '—'}
-                </td>
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
+              <tr>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Grupo</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Rol</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Descripción</th>
+                <th className="px-4 py-3 text-right font-label-caps text-label-caps uppercase text-on-surface-variant">Monto</th>
+                <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Desde</th>
+                <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Hasta</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+              {(data as SalarioPlus[]).map((item) => (
+                <tr key={item.id} className="hover:bg-surface-container transition-colors">
+                  <td className="px-4 py-3 font-body-md text-body-md font-medium text-on-surface">{item.grupo}</td>
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{item.rol}</td>
+                  <td className="px-4 py-3 font-body-md text-body-md text-on-surface-variant">{item.descripcion}</td>
+                  <td className="px-4 py-3 text-right font-mono-data text-mono-data text-on-surface">
+                    {formatARS(item.monto)}
+                  </td>
+                  <td className="px-4 py-3 text-center font-mono-data text-mono-data text-on-surface-variant">{item.desde}</td>
+                  <td className="px-4 py-3 text-center font-mono-data text-mono-data text-on-surface-variant">
+                    {item.hasta ?? '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

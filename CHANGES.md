@@ -81,18 +81,18 @@ GATE 6: C-07 ✓ ✓ C-08 ✓ C-09 ✓                      ← FORK ANCHO (usua
   → C-20 perfil-y-mensajeria-interna               [Agente C]
 
 GATE 7: C-09 ✓                                     ← PADRÓN LISTO
-  → C-10 calificaciones-y-umbral                   [Agente B] 🔜
+  → C-10 calificaciones-y-umbral                   [Agente B] [x]
 
 GATE 8: C-10 ✓
-  → C-11 analisis-atrasados-reportes               [Agente B]
+  → C-11 analisis-atrasados-reportes               [Agente B] [x]
 
 GATE 9: C-11 ✓                                     ← flujo central del PROFESOR completo
-  → C-12 comunicaciones-cola-worker                [Agente B]
+  → C-12 comunicaciones-cola-worker                [Agente B] [x]
 
 GATE 10: C-21 ✓ + backend de cada dominio ✓       ← capa de presentación
-  → C-22 frontend-academico-docente                [Agente C — si C-12 ✓]
-  → C-23 frontend-coordinacion                     [Agente C — si C-08, C-15, C-16 ✓]
-  → C-24 frontend-finanzas-y-admin                 [Agente C — si C-18, C-19 ✓]
+  → C-22 frontend-academico-docente                [Agente C — si C-12 ✓] [x]
+  → C-23 frontend-coordinacion                     [Agente C — si C-08, C-15, C-16 ✓] [x]
+  → C-24 frontend-finanzas-y-admin                 [Agente C — si C-18, C-19 ✓] [x]
 ```
 
 ### Camino crítico (10 changes — mínimo irreducible)
@@ -116,10 +116,10 @@ C-01 → C-02 → C-03 → C-04 → C-06 → C-07 → C-09 → C-10 → C-11 →
 | 5 | C-06 estructura-academica | C-05 audit-log | C-21 frontend-shell-y-auth |
 | 6 | C-07 usuarios-y-asignaciones | C-17 programas-y-fechas | C-15 avisos-y-acknowledgment |
 | 7 | C-08 equipos-docentes [x] | C-09 padron-ingesta-moodle [x] | C-20 perfil-y-mensajeria |
-| 8 | C-13 encuentros-y-guardias | C-10 calificaciones-y-umbral | C-16 tareas-internas |
-| 9 | C-14 evaluaciones-y-coloquios | C-11 analisis-atrasados-reportes | C-18 liquidaciones-y-honorarios |
-| 10 | C-19 panel-auditoria-metricas | C-12 comunicaciones-cola-worker | C-22 frontend-academico-docente |
-| 11 | — | C-23 frontend-coordinacion | C-24 frontend-finanzas-y-admin |
+| 8 | C-13 encuentros-y-guardias [x] | C-10 calificaciones-y-umbral [x] | C-16 tareas-internas [x] |
+| 9 | C-14 evaluaciones-y-coloquios [x] | C-11 analisis-atrasados-reportes [x] | C-18 liquidaciones-y-honorarios [x] |
+| 10 | C-19 panel-auditoria-metricas [x] | C-12 comunicaciones-cola-worker [x] | C-22 frontend-academico-docente [x] |
+| 11 | — | C-23 frontend-coordinacion [x] | C-24 frontend-finanzas-y-admin [x] |
 
 > Los 3 agentes convergen alrededor del paso 10-11. El Agente A queda libre antes y puede tomar `C-19` o adelantar refactors.
 
@@ -532,6 +532,4 @@ C-01 → C-02 → C-03 → C-04 → C-06 → C-07 → C-09 → C-10 → C-11 →
 | Changes CRITICO (governance) | 6 (C-02, C-03, C-04, C-05, C-07, C-18) |
 | Primer fork | GATE 4 (tras C-04, seguridad lista) |
 
-**Primer change recomendado**: `C-01` (foundation-setup).
-
-Para arrancar: `/opsx:propose C-01-foundation-setup`
+**Estado del proyecto**: Todos los changes (C-01 a C-24) están completados. El MVP está finalizado.

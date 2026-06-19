@@ -4,11 +4,21 @@ import { useMaterias } from '../../academico/hooks/useMaterias'
 import { useCohortes } from '../../estructura-academica/hooks/useEstructuraApi'
 import AvisoForm from './AvisoForm'
 import type { Aviso } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 
-const SEVERIDAD_COLORS: Record<string, string> = {
-  Info: 'bg-blue-100 text-blue-700',
-  Advertencia: 'bg-yellow-100 text-yellow-700',
-  'Crítico': 'bg-red-100 text-red-700',
+function severidadVariant(severidad: string): 'success' | 'warning' | 'error' | 'neutral' {
+  switch (severidad) {
+    case 'Info':
+      return 'success'
+    case 'Advertencia':
+      return 'warning'
+    case 'Crítico':
+      return 'error'
+    default:
+      return 'neutral'
+  }
 }
 
 export default function GestionAvisos() {
@@ -29,15 +39,15 @@ export default function GestionAvisos() {
     return (id: string) => mapa.get(id) ?? id
   }, [cohortes])
 
-  if (isLoading) return <div className="py-8 text-center text-gray-500">Cargando avisos...</div>
-  if (isError) return <div className="py-8 text-center text-red-600">Error al cargar avisos.</div>
+  if (isLoading) return <div className="py-8 text-center font-body-md text-on-surface-variant">Cargando avisos...</div>
+  if (isError) return <div className="py-8 text-center font-body-md text-error">Error al cargar avisos.</div>
 
   const avisos = data?.items ?? []
 
   if (creando || editando) {
     return (
-      <div>
-        <h2 className="mb-4 text-lg font-semibold text-gray-800">
+      <BentoCard>
+        <h2 className="mb-6 font-headline-sm text-headline-sm text-on-surface">
           {editando ? 'Editar aviso' : 'Nuevo aviso'}
         </h2>
         <AvisoForm
@@ -51,43 +61,40 @@ export default function GestionAvisos() {
             setCreando(false)
           }}
         />
-      </div>
+      </BentoCard>
     )
   }
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
-        <button
-          type="button"
+      <div className="mb-6 flex justify-end">
+        <Button
           onClick={() => setCreando(true)}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          variant="primary"
         >
           + Nuevo aviso
-        </button>
+        </Button>
       </div>
 
       {avisos.length === 0 ? (
-        <div className="rounded-lg bg-gray-50 py-12 text-center text-gray-500">
+        <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
           No hay avisos publicados.
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[...avisos]
             .sort((a, b) => a.orden - b.orden)
             .map((aviso) => (
-              <div
+              <BentoCard
                 key={aviso.id}
-                className="flex items-start justify-between rounded-lg border border-gray-200 bg-white p-4"
+                className="flex items-start justify-between"
               >
                 <div className="flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${SEVERIDAD_COLORS[aviso.severidad] ?? 'bg-gray-100 text-gray-700'}`}
-                    >
+                  <div className="mb-2 flex items-center gap-2">
+                    <Badge variant={severidadVariant(aviso.severidad)}>
                       {aviso.severidad}
-                    </span>
-                    <span className="text-xs text-gray-500">
+                    </Badge>
+                    <span className="font-body-md text-[12px] text-on-surface-variant">
                       {aviso.alcance === 'PorMateria' && aviso.materia_id
                         ? nombreMateria(aviso.materia_id)
                         : aviso.alcance === 'PorCohorte' && aviso.cohorte_id
@@ -97,40 +104,41 @@ export default function GestionAvisos() {
                             : aviso.alcance}
                     </span>
                     {aviso.requiere_ack && (
-                      <span className="inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                      <span className="inline-flex rounded-full bg-[#E5D5F5] px-2 py-0.5 font-body-md text-[12px] font-medium text-[#4A148C]">
                         req. ack
                       </span>
                     )}
-                    <span className="text-xs text-gray-400">
+                    <span className="font-mono-data text-mono-data text-on-surface-variant">
                       acks: {aviso.total_acks}
                     </span>
                   </div>
-                  <p className="font-medium text-gray-900">{aviso.titulo}</p>
-                  <p className="mt-1 text-sm text-gray-600">{aviso.cuerpo}</p>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="font-headline-sm text-headline-sm text-on-surface">{aviso.titulo}</p>
+                  <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{aviso.cuerpo}</p>
+                  <p className="mt-2 font-mono-data text-[12px] text-on-surface-variant">
                     {new Date(aviso.inicio_en).toLocaleString('es-AR')} →{' '}
                     {new Date(aviso.fin_en).toLocaleString('es-AR')}
                   </p>
                 </div>
                 <div className="ml-4 flex gap-2">
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => setEditando(aviso)}
-                    className="text-xs text-blue-600 hover:underline"
+                    variant="ghost"
+                    size="sm"
                   >
                     Editar
-                  </button>
-                  <button
-                    type="button"
+                  </Button>
+                  <Button
                     onClick={() => {
                       if (confirm('¿Eliminar este aviso?')) eliminar.mutate(aviso.id)
                     }}
-                    className="text-xs text-red-600 hover:underline"
+                    variant="ghost"
+                    size="sm"
+                    className="!text-error hover:!bg-error/10"
                   >
                     Eliminar
-                  </button>
+                  </Button>
                 </div>
-              </div>
+              </BentoCard>
             ))}
         </div>
       )}

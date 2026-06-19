@@ -8,6 +8,8 @@ import DetalleLiquidacion from '../components/DetalleLiquidacion'
 import CierreConfirmacion from '../components/CierreConfirmacion'
 import HistorialLiquidaciones from '../components/HistorialLiquidaciones'
 import type { Liquidacion, LiquidacionesFilters } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
 
 export default function LiquidacionesPage() {
   const { user } = useAuth()
@@ -60,19 +62,21 @@ export default function LiquidacionesPage() {
 
   if (!puedeVer) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center text-sm text-red-700">
-        Acceso denegado. No tenés el permiso <code>liquidaciones:ver</code>.
-      </div>
+      <BentoCard>
+        <div className="rounded bg-error-container p-6 text-center font-body-md text-on-error-container">
+          Acceso denegado. No tenés el permiso <code>liquidaciones:ver</code>.
+        </div>
+      </BentoCard>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Liquidaciones</h1>
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Liquidaciones</h1>
         <div className="flex gap-2">
           {puedeCalcular && (
-            <button
+            <Button
               disabled={!filters.cohorte_id || !filters.periodo || calcularMutation.isPending}
               title={
                 !filters.cohorte_id || !filters.periodo
@@ -80,98 +84,110 @@ export default function LiquidacionesPage() {
                   : undefined
               }
               onClick={handleCalcular}
-              className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+              variant="primary"
             >
               {calcularMutation.isPending ? 'Calculando...' : 'Calcular liquidación'}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             disabled={!filters.periodo || exportarMutation.isPending}
             title={!filters.periodo ? 'Seleccioná un período para exportar' : undefined}
             onClick={() =>
               filters.periodo &&
               exportarMutation.mutate({ periodo: filters.periodo, cohorte_id: filters.cohorte_id })
             }
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400 disabled:hover:bg-transparent"
+            variant="ghost"
           >
             {exportarMutation.isPending ? 'Exportando...' : 'Exportar planilla'}
-          </button>
+          </Button>
         </div>
       </div>
 
       {calcularMensaje && (
         <p
-          className={`rounded-lg p-3 text-sm ${
+          className={`rounded neo-latex-border p-4 font-body-md ${
             calcularMensaje.tipo === 'ok'
-              ? 'bg-green-50 text-green-700'
-              : 'bg-yellow-50 text-yellow-700'
+              ? 'bg-[#d4edda] text-[#155724]'
+              : 'bg-error-container text-on-error-container'
           }`}
         >
           {calcularMensaje.texto}
         </p>
       )}
 
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 mb-6">
         {(['periodo', 'historial'] as const).map((t) => (
-          <button
+          <Button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize ${
-              tab === t
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            variant={tab === t ? 'primary' : 'ghost'}
           >
             {t === 'periodo' ? 'Período actual' : 'Historial'}
-          </button>
+          </Button>
         ))}
       </div>
 
-      {tab === 'periodo' && (
-        <>
-          <FiltrosPeriodo filters={filters} onChange={setFilters} />
-          <KpisCabecera periodo={filters.periodo} />
+      <BentoCard>
+        {tab === 'periodo' && (
+          <div className="space-y-6">
+            <FiltrosPeriodo filters={filters} onChange={setFilters} />
+            <KpisCabecera periodo={filters.periodo} />
 
-          {isError && (
-            <p className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
-              Error al cargar las liquidaciones.
-            </p>
-          )}
+            {isError && (
+              <p className="rounded bg-error-container p-4 font-body-md text-on-error-container">
+                Error al cargar las liquidaciones.
+              </p>
+            )}
 
-          {isLoading && (
-            <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-10 animate-pulse rounded bg-gray-200" />
-              ))}
-            </div>
-          )}
+            {isLoading && (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-10 animate-pulse rounded bg-surface-container" />
+                ))}
+              </div>
+            )}
 
-          {!isLoading && data && (
-            <>
-              {puedeCerrar && data.items.some((l) => l.estado === 'Abierta') && (
-                <div className="flex flex-wrap gap-2">
-                  {data.items
-                    .filter((l) => l.estado === 'Abierta')
-                    .map((l) => (
-                      <button
-                        key={l.id}
-                        onClick={() => setCierre(l)}
-                        className="rounded-md bg-red-50 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100"
-                      >
-                        Cerrar: {l.docente_nombre}
-                      </button>
-                    ))}
-                </div>
-              )}
-              <GrillaSegmentada items={data.items} onVerDetalle={setDetalle} />
-            </>
-          )}
-        </>
+            {!isLoading && data && (
+              <>
+                {puedeCerrar && data.items.some((l) => l.estado === 'Abierta') && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {data.items
+                      .filter((l) => l.estado === 'Abierta')
+                      .map((l) => (
+                        <Button
+                          key={l.id}
+                          onClick={() => setCierre(l)}
+                          variant="danger"
+                          size="sm"
+                        >
+                          Cerrar: {l.docente_nombre}
+                        </Button>
+                      ))}
+                  </div>
+                )}
+                <GrillaSegmentada items={data.items} onVerDetalle={setDetalle} />
+              </>
+            )}
+          </div>
+        )}
+
+        {tab === 'historial' && <HistorialLiquidaciones />}
+      </BentoCard>
+
+      {detalle && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <BentoCard className="w-full max-w-4xl shadow-xl max-h-[90vh] overflow-y-auto" title="Detalle Liquidación" action={
+            <button
+              onClick={() => setDetalle(null)}
+              className="material-symbols-outlined text-outline hover:text-on-surface"
+            >
+              close
+            </button>
+          }>
+            <DetalleLiquidacion liquidacion={detalle} onClose={() => setDetalle(null)} />
+          </BentoCard>
+        </div>
       )}
-
-      {tab === 'historial' && <HistorialLiquidaciones />}
-
-      {detalle && <DetalleLiquidacion liquidacion={detalle} onClose={() => setDetalle(null)} />}
 
       {cierre && (
         <CierreConfirmacion

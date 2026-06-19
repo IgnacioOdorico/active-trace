@@ -13,15 +13,15 @@ export default function UltimasAcciones({ filters }: Props) {
   const { data, isLoading } = useUltimasAcciones(filters, max)
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-gray-700">Últimas acciones</h4>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between rounded neo-latex-border bg-surface-container-lowest p-4">
+        <h4 className="font-headline-sm text-headline-sm text-on-surface">Últimas acciones</h4>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-500">Mostrar:</label>
+          <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Mostrar:</label>
           <select
             value={max}
             onChange={(e) => setMax(Number(e.target.value))}
-            className="rounded-md border border-gray-300 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+            className="rounded neo-latex-border bg-surface-container-lowest px-2 py-1 font-mono-data text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {MAX_OPTIONS.map((n) => (
               <option key={n} value={n}>{n}</option>
@@ -30,40 +30,40 @@ export default function UltimasAcciones({ filters }: Props) {
         </div>
       </div>
 
-      {isLoading && <div className="h-32 animate-pulse rounded-lg bg-gray-200" />}
+      {isLoading && <div className="h-32 animate-pulse rounded neo-latex-border bg-surface-container" />}
 
       {!isLoading && (!data || data.items.length === 0) && (
-        <p className="py-6 text-center text-sm text-gray-500">
+        <p className="py-6 text-center font-body-md text-on-surface-variant bg-surface-container-lowest rounded neo-latex-border">
           Sin acciones en el rango seleccionado.
         </p>
       )}
 
       {!isLoading && data && data.items.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full overflow-hidden rounded-lg border border-gray-200 bg-white text-xs">
-            <thead className="bg-gray-50">
+        <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+          <table className="min-w-full divide-y divide-outline-variant">
+            <thead className="bg-surface">
               <tr>
-                <th className="px-3 py-2 text-left font-medium text-gray-500">Fecha/hora</th>
-                <th className="px-3 py-2 text-left font-medium text-gray-500">Acción</th>
-                <th className="px-3 py-2 text-left font-medium text-gray-500">Actor</th>
-                <th className="px-3 py-2 text-left font-medium text-gray-500">Materia</th>
-                <th className="px-3 py-2 text-right font-medium text-gray-500">Filas</th>
-                <th className="px-3 py-2 text-left font-medium text-gray-500">IP</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Fecha/hora</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Acción</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Actor</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Materia</th>
+                <th className="px-4 py-3 text-right font-label-caps text-label-caps uppercase text-on-surface-variant">Filas</th>
+                <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">IP</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
               {data.items.map((item) => (
-                <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="px-3 py-2 text-gray-600">
+                <tr key={item.id} className="hover:bg-surface-container transition-colors">
+                  <td className="px-4 py-3 font-mono-data text-[12px] text-on-surface-variant">
                     {new Date(item.fecha_hora).toLocaleString('es-AR')}
                   </td>
-                  <td className="px-3 py-2 font-medium text-gray-900">{item.accion}</td>
-                  <td className="px-3 py-2 text-gray-600">{item.actor_nombre || item.actor_id.slice(0, 8) + '…'}</td>
-                  <td className="px-3 py-2 text-gray-600">{item.materia_nombre || '—'}</td>
-                  <td className="px-3 py-2 text-right text-gray-600">
+                  <td className="px-4 py-3 font-mono-data text-[12px] font-semibold text-on-surface">{item.accion}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{item.actor_nombre || item.actor_id.slice(0, 8) + '…'}</td>
+                  <td className="px-4 py-3 font-body-md text-[12px] text-on-surface-variant">{item.materia_nombre || '—'}</td>
+                  <td className="px-4 py-3 text-right font-mono-data text-mono-data text-on-surface">
                     {item.filas_afectadas ?? '—'}
                   </td>
-                  <td className="px-3 py-2 text-gray-500">{item.ip ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono-data text-[12px] text-on-surface-variant/50">{item.ip ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

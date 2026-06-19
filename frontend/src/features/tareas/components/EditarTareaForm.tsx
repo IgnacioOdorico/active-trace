@@ -5,6 +5,7 @@ import { useEditarTarea, useUsuariosAsignables } from '../hooks/useTareasApi'
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import { formatNombreUsuario } from '../utils'
 import type { Tarea } from '../types'
+import { Button } from '../../../shared/components/ui/Button'
 
 interface EditarTareaFormProps {
   tarea: Tarea
@@ -37,23 +38,23 @@ export default function EditarTareaForm({ tarea, onSuccess, onCancel }: EditarTa
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">Descripción</label>
+        <label className="mb-1 block font-label-caps text-label-caps text-on-surface-variant uppercase">Descripción</label>
         <textarea
           {...register('descripcion')}
           rows={3}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded neo-latex-border bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
         />
         {errors.descripcion && (
-          <p className="mt-1 text-xs text-red-600">{errors.descripcion.message}</p>
+          <p className="mt-1 font-body-md text-[12px] text-on-error-container">{errors.descripcion.message}</p>
         )}
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">Asignado a</label>
+        <label className="mb-1 block font-label-caps text-label-caps text-on-surface-variant uppercase">Asignado a</label>
         <select
           {...register('asignado_a')}
           disabled={asignablesLoading}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded neo-latex-border bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
         >
           <option value="" disabled>
             {asignablesLoading ? 'Cargando docentes...' : 'Seleccione un docente'}
@@ -65,18 +66,18 @@ export default function EditarTareaForm({ tarea, onSuccess, onCancel }: EditarTa
           ))}
         </select>
         {errors.asignado_a && (
-          <p className="mt-1 text-xs text-red-600">{errors.asignado_a.message}</p>
+          <p className="mt-1 font-body-md text-[12px] text-on-error-container">{errors.asignado_a.message}</p>
         )}
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700">
+        <label className="mb-1 block font-label-caps text-label-caps text-on-surface-variant uppercase">
           Materia (opcional)
         </label>
         <select
           {...register('materia_id')}
           disabled={materiasLoading}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded neo-latex-border bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
         >
           <option value="">
             {materiasLoading ? 'Cargando materias...' : 'Sin materia asociada'}
@@ -90,26 +91,26 @@ export default function EditarTareaForm({ tarea, onSuccess, onCancel }: EditarTa
       </div>
 
       {mutation.isError && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded neo-latex-border bg-error-container p-3 font-body-md text-on-error-container">
           Error al editar la tarea.
         </div>
       )}
 
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={mutation.isPending}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-        >
-          {mutation.isPending ? 'Guardando...' : 'Guardar cambios'}
-        </button>
-        <button
+      <div className="flex gap-3 justify-end pt-2">
+        <Button
           type="button"
           onClick={onCancel}
-          className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          variant="secondary"
         >
           Cancelar
-        </button>
+        </Button>
+        <Button
+          type="submit"
+          disabled={mutation.isPending}
+          variant="primary"
+        >
+          {mutation.isPending ? 'Guardando...' : 'Guardar cambios'}
+        </Button>
       </div>
     </form>
   )

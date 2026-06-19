@@ -3,6 +3,8 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import UsuariosListado from '../components/UsuariosListado'
 import UsuarioForm from '../components/UsuarioForm'
 import type { Usuario } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
 
 export default function UsuariosPage() {
   const { user } = useAuth()
@@ -13,48 +15,59 @@ export default function UsuariosPage() {
 
   if (!puedeGestionar) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center text-sm text-red-700">
-        Acceso denegado. No tenés el permiso <code>usuarios:gestionar</code>.
-      </div>
+      <BentoCard>
+        <div className="rounded bg-error-container p-6 text-center font-body-md text-on-error-container">
+          Acceso denegado. No tenés el permiso <code>usuarios:gestionar</code>.
+        </div>
+      </BentoCard>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Usuarios del Tenant</h1>
-        <button
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Usuarios del Tenant</h1>
+        <Button
           onClick={() => setEditando('nuevo')}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          variant="primary"
         >
-          + Nuevo usuario
-        </button>
+          <span className="material-symbols-outlined mr-1 text-[18px]">add</span>
+          Nuevo usuario
+        </Button>
       </div>
 
       {editando && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">
-            {editando === 'nuevo' ? 'Nuevo usuario' : `Editar: ${(editando as Usuario).email}`}
-          </h2>
-          <UsuarioForm
-            usuario={editando === 'nuevo' ? null : (editando as Usuario)}
-            onSuccess={() => setEditando(null)}
-          />
-          <div className="mt-2 flex justify-start">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <BentoCard className="w-full max-w-md shadow-xl" title={editando === 'nuevo' ? 'Nuevo usuario' : `Editar: ${(editando as Usuario).email}`} action={
             <button
               onClick={() => setEditando(null)}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="material-symbols-outlined text-outline hover:text-on-surface"
             >
-              Cancelar
+              close
             </button>
-          </div>
+          }>
+            <UsuarioForm
+              usuario={editando === 'nuevo' ? null : (editando as Usuario)}
+              onSuccess={() => setEditando(null)}
+            />
+            <div className="mt-4 flex justify-end">
+              <Button
+                onClick={() => setEditando(null)}
+                variant="ghost"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </BentoCard>
         </div>
       )}
 
-      <UsuariosListado
-        puedeGestionar={puedeGestionar}
-        onEditar={(u) => setEditando(u)}
-      />
+      <BentoCard>
+        <UsuariosListado
+          puedeGestionar={puedeGestionar}
+          onEditar={(u) => setEditando(u)}
+        />
+      </BentoCard>
     </div>
   )
 }

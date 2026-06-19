@@ -3,30 +3,30 @@ import { useNavigate } from 'react-router-dom'
 import { useMaterias } from '../../academico/hooks/useMaterias'
 import { useAtrasadosApi } from '../hooks/useAtrasadosApi'
 import type { Atrasado } from '../types'
+import { BentoCard } from '../../../shared/components/ui/BentoCard'
+import { Button } from '../../../shared/components/ui/Button'
+import { Badge } from '../../../shared/components/ui/Badge'
 
 function severityInfo(atrasado: Atrasado) {
   const ratio = atrasado.actividades_no_aprobadas / atrasado.total_actividades
   if (ratio > 0.5) {
     return {
       label: 'Crítico',
-      badgeClass: 'bg-red-100 text-red-800',
-      rowClass: 'border-red-300',
-      bgClass: 'bg-red-50',
+      variant: 'error' as const,
+      rowClass: 'border-l-4 border-error bg-error-container/20',
     }
   }
   if (ratio >= 0.25) {
     return {
       label: 'Atención',
-      badgeClass: 'bg-yellow-100 text-yellow-800',
-      rowClass: 'border-yellow-300',
-      bgClass: 'bg-yellow-50',
+      variant: 'warning' as const,
+      rowClass: 'border-l-4 border-[#F2C94C] bg-[#F2C94C]/10',
     }
   }
   return {
     label: 'Seguimiento',
-    badgeClass: 'bg-green-100 text-green-800',
-    rowClass: 'border-green-300',
-    bgClass: 'bg-green-50',
+    variant: 'success' as const,
+    rowClass: 'border-l-4 border-success bg-success/10',
   }
 }
 
@@ -51,138 +51,147 @@ export default function AlumnosAtrasadosPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl py-8">
-      <h1 className="text-2xl font-bold text-gray-900">Alumnos Atrasados</h1>
-
-      <div className="mt-6">
-        <label htmlFor="materia" className="block text-sm font-medium text-gray-700">
-          Materia
-        </label>
-        <select
-          id="materia"
-          value={materiaId}
-          onChange={(e) => { setMateriaId(e.target.value); setPagina(1) }}
-          className="mt-1 block w-full max-w-md rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="">Seleccione una materia</option>
-          {materiasLoading && <option value="" disabled>Cargando materias...</option>}
-          {materias?.map((m) => (
-            <option key={m.id} value={m.id}>
-              {m.nombre}{m.comision ? ` - ${m.comision}` : ''}
-            </option>
-          ))}
-        </select>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="font-headline-md text-headline-md text-on-surface">Alumnos Atrasados</h1>
       </div>
 
-      {!materiaId && (
-        <p className="mt-8 text-center text-sm text-gray-500">
-          Seleccione una materia para ver el ranking de alumnos atrasados.
-        </p>
-      )}
-
-      {isLoading && materiaId && (
-        <div className="mt-8 flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-          <p className="ml-3 text-sm text-gray-600">Cargando ranking...</p>
+      <BentoCard>
+        <div className="flex flex-col gap-1 mb-6">
+          <label htmlFor="materia" className="font-label-caps text-label-caps text-on-surface-variant uppercase">
+            Materia
+          </label>
+          <select
+            id="materia"
+            value={materiaId}
+            onChange={(e) => { setMateriaId(e.target.value); setPagina(1) }}
+            className="w-full max-w-md neo-latex-border rounded bg-surface-container-lowest px-3 py-2 font-body-md text-on-surface focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Seleccione una materia</option>
+            {materiasLoading && <option value="" disabled>Cargando materias...</option>}
+            {materias?.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nombre}{m.comision ? ` - ${m.comision}` : ''}
+              </option>
+            ))}
+          </select>
         </div>
-      )}
 
-      {isError && materiaId && (
-        <div className="mt-8 rounded-md bg-red-50 p-4 text-sm text-red-800">
-          Error al cargar los datos. Intente nuevamente.
-        </div>
-      )}
+        {!materiaId && (
+          <div className="rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
+            Seleccione una materia para ver el ranking de alumnos atrasados.
+          </div>
+        )}
 
-      {data && data.data.length === 0 && (
-        <div className="mt-8 rounded-md bg-blue-50 p-4 text-sm text-blue-800">
-          No se encontraron alumnos atrasados para esta materia.
-        </div>
-      )}
+        {isLoading && materiaId && (
+          <div className="mt-8 flex items-center justify-center py-8">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="ml-3 font-body-md text-on-surface-variant">Cargando ranking...</p>
+          </div>
+        )}
 
-      {data && data.data.length > 0 && (
-        <div className="mt-6 overflow-x-auto rounded-md border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Nombre</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Comisión</th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">No Aprobadas</th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Total</th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Progreso</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Gravedad</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Última Actividad</th>
-                <th className="px-4 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Acción</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {data.data.map((a) => {
-                const sev = severityInfo(a)
-                return (
-                  <tr key={a.id} className={`${sev.bgClass} border-l-4 ${sev.rowClass}`}>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900">
-                      {a.nombre} {a.apellidos}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{a.comision}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-center text-sm font-semibold text-gray-900">
-                      {a.actividades_no_aprobadas}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-center text-sm text-gray-600">{a.total_actividades}</td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
-                          <div
-                            className="h-full rounded-full bg-blue-600"
-                            style={{ width: `${a.progreso}%` }}
-                          />
-                        </div>
-                        <span className="text-xs text-gray-500">{a.progreso}%</span>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${sev.badgeClass}`}>
-                        {sev.label}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-600">{a.ultima_actividad}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleComunicar(a)}
-                        className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700"
-                      >
-                        Comunicar
-                      </button>
-                    </td>
+        {isError && materiaId && (
+          <div className="mt-8 rounded neo-latex-border bg-error-container p-4 font-body-md text-on-error-container">
+            Error al cargar los datos. Intente nuevamente.
+          </div>
+        )}
+
+        {data && data.data.length === 0 && (
+          <div className="mt-8 rounded neo-latex-border bg-surface-container py-12 text-center font-body-md text-on-surface-variant">
+            No se encontraron alumnos atrasados para esta materia.
+          </div>
+        )}
+
+        {data && data.data.length > 0 && (
+          <>
+            <div className="overflow-x-auto rounded neo-latex-border bg-surface-container-lowest">
+              <table className="min-w-full divide-y divide-outline-variant">
+                <thead className="bg-surface">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Nombre</th>
+                    <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Comisión</th>
+                    <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">No Aprobadas</th>
+                    <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Total</th>
+                    <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Progreso</th>
+                    <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Gravedad</th>
+                    <th className="px-4 py-3 text-left font-label-caps text-label-caps uppercase text-on-surface-variant">Última Actividad</th>
+                    <th className="px-4 py-3 text-center font-label-caps text-label-caps uppercase text-on-surface-variant">Acción</th>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
-
-          {totalPaginas > 1 && (
-            <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
-              <p className="text-sm text-gray-600">
-                Página {data.pagina} de {totalPaginas} ({data.total} resultados)
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setPagina((p) => Math.max(1, p - 1))}
-                  disabled={pagina <= 1}
-                  className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Anterior
-                </button>
-                <button
-                  onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
-                  disabled={pagina >= totalPaginas}
-                  className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Siguiente
-                </button>
-              </div>
+                </thead>
+                <tbody className="divide-y divide-outline-variant bg-surface-container-lowest">
+                  {data.data.map((a) => {
+                    const sev = severityInfo(a)
+                    return (
+                      <tr key={a.id} className={`hover:bg-surface-container transition-colors ${sev.rowClass}`}>
+                        <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md font-medium text-on-surface">
+                          {a.nombre} {a.apellidos}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md text-on-surface-variant">{a.comision}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-center font-mono-data text-mono-data font-medium text-on-surface">
+                          {a.actividades_no_aprobadas}
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 text-center font-mono-data text-mono-data text-on-surface-variant">{a.total_actividades}</td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-24 overflow-hidden rounded-full bg-surface-container-high border border-outline-variant">
+                              <div
+                                className="h-full bg-primary"
+                                style={{ width: `${a.progreso}%` }}
+                              />
+                            </div>
+                            <span className="font-mono-data text-mono-data text-on-surface-variant">{a.progreso}%</span>
+                          </div>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3">
+                          <Badge variant={sev.variant}>
+                            {sev.label}
+                          </Badge>
+                        </td>
+                        <td className="whitespace-nowrap px-4 py-3 font-body-md text-body-md text-on-surface-variant">{a.ultima_actividad}</td>
+                        <td className="whitespace-nowrap px-4 py-3 text-center">
+                          <Button
+                            onClick={() => handleComunicar(a)}
+                            variant="primary"
+                            size="sm"
+                          >
+                            Comunicar
+                          </Button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
-          )}
-        </div>
-      )}
+
+            {totalPaginas > 1 && (
+              <div className="flex items-center justify-between pt-4 font-body-md text-on-surface-variant border-t border-outline-variant mt-4">
+                <p>
+                  Página {data.pagina} de {totalPaginas} ({data.total} resultados)
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setPagina((p) => Math.max(1, p - 1))}
+                    disabled={pagina <= 1}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    onClick={() => setPagina((p) => Math.min(totalPaginas, p + 1))}
+                    disabled={pagina >= totalPaginas}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Siguiente
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </BentoCard>
     </div>
   )
 }

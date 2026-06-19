@@ -3,6 +3,7 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import CarrerasABM from '../components/CarrerasABM'
 import CohortesABM from '../components/CohortesABM'
 import MateriasABM from '../components/MateriasABM'
+import { Button } from '../../../shared/components/ui/Button'
 
 type Tab = 'carreras' | 'cohortes' | 'materias'
 
@@ -15,8 +16,8 @@ export default function EstructuraAcademicaPage() {
 
   if (!puedeGestionar) {
     return (
-      <div className="rounded-lg bg-red-50 p-6 text-center text-sm text-red-700">
-        Acceso denegado. No tenés el permiso <code>estructura:gestionar</code>.
+      <div className="rounded neo-latex-border bg-error-container p-6 text-center font-body-md text-on-error-container mt-8">
+        Acceso denegado. No tenés el permiso <code className="font-mono-data text-on-error-container font-semibold">estructura:gestionar</code>.
       </div>
     )
   }
@@ -29,27 +30,25 @@ export default function EstructuraAcademicaPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Estructura Académica</h1>
+      <h1 className="font-headline-md text-headline-md text-on-surface">Estructura Académica</h1>
 
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-outline-variant pb-2">
         {tabs.map((t) => (
-          <button
+          <Button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium ${
-              tab === t.key
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            variant={tab === t.key ? 'primary' : 'ghost'}
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
-      {tab === 'carreras' && <CarrerasABM />}
-      {tab === 'cohortes' && <CohortesABM />}
-      {tab === 'materias' && <MateriasABM />}
+      <div>
+        {tab === 'carreras' && <CarrerasABM />}
+        {tab === 'cohortes' && <CohortesABM />}
+        {tab === 'materias' && <MateriasABM />}
+      </div>
     </div>
   )
 }
