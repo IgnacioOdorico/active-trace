@@ -5,11 +5,12 @@ import UsuarioForm from '../components/UsuarioForm'
 import type { Usuario } from '../types'
 import { BentoCard } from '../../../shared/components/ui/BentoCard'
 import { Button } from '../../../shared/components/ui/Button'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 export default function UsuariosPage() {
   const { user } = useAuth()
   const perms = user?.permissions ?? []
-  const puedeGestionar = perms.includes('*:*') || perms.includes('usuarios:gestionar')
+  const puedeGestionar = hasPermission(perms, 'usuarios:gestionar')
 
   const [editando, setEditando] = useState<Usuario | null | 'nuevo'>(null)
 

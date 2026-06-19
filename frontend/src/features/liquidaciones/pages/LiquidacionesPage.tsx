@@ -10,13 +10,14 @@ import HistorialLiquidaciones from '../components/HistorialLiquidaciones'
 import type { Liquidacion, LiquidacionesFilters } from '../types'
 import { BentoCard } from '../../../shared/components/ui/BentoCard'
 import { Button } from '../../../shared/components/ui/Button'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 export default function LiquidacionesPage() {
   const { user } = useAuth()
   const perms = user?.permissions ?? []
-  const puedeVer = perms.includes('*:*') || perms.includes('liquidaciones:ver')
-  const puedeCerrar = perms.includes('*:*') || perms.includes('liquidaciones:cerrar')
-  const puedeCalcular = perms.includes('*:*') || perms.includes('liquidaciones:calcular')
+  const puedeVer = hasPermission(perms, 'liquidaciones:ver')
+  const puedeCerrar = hasPermission(perms, 'liquidaciones:cerrar')
+  const puedeCalcular = hasPermission(perms, 'liquidaciones:calcular')
 
   const [filters, setFilters] = useState<LiquidacionesFilters>({})
   const [detalle, setDetalle] = useState<Liquidacion | null>(null)

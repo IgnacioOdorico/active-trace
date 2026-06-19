@@ -6,6 +6,7 @@ import ComunicacionForm from '../components/ComunicacionForm'
 import ComunicacionTracking from '../components/ComunicacionTracking'
 import type { PreviewRequest, PreviewResponse, EnviarRequest, EnviarResponse } from '../types'
 import { Button } from '../../../shared/components/ui/Button'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 type ViewMode = 'form' | 'tracking'
 
@@ -75,7 +76,7 @@ export default function ComunicacionesPage() {
         {viewMode === 'tracking' && trackingLoteId && (
           <ComunicacionTracking
             loteId={trackingLoteId}
-            canApprove={(user?.permissions.includes('*:*') || user?.permissions.includes('comunicacion:aprobar')) ?? false}
+            canApprove={hasPermission(user?.permissions ?? [], 'comunicaciones:aprobar')}
           />
         )}
 

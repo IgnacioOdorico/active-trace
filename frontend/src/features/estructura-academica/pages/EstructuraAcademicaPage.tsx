@@ -4,13 +4,14 @@ import CarrerasABM from '../components/CarrerasABM'
 import CohortesABM from '../components/CohortesABM'
 import MateriasABM from '../components/MateriasABM'
 import { Button } from '../../../shared/components/ui/Button'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 type Tab = 'carreras' | 'cohortes' | 'materias'
 
 export default function EstructuraAcademicaPage() {
   const { user } = useAuth()
   const perms = user?.permissions ?? []
-  const puedeGestionar = perms.includes('*:*') || perms.includes('estructura:gestionar')
+  const puedeGestionar = hasPermission(perms, 'estructura:gestionar')
 
   const [tab, setTab] = useState<Tab>('carreras')
 

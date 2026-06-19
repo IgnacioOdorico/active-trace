@@ -3,14 +3,14 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import SalarioBaseABM from '../components/SalarioBaseABM'
 import SalarioPlusABM from '../components/SalarioPlusABM'
 import { Button } from '../../../shared/components/ui/Button'
+import { hasPermission } from '../../../shared/utils/permissions'
 
 type Tab = 'base' | 'plus'
 
 export default function GrillaSalarialPage() {
   const { user } = useAuth()
   const perms = user?.permissions ?? []
-  const puedeConfigurar =
-    perms.includes('*:*') || perms.includes('liquidaciones:configurar-salarios')
+  const puedeConfigurar = hasPermission(perms, 'liquidaciones:configurar-salarios')
 
   const [tab, setTab] = useState<Tab>('base')
 
