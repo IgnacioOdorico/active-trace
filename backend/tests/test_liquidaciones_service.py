@@ -247,11 +247,12 @@ class TestCalcularLiquidacion:
 
     @pytest.mark.asyncio
     async def test_listar_por_periodo(self, service, mock_session):
+        usuario_id = uuid.uuid4()
         mock_liq = MagicMock()
         mock_liq.id = uuid.uuid4()
         mock_liq.cohorte_id = uuid.uuid4()
         mock_liq.periodo = "2026-06"
-        mock_liq.usuario_id = uuid.uuid4()
+        mock_liq.usuario_id = usuario_id
         mock_liq.rol = "PROFESOR"
         mock_liq.comisiones = ["PROG"]
         mock_liq.monto_base = 500.0
@@ -261,9 +262,116 @@ class TestCalcularLiquidacion:
         mock_liq.excluido_por_factura = False
         mock_liq.estado = "Abierta"
         service._repo.listar_por_periodo = AsyncMock(return_value=[mock_liq])
+
+        user = MagicMock()
+        user.id = usuario_id
+        user.nombre = "Juan"
+        user.apellidos = "Pérez"
+        user.email = "juan@demo.local"
+        mock_session.execute = AsyncMock(
+            return_value=MagicMock(**{"unique.return_value.scalars.return_value.all.return_value": [user]})
+        )
+
         result = await service.listar(mock_session, "2026-06")
         assert len(result) == 1
         assert result[0]["total"] == 700.0
+        assert result[0]["docente_nombre"] == "Juan Pérez"
+
+    @pytest.mark.asyncio
+    async def test_listar_usuario_sin_resolver_usa_id_como_fallback(self, service, mock_session):
+        """Si el usuario_id no aparece en el mapa resuelto (ej. usuario borrado),
+        no debe romper — cae al string del id en vez de crashear."""
+        usuario_id = uuid.uuid4()
+        mock_liq = MagicMock()
+        mock_liq.id = uuid.uuid4()
+        mock_liq.cohorte_id = uuid.uuid4()
+        mock_liq.periodo = "2026-06"
+        mock_liq.usuario_id = usuario_id
+        mock_liq.rol = "PROFESOR"
+        mock_liq.comisiones = []
+        mock_liq.monto_base = 500.0
+        mock_liq.monto_plus = 0.0
+        mock_liq.total = 500.0
+        mock_liq.es_nexo = False
+        mock_liq.excluido_por_factura = False
+        mock_liq.estado = "Abierta"
+        service._repo.listar_por_periodo = AsyncMock(return_value=[mock_liq])
+
+        mock_session.execute = AsyncMock(
+            return_value=MagicMock(**{"unique.return_value.scalars.return_value.all.return_value": []})
+        )
+
+        result = await service.listar(mock_session, "2026-06")
+        assert result[0]["docente_nombre"] == str(usuario_id)
+
+
+class TestHistorialLiquidacion:
+    @pytest.fixture
+    def service(self):
+        return LiquidacionService(tenant_id=uuid.uuid4())
+
+    @pytest.fixture
+    def mock_session(self):
+        return AsyncMock()
+
+    def _make_liq(self, periodo, cohorte_id, total, estado="Abierta"):
+        liq = MagicMock()
+        liq.periodo = periodo
+        liq.cohorte_id = cohorte_id
+        liq.total = total
+        liq.estado = estado
+        return liq
+
+    @pytest.mark.asyncio
+    async def test_historial_agrupa_por_periodo_y_cohorte(self, service, mock_session):
+        cohorte_id = uuid.uuid4()
+        liqs = [
+            self._make_liq("2026-05", cohorte_id, 1000.0),
+            self._make_liq("2026-05", cohorte_id, 500.0),
+            self._make_liq("2026-06", cohorte_id, 700.0),
+        ]
+        service._repo.listar_todas = AsyncMock(return_value=liqs)
+
+        result = await service.historial(mock_session)
+
+        assert len(result) == 2
+        mayo = next(r for r in result if r["periodo"] == "2026-05")
+        assert mayo["total_docentes"] == 2
+        assert mayo["monto_total"] == 1500.0
+
+    @pytest.mark.asyncio
+    async def test_historial_estado_cerrada_solo_si_todas_cerradas(self, service, mock_session):
+        cohorte_id = uuid.uuid4()
+        liqs = [
+            self._make_liq("2026-05", cohorte_id, 1000.0, estado="Cerrada"),
+            self._make_liq("2026-05", cohorte_id, 500.0, estado="Abierta"),
+        ]
+        service._repo.listar_todas = AsyncMock(return_value=liqs)
+
+        result = await service.historial(mock_session)
+
+        assert result[0]["estado"] == "Abierta"
+
+    @pytest.mark.asyncio
+    async def test_historial_filtra_por_desde_hasta_y_estado(self, service, mock_session):
+        cohorte_id = uuid.uuid4()
+        liqs = [
+            self._make_liq("2026-01", cohorte_id, 100.0, estado="Cerrada"),
+            self._make_liq("2026-05", cohorte_id, 200.0, estado="Abierta"),
+            self._make_liq("2026-08", cohorte_id, 300.0, estado="Abierta"),
+        ]
+        service._repo.listar_todas = AsyncMock(return_value=liqs)
+
+        result = await service.historial(mock_session, desde="2026-02", hasta="2026-07")
+
+        assert len(result) == 1
+        assert result[0]["periodo"] == "2026-05"
+
+    @pytest.mark.asyncio
+    async def test_historial_sin_liquidaciones_devuelve_vacio(self, service, mock_session):
+        service._repo.listar_todas = AsyncMock(return_value=[])
+        result = await service.historial(mock_session)
+        assert result == []
 
     @pytest.mark.asyncio
     async def test_exportar_planilla_genera_xlsx_con_filas_correctas(

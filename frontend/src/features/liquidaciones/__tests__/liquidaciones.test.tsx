@@ -5,6 +5,8 @@ import { renderWithProviders } from '../../../test/test-utils'
 import GrillaSegmentada from '../components/GrillaSegmentada'
 import KpisCabecera from '../components/KpisCabecera'
 import CierreConfirmacion from '../components/CierreConfirmacion'
+import DetalleLiquidacion from '../components/DetalleLiquidacion'
+import HistorialLiquidaciones from '../components/HistorialLiquidaciones'
 
 vi.mock('../../../shared/services/httpClient', () => ({
   default: {
@@ -44,10 +46,10 @@ const liqGeneral = {
   usuario_id: 'u-1',
   docente_nombre: 'Ana García',
   rol: 'PROFESOR',
-  comisiones: 3,
+  comisiones: ['A', 'B', 'C'],
   monto_base: 50000,
-  plus_detalle: [],
-  monto_total: 50000,
+  monto_plus: 0,
+  total: 50000,
   es_nexo: false,
   excluido_por_factura: false,
   estado: 'Abierta' as const,
@@ -112,9 +114,9 @@ describe('KpisCabecera — muestra datos del endpoint', () => {
         total_nexo: 50000,
         total_facturas_pendientes: 30000,
         total_facturas_abonadas: 10000,
-        cantidad_general: 5,
-        cantidad_nexo: 2,
-        cantidad_facturantes: 1,
+        cantidad_docentes_general: 5,
+        cantidad_docentes_nexo: 2,
+        cantidad_docentes_facturantes: 1,
       },
     })
 
@@ -128,6 +130,26 @@ describe('KpisCabecera — muestra datos del endpoint', () => {
   it('no renderiza nada si no hay período', () => {
     const { container } = renderWithProviders(<KpisCabecera periodo={undefined} />)
     expect(container.firstChild).toBeNull()
+  })
+})
+
+describe('DetalleLiquidacion — sin plus_detalle inventado (regresión crash)', () => {
+  it('renderiza el detalle usando monto_plus/total reales sin crashear', () => {
+    renderWithProviders(
+      <DetalleLiquidacion liquidacion={liqGeneral} onClose={vi.fn()} />,
+    )
+    expect(screen.getByText('Ana García')).toBeInTheDocument()
+    expect(screen.getByText('A, B, C')).toBeInTheDocument()
+  })
+
+  it('muestra el plus salarial cuando monto_plus > 0', () => {
+    renderWithProviders(
+      <DetalleLiquidacion
+        liquidacion={{ ...liqGeneral, monto_plus: 5000, total: 55000 }}
+        onClose={vi.fn()}
+      />,
+    )
+    expect(screen.getByText(/Plus salarial/i)).toBeInTheDocument()
   })
 })
 
@@ -184,6 +206,31 @@ describe('CierreConfirmacion — flujo de cierre', () => {
   })
 })
 
+describe('HistorialLiquidaciones — filas agregadas por período (no por docente)', () => {
+  it('renderiza total_docentes y monto_total del agregado real del backend', async () => {
+    mockApiClient.get.mockResolvedValueOnce({
+      data: {
+        items: [
+          {
+            id: 'c-1:2026-05',
+            periodo: '2026-05',
+            cohorte_id: 'c-1',
+            estado: 'Cerrada',
+            total_docentes: 3,
+            monto_total: 150000,
+          },
+        ],
+        total: 1,
+      },
+    })
+
+    renderWithProviders(<HistorialLiquidaciones />)
+
+    expect(await screen.findByText('2026-05')).toBeInTheDocument()
+    expect(screen.getByText('3')).toBeInTheDocument()
+  })
+})
+
 // Exportar planilla: botón deshabilitado sin período, GET con responseType blob al hacer click
 describe('LiquidacionesPage — Exportar planilla', () => {
   it('el botón está deshabilitado mientras no haya un período seleccionado', async () => {
@@ -203,8 +250,8 @@ describe('LiquidacionesPage — Exportar planilla', () => {
         return Promise.resolve({
           data: {
             total_general: 0, total_nexo: 0, total_facturas_pendientes: 0,
-            total_facturas_abonadas: 0, cantidad_general: 0, cantidad_nexo: 0,
-            cantidad_facturantes: 0,
+            total_facturas_abonadas: 0, cantidad_docentes_general: 0, cantidad_docentes_nexo: 0,
+            cantidad_docentes_facturantes: 0,
           },
         })
       }
@@ -241,8 +288,8 @@ describe('LiquidacionesPage — Calcular liquidación', () => {
         return Promise.resolve({
           data: {
             total_general: 0, total_nexo: 0, total_facturas_pendientes: 0,
-            total_facturas_abonadas: 0, cantidad_general: 0, cantidad_nexo: 0,
-            cantidad_facturantes: 0,
+            total_facturas_abonadas: 0, cantidad_docentes_general: 0, cantidad_docentes_nexo: 0,
+            cantidad_docentes_facturantes: 0,
           },
         })
       }

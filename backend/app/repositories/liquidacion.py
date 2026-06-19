@@ -51,6 +51,17 @@ class LiquidacionRepository(FinancialRepository[Liquidacion]):
         result = await session.execute(query)
         return list(result.unique().scalars().all())
 
+    async def listar_todas(
+        self,
+        session: AsyncSession,
+        cohorte_id: uuid.UUID | None = None,
+    ) -> list[Liquidacion]:
+        query = self._base_query()
+        if cohorte_id is not None:
+            query = query.where(self._model.cohorte_id == cohorte_id)
+        result = await session.execute(query)
+        return list(result.unique().scalars().all())
+
     async def periodo_cerrado(
         self,
         session: AsyncSession,

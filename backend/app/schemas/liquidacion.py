@@ -9,6 +9,7 @@ class LiquidacionResponse(BaseModel):
     cohorte_id: uuid.UUID
     periodo: str
     usuario_id: uuid.UUID
+    docente_nombre: str
     rol: str
     comisiones: list[str] | None
     monto_base: float
@@ -25,6 +26,20 @@ class LiquidacionResponse(BaseModel):
 
 class LiquidacionListResponse(BaseModel):
     items: list[LiquidacionResponse]
+    total: int
+
+
+class LiquidacionHistorialItem(BaseModel):
+    id: str
+    periodo: str
+    cohorte_id: uuid.UUID
+    estado: str
+    total_docentes: int
+    monto_total: float
+
+
+class LiquidacionHistorialResponse(BaseModel):
+    items: list[LiquidacionHistorialItem]
     total: int
 
 

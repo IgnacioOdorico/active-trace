@@ -9,7 +9,7 @@ from app.models.asignacion import Asignacion
 from app.models.materia import Materia
 from app.models.salario_base import SalarioBase
 from app.models.salario_plus import SalarioPlus
-from app.models.user import User
+from app.models.user import User, nombre_completo_usuario
 from app.repositories.liquidacion import LiquidacionRepository
 
 
@@ -189,12 +189,14 @@ class LiquidacionService:
         cohorte_id: uuid.UUID | None = None,
     ) -> list[dict]:
         items = await self._repo.listar_por_periodo(session, periodo, cohorte_id)
+        usuarios = await self._mapa_usuarios(session, {l.usuario_id for l in items})
         return [
             {
                 "id": str(l.id),
                 "cohorte_id": str(l.cohorte_id),
                 "periodo": l.periodo,
                 "usuario_id": str(l.usuario_id),
+                "docente_nombre": self._nombre_docente(usuarios.get(l.usuario_id), l.usuario_id),
                 "rol": l.rol,
                 "comisiones": l.comisiones,
                 "monto_base": float(l.monto_base),
@@ -206,6 +208,62 @@ class LiquidacionService:
             }
             for l in items
         ]
+
+    async def historial(
+        self,
+        session: AsyncSession,
+        cohorte_id: uuid.UUID | None = None,
+        desde: str | None = None,
+        hasta: str | None = None,
+        estado: str | None = None,
+    ) -> list[dict]:
+        items = await self._repo.listar_todas(session, cohorte_id)
+
+        grupos: dict[tuple[str, uuid.UUID], list] = {}
+        for l in items:
+            grupos.setdefault((l.periodo, l.cohorte_id), []).append(l)
+
+        resultado: list[dict] = []
+        for (periodo, cid), liqs in grupos.items():
+            if desde and periodo < desde:
+                continue
+            if hasta and periodo > hasta:
+                continue
+            estado_grupo = "Cerrada" if all(l.estado == "Cerrada" for l in liqs) else "Abierta"
+            if estado and estado_grupo != estado:
+                continue
+            resultado.append({
+                "id": f"{cid}:{periodo}",
+                "periodo": periodo,
+                "cohorte_id": str(cid),
+                "estado": estado_grupo,
+                "total_docentes": len(liqs),
+                "monto_total": sum(float(l.total) for l in liqs),
+            })
+
+        resultado.sort(key=lambda x: x["periodo"], reverse=True)
+        return resultado
+
+    async def _mapa_usuarios(
+        self,
+        session: AsyncSession,
+        usuario_ids: set[uuid.UUID],
+    ) -> dict[uuid.UUID, User]:
+        if not usuario_ids:
+            return {}
+        result = await session.execute(
+            select(User).where(
+                User.id.in_(usuario_ids),
+                User.tenant_id == self._tenant_id,
+            )
+        )
+        return {u.id: u for u in result.unique().scalars().all()}
+
+    @staticmethod
+    def _nombre_docente(usuario: User | None, usuario_id: uuid.UUID) -> str:
+        if usuario is None:
+            return str(usuario_id)
+        return nombre_completo_usuario(usuario.nombre, usuario.apellidos, usuario.email)
 
     async def exportar_planilla(
         self,

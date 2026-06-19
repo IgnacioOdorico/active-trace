@@ -27,13 +27,13 @@ function FilaLiquidacion({
     <tr className="border-b border-gray-100 hover:bg-gray-50">
       <td className="px-4 py-2 text-sm text-gray-900">{liq.docente_nombre}</td>
       <td className="px-4 py-2 text-sm text-gray-600">{liq.rol}</td>
-      <td className="px-4 py-2 text-center text-sm text-gray-600">{liq.comisiones}</td>
+      <td className="px-4 py-2 text-center text-sm text-gray-600">{liq.comisiones.length}</td>
       <td className="px-4 py-2 text-right text-sm text-gray-700">{formatARS(liq.monto_base)}</td>
       <td className="px-4 py-2 text-right text-sm text-gray-700">
-        {formatARS(liq.monto_total - liq.monto_base)}
+        {formatARS(liq.monto_plus)}
       </td>
       <td className="px-4 py-2 text-right text-sm font-medium text-gray-900">
-        {formatARS(liq.monto_total)}
+        {formatARS(liq.total)}
       </td>
       <td className="px-4 py-2 text-center text-sm">
         <span
