@@ -5,7 +5,7 @@ from sqlalchemy import String, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
-from app.models.base import EntityMeta
+from app.models.base import EntityMeta, RootEntityMeta
 from app.models.tenant import Tenant
 
 
@@ -16,8 +16,9 @@ db = pytest.mark.skipif(
 
 
 class TestTenantModel:
-    def test_tenant_inherits_entity_meta(self):
-        assert issubclass(Tenant, EntityMeta)
+    def test_tenant_inherits_root_entity_meta(self):
+        assert issubclass(Tenant, RootEntityMeta)
+        assert not issubclass(Tenant, EntityMeta)
 
     def test_tenant_has_slug_column(self):
         assert hasattr(Tenant, "slug")
@@ -43,19 +44,17 @@ class TestTenantModel:
             assert "'{}'" in str(server_default.arg) or "{}" in str(server_default.arg)
 
     def test_tenant_creates_with_slug_and_name(self):
-        tenant = Tenant(slug="uni-test", name="University Test", tenant_id=uuid.uuid4())
+        tenant = Tenant(slug="uni-test", name="University Test")
         assert tenant.slug == "uni-test"
         assert tenant.name == "University Test"
 
     def test_tenant_creates_with_config(self):
         config = {"theme": "blue", "locale": "es-AR"}
-        tenant = Tenant(slug="uni-config", name="Config Test", config=config, tenant_id=uuid.uuid4())
+        tenant = Tenant(slug="uni-config", name="Config Test", config=config)
         assert tenant.config == config
 
-    def test_tenant_self_referential_tenant_id(self):
-        tid = uuid.uuid4()
-        tenant = Tenant(slug="self-ref", name="Self Ref", tenant_id=tid)
-        assert tenant.tenant_id == tid
+    def test_tenant_has_no_tenant_id(self):
+        assert not hasattr(Tenant, "tenant_id")
 
     def test_tenant_tablename_is_tenant(self):
         assert Tenant.__tablename__ == "tenant"
@@ -64,7 +63,7 @@ class TestTenantModel:
 @pytest.mark.asyncio
 @db
 async def test_tenant_persists_with_unique_slug(db_session):
-    tenant = Tenant(slug="universidad-nacional", name="Universidad Nacional", tenant_id=uuid.uuid4())
+    tenant = Tenant(slug="universidad-nacional", name="Universidad Nacional")
     db_session.add(tenant)
     await db_session.commit()
     assert tenant.id is not None
@@ -76,12 +75,11 @@ async def test_tenant_persists_with_unique_slug(db_session):
 @pytest.mark.asyncio
 @db
 async def test_tenant_duplicate_slug_fails(db_session):
-    tid = uuid.uuid4()
-    t1 = Tenant(slug="slug-dup", name="First", tenant_id=tid)
+    t1 = Tenant(slug="slug-dup", name="First")
     db_session.add(t1)
     await db_session.commit()
 
-    t2 = Tenant(slug="slug-dup", name="Second", tenant_id=tid)
+    t2 = Tenant(slug="slug-dup", name="Second")
     db_session.add(t2)
     with pytest.raises(Exception):
         await db_session.commit()
@@ -91,7 +89,7 @@ async def test_tenant_duplicate_slug_fails(db_session):
 @pytest.mark.asyncio
 @db
 async def test_tenant_config_defaults_to_empty(db_session):
-    tenant = Tenant(slug="no-config", name="No Config", tenant_id=uuid.uuid4())
+    tenant = Tenant(slug="no-config", name="No Config")
     db_session.add(tenant)
     await db_session.commit()
     await db_session.refresh(tenant)
@@ -122,10 +120,10 @@ async def test_entity_with_nonexistent_tenant_fails(db_session):
 @pytest.mark.asyncio
 @db
 async def test_entity_with_existing_tenant_persists(db_session):
-    tid = uuid.uuid4()
-    tenant = Tenant(slug="existing-tenant", name="Existing", tenant_id=tid)
+    tenant = Tenant(slug="existing-tenant", name="Existing")
     db_session.add(tenant)
     await db_session.commit()
+    tid = tenant.id
 
     class _TestEntityRef2(Base, EntityMeta):
         __tablename__ = "test_entity_ref2"
