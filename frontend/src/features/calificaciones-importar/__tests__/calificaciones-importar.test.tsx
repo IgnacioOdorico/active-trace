@@ -129,7 +129,8 @@ describe('CalificacionesImportarPage — vista previa con el contrato real', () 
     expect(sentData.get('actividades')).toBe(JSON.stringify(['Primer Parcial (Real)']))
     expect(config).toMatchObject({ headers: { 'Content-Type': 'multipart/form-data' } })
 
-    expect(await screen.findByText(/12 calificaciones insertadas/i)).toBeInTheDocument()
+    const resultado = await screen.findByText(/calificaciones insertadas/i)
+    expect(resultado).toHaveTextContent('12 calificaciones insertadas')
   })
 
   it('sin actividades detectadas muestra el estado vacío', async () => {
