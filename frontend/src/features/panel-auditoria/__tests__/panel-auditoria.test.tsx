@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders } from '../../../test/test-utils'
@@ -85,7 +85,7 @@ describe('FiltrosPanel — propagación de filtros', () => {
     )
 
     const input = screen.getByPlaceholderText(/Ej: LIQUIDACION_CERRAR/i)
-    await userEvent.setup().type(input, 'LIQUIDACION_CALCULAR')
+    fireEvent.change(input, { target: { value: 'LIQUIDACION_CALCULAR' } })
 
     await waitFor(() =>
       expect(onChange).toHaveBeenLastCalledWith(

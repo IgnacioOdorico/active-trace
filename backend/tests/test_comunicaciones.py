@@ -1095,7 +1095,7 @@ class TestComunicacionEndpoints:
             mock_svc.aprobar_lote = AsyncMock(return_value={"lote_id": lote_id, "aprobadas": 5})
 
             response = await async_client_com.post(
-                f"/api/comunicaciones/lotes/{lote_id}/aprobar",
+                f"/api/comunicaciones/lote/{lote_id}/aprobar",
                 headers={"Authorization": "Bearer fake-token"},
             )
             assert response.status_code == 200
@@ -1113,7 +1113,7 @@ class TestComunicacionEndpoints:
             mock_svc.rechazar_lote = AsyncMock(return_value={"lote_id": lote_id, "rechazadas": 3})
 
             response = await async_client_com.post(
-                f"/api/comunicaciones/lotes/{lote_id}/rechazar",
+                f"/api/comunicaciones/lote/{lote_id}/rechazar",
                 headers={"Authorization": "Bearer fake-token"},
             )
             assert response.status_code == 200

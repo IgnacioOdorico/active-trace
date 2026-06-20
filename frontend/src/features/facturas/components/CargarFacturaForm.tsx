@@ -56,8 +56,8 @@ export default function CargarFacturaForm({ onSuccess }: Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1">
-          <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Período (AAAA-MM) *</label>
           <Input
+            label="Período (AAAA-MM) *"
             type="month"
             value={periodo}
             onChange={(e) => setPeriodo(e.target.value)}
@@ -67,8 +67,8 @@ export default function CargarFacturaForm({ onSuccess }: Props) {
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Detalle *</label>
           <Input
+            label="Detalle *"
             type="text"
             value={detalle}
             onChange={(e) => setDetalle(e.target.value)}
@@ -80,8 +80,8 @@ export default function CargarFacturaForm({ onSuccess }: Props) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="font-label-caps text-label-caps text-on-surface-variant uppercase">Archivo PDF *</label>
         <Input
+          label="Archivo PDF *"
           ref={fileRef}
           type="file"
           accept=".pdf"

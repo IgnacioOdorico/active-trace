@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders } from '../../../test/test-utils'
@@ -39,8 +39,7 @@ describe('CargarFacturaForm — validación de PDF', () => {
     const onSuccess = vi.fn()
     renderWithProviders(<CargarFacturaForm onSuccess={onSuccess} />)
 
-    const user = userEvent.setup()
-    await user.type(screen.getByRole('combobox'), '2024-06')
+    const user = userEvent.setup({ applyAccept: false })
     await user.type(screen.getByPlaceholderText(/Describí el comprobante/i), 'Comprobante')
 
     const file = new File(['content'], 'documento.docx', { type: 'application/msword' })
@@ -91,7 +90,7 @@ describe('FacturasListado — cambio de estado a Abonada', () => {
     renderWithProviders(<FacturasListado puedeAbonar={true} />)
 
     expect(await screen.findByText('Comprobante junio')).toBeInTheDocument()
-    expect(screen.getByText('Pendiente')).toBeInTheDocument()
+    expect(within(screen.getByRole('table')).getByText('Pendiente')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Marcar abonada/i })).toBeInTheDocument()
   })
 

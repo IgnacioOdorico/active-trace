@@ -19,7 +19,7 @@ class _MockSession:
     def __init__(self):
         self.commit = AsyncMock()
         self.rollback = AsyncMock()
-        self.execute = AsyncMock()
+        self.execute = AsyncMock(return_value=MagicMock(scalars=MagicMock(return_value=[])))
         self.flush = AsyncMock()
         self.refresh = AsyncMock()
         self.close = AsyncMock()

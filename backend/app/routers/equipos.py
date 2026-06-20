@@ -30,25 +30,10 @@ from app.services.equipo_service import EquipoService
 router = APIRouter(prefix="/api/equipos", tags=["equipos"])
 
 
-@router.get("/mis-equipos", response_model=EquipoListResponse)
-async def list_mis_equipos(
-    materia_id: str | None = Query(default=None),
-    rol: str | None = Query(default=None),
-    estado_vigencia: str | None = Query(default=None),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-    _=Depends(require_permission("equipos:asignar")),
-):
-    svc = EquipoService(current_user.tenant_id)
-    asignaciones = await svc.listar_mis_equipos(
-        db,
-        usuario_id=current_user.id,
-        materia_id=uuid.UUID(materia_id) if materia_id else None,
-        rol=rol,
-        estado_vigencia=estado_vigencia,
-    )
-
-    # Batch-load related entities to enrich the response with human-readable names.
+async def _enriquecer_asignaciones(
+    db: AsyncSession, asignaciones: list
+) -> list[EquipoItemResponse]:
+    """Batch-load related entities to enrich the response with human-readable names."""
     materia_ids = {a.materia_id for a in asignaciones if a.materia_id}
     cohorte_ids = {a.cohorte_id for a in asignaciones if a.cohorte_id}
 
@@ -104,6 +89,29 @@ async def list_mis_equipos(
             created_at=a.created_at,
             updated_at=a.updated_at,
         ))
+
+    return items
+
+
+@router.get("/mis-equipos", response_model=EquipoListResponse)
+async def list_mis_equipos(
+    materia_id: str | None = Query(default=None),
+    rol: str | None = Query(default=None),
+    estado_vigencia: str | None = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    _=Depends(require_permission("equipos:asignar")),
+):
+    svc = EquipoService(current_user.tenant_id)
+    asignaciones = await svc.listar_mis_equipos(
+        db,
+        usuario_id=current_user.id,
+        materia_id=uuid.UUID(materia_id) if materia_id else None,
+        rol=rol,
+        estado_vigencia=estado_vigencia,
+    )
+
+    items = await _enriquecer_asignaciones(db, asignaciones)
 
     return EquipoListResponse(data=items, total=len(items))
 
@@ -188,7 +196,8 @@ async def modificar_vigencia(
         await db.refresh(asignacion)
     except EntityNotFoundError:
         raise HTTPException(status_code=404, detail="Asignacion not found")
-    return EquipoItemResponse.model_validate(asignacion)
+    items = await _enriquecer_asignaciones(db, [asignacion])
+    return items[0]
 
 
 @router.patch(
