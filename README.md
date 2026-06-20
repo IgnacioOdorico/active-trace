@@ -50,7 +50,6 @@
 - [✨ Features](#-features)
 - [🛠 Tech Stack](#-tech-stack)
 - [🚀 Instalación](#-instalación)
-- [📸 Screenshots](#-screenshots)
 
 </details>
 
@@ -216,47 +215,3 @@ pnpm dev
 | ALUMNO | alumno1@demo.local | Demo1234! |
 | NEXO | nexo1@demo.local | Demo1234! |
 | FINANZAS | finanzas1@demo.local | Demo1234! |
-
-
-## 📸 Screenshots
-
-> *(Grabá tus propios GIFs y pegálos acá)*
-
-<div align="center">
-
-### Panel de Administración
-
-```
-[GIF AQUÍ — Navegación por el panel de administración]
-```
-
-### Importación de Calificaciones
-
-```
-[GIF AQUÍ — Flujo de importación desde Moodle]
-```
-
-### Comunicaciones y Avisos
-
-```
-[GIF AQUÍ — Envío de comunicaciones y tablón de avisos]
-```
-
-### Liquidaciones
-
-```
-[GIF AQUÍ — Vista de liquidaciones y grilla salarial]
-```
-
-### Panel de Auditoría
-
-```
-[GIF AQUÍ — Log de auditoría y métricas de uso]
-```
-
-</div>
-
-
-<div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=003765,1a365d,002045&height=150&section=footer&text=activia-trace&fontSize=30&fontAlignY=65&fontColor=adc7f7" width="100%" />
-</div>
