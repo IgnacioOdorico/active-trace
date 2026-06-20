@@ -135,20 +135,19 @@ describe('AvisoForm — validaciones de schema Zod', () => {
     // Verificación directa del schema Zod sin montar el componente
     const { avisoSchema } = await import('../schemas')
     const result = avisoSchema.safeParse({
-      alcance: 'global',
-      roles: [],
-      severidad: 'info',
+      alcance: 'Global',
+      severidad: 'Info',
       titulo: 'Aviso test',
       cuerpo: 'Contenido',
-      vigencia_inicio: '2024-12-31T10:00',
-      vigencia_fin: '2024-01-01T10:00',
+      inicio_en: '2024-12-31T10:00',
+      fin_en: '2024-01-01T10:00',
       orden: 0,
       activo: true,
       requiere_ack: false,
     })
     expect(result.success).toBe(false)
     if (!result.success) {
-      const vigenciaError = result.error.issues.find((i) => i.path.includes('vigencia_fin'))
+      const vigenciaError = result.error.issues.find((i) => i.path.includes('fin_en'))
       expect(vigenciaError?.message).toMatch(/anterior a la de fin/i)
     }
     expect(mockApiClient.post).not.toHaveBeenCalled()
@@ -157,21 +156,20 @@ describe('AvisoForm — validaciones de schema Zod', () => {
   it('schema bloquea alcance cohorte sin cohorte proporcionada', async () => {
     const { avisoSchema } = await import('../schemas')
     const result = avisoSchema.safeParse({
-      alcance: 'cohorte',
-      cohorte: '', // vacío
-      roles: [],
-      severidad: 'info',
+      alcance: 'PorCohorte',
+      cohorte_id: '', // vacío
+      severidad: 'Info',
       titulo: 'Aviso',
       cuerpo: 'Body',
-      vigencia_inicio: '2024-01-01T00:00',
-      vigencia_fin: '2024-12-31T00:00',
+      inicio_en: '2024-01-01T00:00',
+      fin_en: '2024-12-31T00:00',
       orden: 0,
       activo: true,
       requiere_ack: false,
     })
     expect(result.success).toBe(false)
     if (!result.success) {
-      const cohorteError = result.error.issues.find((i) => i.path.includes('cohorte'))
+      const cohorteError = result.error.issues.find((i) => i.path.includes('cohorte_id'))
       expect(cohorteError?.message).toMatch(/cohorte/i)
     }
     expect(mockApiClient.post).not.toHaveBeenCalled()
@@ -182,23 +180,24 @@ describe('AckAviso', () => {
   it('llama POST /api/avisos/{id}/ack al confirmar lectura', async () => {
     mockApiClient.get.mockResolvedValueOnce({
       data: {
-        data: [
+        items: [
           {
             id: 'av-1',
-            alcance: 'global',
-            roles: [],
-            severidad: 'info',
+            tenant_id: 't-1',
+            alcance: 'Global',
+            severidad: 'Info',
             titulo: 'Aviso importante',
             cuerpo: 'Leer con atención',
-            vigencia_inicio: '2024-01-01',
-            vigencia_fin: '2024-12-31',
+            inicio_en: '2024-01-01',
+            fin_en: '2024-12-31',
             orden: 1,
             activo: true,
             requiere_ack: true,
-            creado_en: '2024-01-01',
           },
         ],
         total: 1,
+        pagina: 1,
+        page_size: 50,
       },
     })
     mockApiClient.post.mockResolvedValueOnce({ data: {} })
@@ -216,23 +215,24 @@ describe('AckAviso', () => {
   it('renderiza aviso con severidad warning con clase de color correcta', async () => {
     mockApiClient.get.mockResolvedValueOnce({
       data: {
-        data: [
+        items: [
           {
             id: 'av-2',
-            alcance: 'global',
-            roles: [],
-            severidad: 'warning',
+            tenant_id: 't-1',
+            alcance: 'Global',
+            severidad: 'Advertencia',
             titulo: 'Aviso warning',
             cuerpo: 'Texto de warning',
-            vigencia_inicio: '2024-01-01',
-            vigencia_fin: '2024-12-31',
+            inicio_en: '2024-01-01',
+            fin_en: '2024-12-31',
             orden: 1,
             activo: true,
             requiere_ack: false,
-            creado_en: '2024-01-01',
           },
         ],
         total: 1,
+        pagina: 1,
+        page_size: 50,
       },
     })
 
